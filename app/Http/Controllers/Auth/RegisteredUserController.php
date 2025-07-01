@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -47,6 +48,15 @@ class RegisteredUserController extends Controller
             'subject' => $request->subject,
             'city' => $request->city,
             'is_approved' => false,
+        ]);
+
+        // Create default subscription for new user
+        Subscription::create([
+            'user_id' => $user->id,
+            'max_students' => 5,
+            'is_active' => true,
+            'start_date' => now(),
+            'end_date' => null, // No end date for free tier
         ]);
 
         event(new Registered($user));

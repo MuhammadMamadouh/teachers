@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -36,6 +37,17 @@ class AdminController extends Controller
             'is_approved' => true,
             'approved_at' => now(),
         ]);
+
+        // Ensure user has a default subscription if they don't have one
+        if (!$user->subscriptions()->exists()) {
+            Subscription::create([
+                'user_id' => $user->id,
+                'max_students' => 5,
+                'is_active' => true,
+                'start_date' => now(),
+                'end_date' => null, // No end date for free tier
+            ]);
+        }
 
         return redirect()->back()->with('success', 'User approved successfully!');
     }

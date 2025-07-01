@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class AdminController extends Controller
+{
+    use AuthorizesRequests;
+    /**
+     * Display the admin panel with unapproved users.
+     */
+    public function index(): Response
+    {
+        $unapprovedUsers = User::where('is_approved', false)
+            ->where('is_admin', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Admin/UserApproval', [
+            'unapprovedUsers' => $unapprovedUsers
+        ]);
+    }
+
+    /**
+     * Approve a user.
+     */
+    public function approveUser(User $user): RedirectResponse
+    {
+        $user->update([
+            'is_approved' => true,
+            'approved_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'User approved successfully!');
+    }
+
+    /**
+     * Reject a user (delete).
+     */
+    public function rejectUser(User $user): RedirectResponse
+    {
+        $user->delete();
+
+        return redirect()->back()->with('success', 'User rejected and deleted successfully!');
+    }
+}

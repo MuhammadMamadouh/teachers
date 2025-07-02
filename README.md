@@ -1,11 +1,88 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Teachers Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive Laravel-based system for managing teachers, students, groups, schedules, payments, and attendance.
+
+## Features
+
+### 🎓 Student Management
+- Complete student registration and profile management
+- Student assignment to groups with capacity controls
+- Student search and filtering capabilities
+
+### 👥 Group Management
+- Create and manage learning groups
+- Flexible scheduling system with multiple time slots
+- Group capacity management and student enrollment
+- **NEW: Special Sessions & Calendar View**
+
+### 📅 Advanced Scheduling
+- **Weekly Calendar View**: Interactive FullCalendar integration showing all sessions
+- **Recurring Sessions**: Regular weekly schedules from group_schedules
+- **Special Sessions**: One-time sessions with custom dates and descriptions
+- **RTL Support**: Full Arabic language and right-to-left layout support
+
+### 💰 Payment Tracking
+- Monthly payment tracking per student per group
+- Payment status management (paid/unpaid)
+- Bulk payment operations
+- Payment summaries and reports
+
+### ✅ Attendance Management
+- Daily attendance tracking
+- Group-based attendance recording
+- Attendance history and reports
+
+### 🔐 User Management & Security
+- User registration with admin approval system
+- Role-based access control (Admin/Teacher)
+- Secure authentication and authorization
+
+## Technical Stack
+
+- **Backend**: Laravel 11 with Inertia.js
+- **Frontend**: React 18 with Tailwind CSS
+- **Calendar**: FullCalendar React integration
+- **Database**: SQLite (development) / MySQL (production)
+- **Build Tools**: Vite
+- **UI Components**: Headless UI, Lucide React icons
+
+## Recent Updates
+
+### Special Sessions Feature ✨
+- Interactive calendar view for each group
+- Add, edit, and delete special one-time sessions
+- Visual distinction between recurring and special sessions
+- Real-time calendar updates without page refresh
+- Mobile-responsive calendar interface
+
+For detailed implementation information, see [SPECIAL-SESSIONS-IMPLEMENTATION.md](SPECIAL-SESSIONS-IMPLEMENTATION.md)
+
+## Installation
+
+1. Clone the repository
+2. Install PHP dependencies: `composer install`
+3. Install Node.js dependencies: `npm install`
+4. Copy environment file: `cp .env.example .env`
+5. Generate application key: `php artisan key:generate`
+6. Run migrations: `php artisan migrate`
+7. Build frontend assets: `npm run build`
+8. Start the development server: `php artisan serve`
+
+## Development
+
+For development with hot reload:
+```bash
+npm run dev
+```
+
+## Documentation
+
+- [Special Sessions Implementation](SPECIAL-SESSIONS-IMPLEMENTATION.md)
+- [Student Management Guide](STUDENT-MANAGEMENT.md)
+- [Payment Tracking Implementation](PAYMENT-TRACKING-IMPLEMENTATION.md)
+- [Subscription System Implementation](SUBSCRIPTION-IMPLEMENTATION.md)
+
+---
 
 ## About Laravel
 

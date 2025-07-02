@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\GroupSchedule;
+use App\Models\GroupSpecialSession;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,7 +71,7 @@ class GroupController extends Controller
             abort(403);
         }
         
-        $group->load(['schedules', 'students']);
+        $group->load(['schedules', 'students', 'specialSessions']);
         $availableStudents = Student::where('user_id', Auth::id())
             ->whereDoesntHave('groups', function($query) use ($group) {
                 $query->where('group_id', $group->id);
@@ -217,5 +218,168 @@ class GroupController extends Controller
         $group->students()->detach($student->id);
 
         return back()->with('success', 'تم إزالة الطالب من المجموعة بنجاح');
+    }
+
+    /**
+     * Display the calendar view for a group
+     */
+    public function calendar(Group $group)
+    {
+        // Ensure the group belongs to the authenticated user
+        if ($group->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $group->load(['schedules', 'specialSessions']);
+
+        return Inertia::render('Groups/Calendar', [
+            'group' => $group
+        ]);
+    }
+
+    /**
+     * Get calendar events for a group
+     */
+    public function getCalendarEvents(Request $request, Group $group)
+    {
+        // Ensure the group belongs to the authenticated user
+        if ($group->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $start = $request->input('start');
+        $end = $request->input('end');
+
+        $events = [];
+
+        // Add recurring schedule events
+        if ($start && $end) {
+            $startDate = new \DateTime($start);
+            $endDate = new \DateTime($end);
+            
+            while ($startDate <= $endDate) {
+                $dayOfWeek = (int) $startDate->format('w'); // 0 = Sunday, 6 = Saturday
+                
+                foreach ($group->schedules as $schedule) {
+                    if ($schedule->day_of_week == $dayOfWeek) {
+                        $events[] = [
+                            'id' => 'schedule_' . $schedule->id . '_' . $startDate->format('Y-m-d'),
+                            'title' => $group->name . ' - جلسة عادية',
+                            'start' => $startDate->format('Y-m-d') . 'T' . $schedule->start_time,
+                            'end' => $startDate->format('Y-m-d') . 'T' . $schedule->end_time,
+                            'backgroundColor' => '#3b82f6',
+                            'borderColor' => '#2563eb',
+                            'type' => 'recurring',
+                            'editable' => false
+                        ];
+                    }
+                }
+                
+                $startDate->modify('+1 day');
+            }
+        }
+
+        // Add special session events
+        $specialSessions = $group->specialSessions()
+            ->when($start, function($query) use ($start) {
+                $query->where('date', '>=', $start);
+            })
+            ->when($end, function($query) use ($end) {
+                $query->where('date', '<=', $end);
+            })
+            ->get();
+
+        foreach ($specialSessions as $session) {
+            $events[] = [
+                'id' => 'special_' . $session->id,
+                'title' => $group->name . ' - جلسة خاصة',
+                'start' => $session->date->format('Y-m-d') . 'T' . $session->start_time,
+                'end' => $session->date->format('Y-m-d') . 'T' . $session->end_time,
+                'backgroundColor' => '#10b981',
+                'borderColor' => '#059669',
+                'extendedProps' => [
+                    'description' => $session->description,
+                    'type' => 'special',
+                    'sessionId' => $session->id
+                ],
+                'editable' => true
+            ];
+        }
+
+        return response()->json($events);
+    }
+
+    /**
+     * Store a new special session
+     */
+    public function storeSpecialSession(Request $request, Group $group)
+    {
+        // Ensure the group belongs to the authenticated user
+        if ($group->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $specialSession = $group->specialSessions()->create($request->only([
+            'date', 'start_time', 'end_time', 'description'
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إضافة الجلسة الخاصة بنجاح',
+            'session' => $specialSession
+        ]);
+    }
+
+    /**
+     * Update a special session
+     */
+    public function updateSpecialSession(Request $request, Group $group, GroupSpecialSession $specialSession)
+    {
+        // Ensure the group and session belong to the authenticated user
+        if ($group->user_id !== Auth::id() || $specialSession->group_id !== $group->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $specialSession->update($request->only([
+            'date', 'start_time', 'end_time', 'description'
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث الجلسة الخاصة بنجاح',
+            'session' => $specialSession
+        ]);
+    }
+
+    /**
+     * Delete a special session
+     */
+    public function destroySpecialSession(Group $group, GroupSpecialSession $specialSession)
+    {
+        // Ensure the group and session belong to the authenticated user
+        if ($group->user_id !== Auth::id() || $specialSession->group_id !== $group->id) {
+            abort(403);
+        }
+
+        $specialSession->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حذف الجلسة الخاصة بنجاح'
+        ]);
     }
 }

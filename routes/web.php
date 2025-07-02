@@ -26,6 +26,13 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'approved'])
     ->name('dashboard');
 
+// Dashboard calendar routes (for approved teachers)
+Route::middleware(['auth', 'verified', 'approved', 'not-admin'])->group(function () {
+    Route::get('/dashboard/calendar', [DashboardController::class, 'calendar'])->name('dashboard.calendar');
+    Route::get('/dashboard/calendar-events', [DashboardController::class, 'getCalendarEvents'])->name('dashboard.calendar-events');
+    Route::get('/dashboard/today-sessions', [DashboardController::class, 'getTodaySessions'])->name('dashboard.today-sessions');
+});
+
 // Pending approval page - accessible by unapproved users
 Route::get('/pending-approval', [PendingApprovalController::class, 'index'])
     ->middleware('auth')
@@ -55,6 +62,13 @@ Route::middleware('auth')->group(function () {
         // Group student assignment routes
         Route::post('/groups/{group}/assign-students', [GroupController::class, 'assignStudents'])->name('groups.assign-students');
         Route::delete('/groups/{group}/students/{student}', [GroupController::class, 'removeStudent'])->name('groups.remove-student');
+        
+        // Group calendar and special sessions routes
+        Route::get('/groups/{group}/calendar', [GroupController::class, 'calendar'])->name('groups.calendar');
+        Route::get('/groups/{group}/calendar-events', [GroupController::class, 'getCalendarEvents'])->name('groups.calendar-events');
+        Route::post('/groups/{group}/special-sessions', [GroupController::class, 'storeSpecialSession'])->name('groups.special-sessions.store');
+        Route::put('/groups/{group}/special-sessions/{specialSession}', [GroupController::class, 'updateSpecialSession'])->name('groups.special-sessions.update');
+        Route::delete('/groups/{group}/special-sessions/{specialSession}', [GroupController::class, 'destroySpecialSession'])->name('groups.special-sessions.destroy');
         
         // Attendance routes
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');

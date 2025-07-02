@@ -76,6 +76,12 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             تعديل
                         </Link>
                         <Link
+                            href={route('groups.calendar', group.id)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            التقويم
+                        </Link>
+                        <Link
                             href={route('attendance.index', { group_id: group.id })}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         >

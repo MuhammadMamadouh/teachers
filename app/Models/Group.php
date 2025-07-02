@@ -41,6 +41,11 @@ class Group extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function specialSessions(): HasMany
+    {
+        return $this->hasMany(GroupSpecialSession::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

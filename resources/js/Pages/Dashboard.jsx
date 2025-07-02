@@ -1,7 +1,31 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, Users, BookOpen } from 'lucide-react';
 
 export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans }) {
+    const [todaySessions, setTodaySessions] = useState([]);
+    const [loadingSessions, setLoadingSessions] = useState(true);
+
+    useEffect(() => {
+        // Fetch today's sessions
+        fetch(route('dashboard.today-sessions'))
+            .then(response => response.json())
+            .then(data => {
+                setTodaySessions(data);
+                setLoadingSessions(false);
+            })
+            .catch(error => {
+                console.error('Error fetching today sessions:', error);
+                setLoadingSessions(false);
+            });
+    }, []);
+
+    const formatTime = (timeString) => {
+        const [hours, minutes] = timeString.split(':');
+        return `${hours}:${minutes}`;
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -183,7 +207,60 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <span className="text-sm font-medium text-amber-900">إدارة المدفوعات</span>
                                     <span className="block text-xs text-amber-700 mt-1">تتبع المدفوعات الشهرية</span>
                                 </Link>
+
+                                <Link
+                                    href={route('dashboard.calendar')}
+                                    className="p-4 border-2 border-dashed border-blue-300 rounded-lg text-center hover:border-blue-400 transition-colors bg-blue-50"
+                                >
+                                    <Calendar className="mx-auto h-12 w-12 text-blue-500 mb-2" />
+                                    <span className="text-sm font-medium text-blue-900">تقويم الجلسات</span>
+                                    <span className="block text-xs text-blue-700 mt-1">عرض جميع جلساتك</span>
+                                </Link>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Today's Sessions */}
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
+                        <div className="p-6">
+                            <div className="flex items-center mb-4">
+                                <Clock className="w-5 h-5 text-blue-600 ml-2" />
+                                <h3 className="text-lg font-medium text-gray-900">جلسات اليوم</h3>
+                            </div>
+                            {loadingSessions ? (
+                                <div className="text-center py-4">
+                                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                    <p className="text-gray-500 mt-2">جاري تحميل الجلسات...</p>
+                                </div>
+                            ) : todaySessions.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+                                    <p className="text-gray-500 mt-2">لا توجد جلسات مجدولة لليوم</p>
+                                    <p className="text-sm text-gray-400">استمتع بيومك!</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {todaySessions.map((session, index) => (
+                                        <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                                            <div className="flex items-center">
+                                                <div className={`w-3 h-3 rounded-full ml-3 ${session.type === 'special' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-gray-900">{session.group_name}</h4>
+                                                    <p className="text-xs text-gray-600">{session.description}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {formatTime(session.start_time)} - {formatTime(session.end_time)}
+                                                </span>
+                                                <p className="text-xs text-gray-500">
+                                                    {session.type === 'special' ? 'جلسة خاصة' : 'جلسة عادية'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

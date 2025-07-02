@@ -26,11 +26,11 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title="تسجيل جديد" />
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value="الاسم" />
 
                     <TextInput
                         id="name"
@@ -47,7 +47,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="البريد الإلكتروني" />
 
                     <TextInput
                         id="email"
@@ -64,7 +64,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="phone" value="Phone" />
+                    <InputLabel htmlFor="phone" value="الهاتف" />
 
                     <TextInput
                         id="phone"
@@ -81,7 +81,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="subject" value="Subject (e.g., Math - Grade 9)" />
+                    <InputLabel htmlFor="subject" value="المادة (مثال: رياضيات - الصف التاسع)" />
 
                     <TextInput
                         id="subject"
@@ -89,7 +89,7 @@ export default function Register() {
                         name="subject"
                         value={data.subject}
                         className="mt-1 block w-full"
-                        placeholder="e.g., Math - Grade 9, English Literature, Physics"
+                        placeholder="مثال: رياضيات - الصف التاسع، أدب إنجليزي، فيزياء"
                         onChange={(e) => setData('subject', e.target.value)}
                         required
                     />
@@ -98,7 +98,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="city" value="City" />
+                    <InputLabel htmlFor="city" value="المدينة" />
 
                     <TextInput
                         id="city"
@@ -115,7 +115,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="كلمة المرور" />
 
                     <TextInput
                         id="password"
@@ -134,7 +134,7 @@ export default function Register() {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="تأكيد كلمة المرور"
                     />
 
                     <TextInput
@@ -161,11 +161,11 @@ export default function Register() {
                         href={route('login')}
                         className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
-                        Already registered?
+                        مسجل مسبقاً؟
                     </Link>
 
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
+                        تسجيل جديد
                     </PrimaryButton>
                 </div>
             </form>

@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 
 export default function Index({ students, subscriptionLimits, currentStudentCount, canAddStudents }) {
     const handleDelete = (student) => {
-        if (confirm(`Are you sure you want to delete ${student.name}?`)) {
+        if (confirm(`هل أنت متأكد من حذف ${student.name}؟`)) {
             router.delete(route('students.destroy', student.id), {
                 preserveScroll: true,
             });
@@ -15,20 +15,20 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        My Students
+                        طلابي
                     </h2>
                     {canAddStudents && (
                         <Link
                             href={route('students.create')}
                             className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                            Add Student
+                            إضافة طالب
                         </Link>
                     )}
                 </div>
             }
         >
-            <Head title="Students" />
+            <Head title="الطلاب" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -42,15 +42,15 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm font-medium text-blue-800">
-                                    Using {currentStudentCount} of {subscriptionLimits.max_students} students
+                                    استخدام {currentStudentCount} من {subscriptionLimits.max_students} طالب
                                     {subscriptionLimits.plan && (
                                         <span className="ml-2 text-blue-600">
-                                            ({subscriptionLimits.plan.name} Plan)
+                                            (خطة {subscriptionLimits.plan.name})
                                         </span>
                                     )}
                                     {!canAddStudents && (
                                         <span className="ml-2 font-normal text-blue-600">
-                                            - Limit reached
+                                            - تم الوصول للحد الأقصى
                                         </span>
                                     )}
                                 </p>
@@ -65,9 +65,9 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No students</h3>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">لا يوجد طلاب</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Get started by adding your first student.
+                                        ابدأ بإضافة أول طالب.
                                     </p>
                                     {canAddStudents && (
                                         <div className="mt-6">
@@ -78,7 +78,7 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                                                 <svg className="-ml-1 mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                                                 </svg>
-                                                Add Student
+                                                إضافة طالب
                                             </Link>
                                         </div>
                                     )}
@@ -89,19 +89,19 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                                         <thead className="bg-gray-50">
                                             <tr>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                    Name
+                                                    الاسم
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                    Phone
+                                                    الهاتف
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                    Guardian
+                                                    ولي الأمر
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                    Guardian Phone
+                                                    هاتف ولي الأمر
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                    Actions
+                                                    الإجراءات
                                                 </th>
                                             </tr>
                                         </thead>
@@ -126,19 +126,19 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                                                                 href={route('students.show', student.id)}
                                                                 className="text-indigo-600 hover:text-indigo-900"
                                                             >
-                                                                View
+                                                                عرض
                                                             </Link>
                                                             <Link
                                                                 href={route('students.edit', student.id)}
                                                                 className="text-indigo-600 hover:text-indigo-900"
                                                             >
-                                                                Edit
+                                                                تعديل
                                                             </Link>
                                                             <button
                                                                 onClick={() => handleDelete(student)}
                                                                 className="text-red-600 hover:text-red-900"
                                                             >
-                                                                Delete
+                                                                حذف
                                                             </button>
                                                         </div>
                                                     </td>

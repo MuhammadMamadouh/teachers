@@ -23,45 +23,44 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">                        <NavLink
+                            href={route('dashboard')}
+                            active={route().current('dashboard')}
+                        >
+                            لوحة التحكم
+                        </NavLink>
+                        {!user.is_admin && (
+                            <>
                                 <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                    href={route('students.index')}
+                                    active={route().current('students.*')}
                                 >
-                                    Dashboard
+                                    الطلاب
                                 </NavLink>
-                                {!user.is_admin && (
-                                    <>
-                                        <NavLink
-                                            href={route('students.index')}
-                                            active={route().current('students.*')}
-                                        >
-                                            Students
-                                        </NavLink>
-                                        <NavLink
-                                            href={route('plans.index')}
-                                            active={route().current('plans.*')}
-                                        >
-                                            Plans
-                                        </NavLink>
-                                    </>
-                                )}
-                                {user.is_admin && (
-                                    <>
-                                        <NavLink
-                                            href={route('admin.users')}
-                                            active={route().current('admin.users')}
-                                        >
-                                            User Approvals
-                                        </NavLink>
-                                        <NavLink
-                                            href={route('admin.plans.index')}
-                                            active={route().current('admin.plans.*')}
-                                        >
-                                            Manage Plans
-                                        </NavLink>
-                                    </>
-                                )}
+                                <NavLink
+                                    href={route('plans.index')}
+                                    active={route().current('plans.*')}
+                                >
+                                    الخطط
+                                </NavLink>
+                            </>
+                        )}
+                        {user.is_admin && (
+                            <>
+                                <NavLink
+                                    href={route('admin.users')}
+                                    active={route().current('admin.users')}
+                                >
+                                    موافقات المعلمين
+                                </NavLink>
+                                <NavLink
+                                    href={route('admin.plans.index')}
+                                    active={route().current('admin.plans.*')}
+                                >
+                                    إدارة الخطط
+                                </NavLink>
+                            </>
+                        )}
                             </div>
                         </div>
 
@@ -96,14 +95,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <Dropdown.Link
                                             href={route('profile.edit')}
                                         >
-                                            Profile
+                                            الملف الشخصي
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                            تسجيل الخروج
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -164,7 +163,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             href={route('dashboard')}
                             active={route().current('dashboard')}
                         >
-                            Dashboard
+                            لوحة التحكم
                         </ResponsiveNavLink>
                         {!user.is_admin && (
                             <>
@@ -172,13 +171,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href={route('students.index')}
                                     active={route().current('students.*')}
                                 >
-                                    Students
+                                    الطلاب
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
                                     href={route('plans.index')}
                                     active={route().current('plans.*')}
                                 >
-                                    Plans
+                                    الخطط
                                 </ResponsiveNavLink>
                             </>
                         )}
@@ -188,13 +187,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href={route('admin.users')}
                                     active={route().current('admin.users')}
                                 >
-                                    User Approvals
+                                    موافقات المعلمين
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
                                     href={route('admin.plans.index')}
                                     active={route().current('admin.plans.*')}
                                 >
-                                    Manage Plans
+                                    إدارة الخطط
                                 </ResponsiveNavLink>
                             </>
                         )}
@@ -212,14 +211,14 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
+                                الملف الشخصي
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}
                                 as="button"
                             >
-                                Log Out
+                                تسجيل الخروج
                             </ResponsiveNavLink>
                         </div>
                     </div>

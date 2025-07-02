@@ -3,7 +3,7 @@ import { Head, router } from '@inertiajs/react';
 
 export default function PlansIndex({ currentPlan, availablePlans, currentStudentCount }) {
     const handleUpgrade = (planId) => {
-        if (confirm('Are you sure you want to upgrade your plan? This change will take effect immediately.')) {
+        if (confirm('هل أنت متأكد من ترقية خطتك؟ سيتم تطبيق هذا التغيير فوراً.')) {
             router.post(route('plans.upgrade'), {
                 plan_id: planId,
             });
@@ -14,31 +14,31 @@ export default function PlansIndex({ currentPlan, availablePlans, currentStudent
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Upgrade Your Plan
+                    ترقية خطتك
                 </h2>
             }
         >
-            <Head title="Upgrade Plan" />
+            <Head title="ترقية الخطة" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Current Plan */}
                     {currentPlan && (
                         <div className="mb-8">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Current Plan</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">الخطة الحالية</h3>
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                                 <div className="p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <h4 className="text-xl font-semibold text-gray-900">{currentPlan.name} Plan</h4>
-                                            <p className="text-gray-600">Up to {currentPlan.max_students} students</p>
+                                            <h4 className="text-xl font-semibold text-gray-900">خطة {currentPlan.name}</h4>
+                                            <p className="text-gray-600">حتى {currentPlan.max_students} طالب</p>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                Currently using {currentStudentCount} of {currentPlan.max_students} students
+                                                تستخدم حالياً {currentStudentCount} من {currentPlan.max_students} طالب
                                             </p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-2xl font-bold text-gray-900">${currentPlan.price_per_month}</p>
-                                            <p className="text-sm text-gray-500">per month</p>
+                                            <p className="text-sm text-gray-500">شهرياً</p>
                                         </div>
                                     </div>
                                 </div>
@@ -48,15 +48,15 @@ export default function PlansIndex({ currentPlan, availablePlans, currentStudent
 
                     {/* Available Upgrades */}
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Available Upgrades</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">الترقيات المتاحة</h3>
                         {availablePlans.length === 0 ? (
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                                 <div className="p-6 text-center">
                                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <h4 className="mt-4 text-lg font-medium text-gray-900">You're on the highest plan!</h4>
-                                    <p className="mt-2 text-gray-600">There are no upgrade options available.</p>
+                                    <h4 className="mt-4 text-lg font-medium text-gray-900">أنت على أعلى خطة!</h4>
+                                    <p className="mt-2 text-gray-600">لا توجد خيارات ترقية متاحة.</p>
                                 </div>
                             </div>
                         ) : (
@@ -65,30 +65,30 @@ export default function PlansIndex({ currentPlan, availablePlans, currentStudent
                                     <div key={plan.id} className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                                         <div className="p-6">
                                             <div className="text-center">
-                                                <h4 className="text-xl font-semibold text-gray-900 mb-2">{plan.name} Plan</h4>
+                                                <h4 className="text-xl font-semibold text-gray-900 mb-2">خطة {plan.name}</h4>
                                                 <div className="mb-4">
                                                     <span className="text-3xl font-bold text-gray-900">${plan.price_per_month}</span>
-                                                    <span className="text-gray-500">/month</span>
+                                                    <span className="text-gray-500">/شهر</span>
                                                 </div>
                                                 <div className="mb-6">
                                                     <div className="flex items-center justify-center mb-2">
                                                         <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span className="text-gray-700">Up to {plan.max_students} students</span>
+                                                        <span className="text-gray-700">حتى {plan.max_students} طالب</span>
                                                     </div>
                                                     <div className="flex items-center justify-center">
                                                         <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span className="text-gray-700">All current features</span>
+                                                        <span className="text-gray-700">جميع الميزات الحالية</span>
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={() => handleUpgrade(plan.id)}
                                                     className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                 >
-                                                    Upgrade to {plan.name}
+                                                    ترقية إلى {plan.name}
                                                 </button>
                                             </div>
                                         </div>

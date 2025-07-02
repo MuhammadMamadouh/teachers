@@ -16,17 +16,17 @@ export default function AdminDashboard({
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Admin Dashboard
+                    لوحة تحكم المدير
                 </h2>
             }
         >
-            <Head title="Admin Dashboard" />
+            <Head title="لوحة تحكم المدير" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* System Overview */}
                     <div className="mb-8">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">System Overview</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">نظرة عامة على النظام</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                                 <div className="p-6">
@@ -39,9 +39,9 @@ export default function AdminDashboard({
                                             </div>
                                         </div>
                                         <div className="ml-4">
-                                            <h4 className="text-lg font-medium text-gray-900">Total Teachers</h4>
+                                            <h4 className="text-lg font-medium text-gray-900">إجمالي المعلمين</h4>
                                             <p className="text-2xl font-bold text-gray-900">{systemStats.total_users}</p>
-                                            <p className="text-sm text-green-600">{systemStats.approved_users} approved</p>
+                                            <p className="text-sm text-green-600">{systemStats.approved_users} معتمد</p>
                                         </div>
                                     </div>
                                 </div>
@@ -58,9 +58,9 @@ export default function AdminDashboard({
                                             </div>
                                         </div>
                                         <div className="ml-4">
-                                            <h4 className="text-lg font-medium text-gray-900">Pending Approval</h4>
+                                            <h4 className="text-lg font-medium text-gray-900">في انتظار الموافقة</h4>
                                             <p className="text-2xl font-bold text-gray-900">{systemStats.pending_users}</p>
-                                            <p className="text-sm text-yellow-600">Need review</p>
+                                            <p className="text-sm text-yellow-600">تحتاج مراجعة</p>
                                         </div>
                                     </div>
                                 </div>
@@ -77,9 +77,9 @@ export default function AdminDashboard({
                                             </div>
                                         </div>
                                         <div className="ml-4">
-                                            <h4 className="text-lg font-medium text-gray-900">Total Students</h4>
+                                            <h4 className="text-lg font-medium text-gray-900">إجمالي الطلاب</h4>
                                             <p className="text-2xl font-bold text-gray-900">{systemStats.total_students}</p>
-                                            <p className="text-sm text-green-600">Across all teachers</p>
+                                            <p className="text-sm text-green-600">عبر جميع المعلمين</p>
                                         </div>
                                     </div>
                                 </div>
@@ -96,9 +96,9 @@ export default function AdminDashboard({
                                             </div>
                                         </div>
                                         <div className="ml-4">
-                                            <h4 className="text-lg font-medium text-gray-900">System Utilization</h4>
+                                            <h4 className="text-lg font-medium text-gray-900">استخدام النظام</h4>
                                             <p className="text-2xl font-bold text-gray-900">{utilizationRate}%</p>
-                                            <p className="text-sm text-purple-600">{totalUsed} of {totalCapacity} slots</p>
+                                            <p className="text-sm text-purple-600">{totalUsed} من {totalCapacity} مقعد</p>
                                         </div>
                                     </div>
                                 </div>
@@ -109,12 +109,12 @@ export default function AdminDashboard({
                     {/* Plan Statistics */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-medium text-gray-900">Subscription Plans</h3>
+                            <h3 className="text-lg font-medium text-gray-900">خطط الاشتراك</h3>
                             <Link
                                 href={route('admin.plans.index')}
                                 className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             >
-                                Manage Plans
+                                إدارة الخطط
                             </Link>
                         </div>
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -123,11 +123,11 @@ export default function AdminDashboard({
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Limit</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Month</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribers</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الخطة</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">عدد الطلاب</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">السعر/شهر</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">المشتركين</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
@@ -137,7 +137,7 @@ export default function AdminDashboard({
                                                         <div className="text-sm font-medium text-gray-900">{plan.name}</div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-900">{plan.max_students} students</div>
+                                                        <div className="text-sm text-gray-900">{plan.max_students} طالب</div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">${plan.price}</div>
@@ -148,7 +148,7 @@ export default function AdminDashboard({
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {plan.is_default && (
                                                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                                Default
+                                                                افتراضي
                                                             </span>
                                                         )}
                                                     </td>
@@ -163,7 +163,7 @@ export default function AdminDashboard({
 
                     {/* Recent Users */}
                     <div className="mb-8">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Teachers</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">المعلمون الجدد</h3>
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6">
                                 <div className="space-y-4">
@@ -173,7 +173,7 @@ export default function AdminDashboard({
                                                 <h4 className="text-sm font-medium text-gray-900">{user.name}</h4>
                                                 <p className="text-sm text-gray-500">{user.email}</p>
                                                 <p className="text-xs text-gray-400">
-                                                    Joined {new Date(user.created_at).toLocaleDateString()}
+                                                    انضم في {new Date(user.created_at).toLocaleDateString('ar-SA')}
                                                 </p>
                                             </div>
                                             <div>
@@ -182,7 +182,7 @@ export default function AdminDashboard({
                                                         ? 'bg-green-100 text-green-800' 
                                                         : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
-                                                    {user.is_approved ? 'Approved' : 'Pending'}
+                                                    {user.is_approved ? 'معتمد' : 'في انتظار الموافقة'}
                                                 </span>
                                             </div>
                                         </div>

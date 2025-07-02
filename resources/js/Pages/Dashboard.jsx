@@ -6,19 +6,19 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard
+                    لوحة التحكم
                 </h2>
             }
         >
-            <Head title="Dashboard" />
+            <Head title="لوحة التحكم" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Welcome Section */}
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg mb-6">
                         <div className="p-6 text-gray-900">
-                            <h3 className="text-lg font-medium mb-2">Welcome back!</h3>
-                            <p className="text-gray-600">Manage your students and track their attendance.</p>
+                            <h3 className="text-lg font-medium mb-2">مرحباً بك مرة أخرى!</h3>
+                            <p className="text-gray-600">قم بإدارة طلابك وتتبع حضورهم.</p>
                         </div>
                     </div>
 
@@ -35,15 +35,15 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">Students</h4>
+                                        <h4 className="text-lg font-medium text-gray-900">الطلاب</h4>
                                         <p className="text-2xl font-bold text-gray-900">
-                                            {currentStudentCount} of {subscriptionLimits.max_students || 0}
+                                            {currentStudentCount} من {subscriptionLimits.max_students || 0}
                                         </p>                        <p className="text-sm text-gray-500">
-                            {subscriptionLimits.has_active_subscription ? 'Active Plan' : 'No Active Plan'}
+                            {subscriptionLimits.has_active_subscription ? 'خطة نشطة' : 'لا توجد خطة نشطة'}
                         </p>
                         {subscriptionLimits.plan && (
                             <p className="text-xs text-blue-600 font-medium mt-1">
-                                {subscriptionLimits.plan.name} Plan
+                                خطة {subscriptionLimits.plan.name}
                             </p>
                         )}
                                     </div>
@@ -66,15 +66,15 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">Subscription</h4>                        <p className={`text-sm font-medium ${
+                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>                        <p className={`text-sm font-medium ${
                             subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
                         }`}>
-                            {subscriptionLimits.has_active_subscription ? 'Active' : 'Inactive'}
+                            {subscriptionLimits.has_active_subscription ? 'نشط' : 'غير نشط'}
                         </p>
                         {subscriptionLimits.plan ? (
-                            <p className="text-sm text-gray-500">{subscriptionLimits.plan.name} Plan</p>
+                            <p className="text-sm text-gray-500">خطة {subscriptionLimits.plan.name}</p>
                         ) : (
-                            <p className="text-sm text-gray-500">No Plan</p>
+                            <p className="text-sm text-gray-500">لا توجد خطة</p>
                         )}
                                     </div>
                                 </div>
@@ -96,14 +96,14 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">Add Students</h4>
+                                        <h4 className="text-lg font-medium text-gray-900">إضافة طلاب</h4>
                                         <p className={`text-sm font-medium ${
                                             canAddStudents ? 'text-green-600' : 'text-yellow-600'
                                         }`}>
-                                            {canAddStudents ? 'Available' : 'Limit Reached'}
+                                            {canAddStudents ? 'متاح' : 'تم الوصول للحد الأقصى'}
                                         </p>
                                         <p className="text-sm text-gray-500">
-                                            {subscriptionLimits.max_students - currentStudentCount} slots remaining
+                                            {subscriptionLimits.max_students - currentStudentCount} مقعد متبقي
                                         </p>
                                     </div>
                                 </div>
@@ -114,7 +114,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                     {/* Quick Actions */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">الإجراءات السريعة</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Link
                                     href={canAddStudents ? route('students.create') : '#'}
@@ -128,9 +128,9 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <svg className="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                     </svg>
-                                    <span className="text-sm font-medium text-gray-900">Add New Student</span>
+                                    <span className="text-sm font-medium text-gray-900">إضافة طالب جديد</span>
                                     <span className="block text-xs text-gray-500 mt-1">
-                                        {canAddStudents ? 'Add students to your class' : 'Subscription limit reached'}
+                                        {canAddStudents ? 'أضف طلاب إلى صفك' : 'تم الوصول لحد الاشتراك'}
                                     </span>
                                 </Link>
 
@@ -141,8 +141,8 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <svg className="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
-                                    <span className="text-sm font-medium text-gray-900">Manage Students</span>
-                                    <span className="block text-xs text-gray-500 mt-1">View and edit your students</span>
+                                    <span className="text-sm font-medium text-gray-900">إدارة الطلاب</span>
+                                    <span className="block text-xs text-gray-500 mt-1">عرض وتعديل طلابك</span>
                                 </Link>
 
                                 {availablePlans && availablePlans.length > 0 && (
@@ -153,8 +153,8 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                         <svg className="mx-auto h-12 w-12 text-indigo-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                         </svg>
-                                        <span className="text-sm font-medium text-indigo-900">Upgrade Plan</span>
-                                        <span className="block text-xs text-indigo-700 mt-1">Get more student slots</span>
+                                        <span className="text-sm font-medium text-indigo-900">ترقية الخطة</span>
+                                        <span className="block text-xs text-indigo-700 mt-1">احصل على المزيد من المقاعد</span>
                                     </Link>
                                 )}
                             </div>

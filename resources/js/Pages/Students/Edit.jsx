@@ -24,18 +24,18 @@ export default function Edit({ student }) {
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        Edit Student: {student.name}
+                        تعديل الطالب: {student.name}
                     </h2>
                     <Link
                         href={route('students.index')}
                         className="rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
-                        Back to Students
+                        العودة للطلاب
                     </Link>
                 </div>
             }
         >
-            <Head title={`Edit ${student.name}`} />
+            <Head title={`تعديل ${student.name}`} />
 
             <div className="py-12">
                 <div className="mx-auto max-w-2xl sm:px-6 lg:px-8">
@@ -45,7 +45,7 @@ export default function Edit({ student }) {
                                 {/* Student Information */}
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div>
-                                        <InputLabel htmlFor="name" value="Student Name" />
+                                        <InputLabel htmlFor="name" value="اسم الطالب" />
                                         <TextInput
                                             id="name"
                                             name="name"
@@ -60,7 +60,7 @@ export default function Edit({ student }) {
                                     </div>
 
                                     <div>
-                                        <InputLabel htmlFor="phone" value="Student Phone" />
+                                        <InputLabel htmlFor="phone" value="هاتف الطالب" />
                                         <TextInput
                                             id="phone"
                                             type="tel"
@@ -77,10 +77,10 @@ export default function Edit({ student }) {
 
                                 {/* Guardian Information */}
                                 <div className="border-t border-gray-200 pt-6">
-                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Guardian Information</h3>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">معلومات ولي الأمر</h3>
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div>
-                                            <InputLabel htmlFor="guardian_name" value="Guardian Name" />
+                                            <InputLabel htmlFor="guardian_name" value="اسم ولي الأمر" />
                                             <TextInput
                                                 id="guardian_name"
                                                 name="guardian_name"
@@ -94,7 +94,7 @@ export default function Edit({ student }) {
                                         </div>
 
                                         <div>
-                                            <InputLabel htmlFor="guardian_phone" value="Guardian Phone" />
+                                            <InputLabel htmlFor="guardian_phone" value="هاتف ولي الأمر" />
                                             <TextInput
                                                 id="guardian_phone"
                                                 type="tel"
@@ -115,10 +115,10 @@ export default function Edit({ student }) {
                                         href={route('students.index')}
                                         className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                     >
-                                        Cancel
+                                        إلغاء
                                     </Link>
                                     <PrimaryButton disabled={processing}>
-                                        {processing ? 'Updating...' : 'Update Student'}
+                                        {processing ? 'جاري التحديث...' : 'تحديث الطالب'}
                                     </PrimaryButton>
                                 </div>
                             </form>

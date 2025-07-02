@@ -64,6 +64,7 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
+
         // Ensure the group belongs to the authenticated user
         if ($group->user_id !== Auth::id()) {
             abort(403);
@@ -75,10 +76,37 @@ class GroupController extends Controller
                 $query->where('group_id', $group->id);
             })
             ->get();
+
+            
+        // Get payment summary for current month
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+        
+        $paymentSummary = [
+            'total_students' => $group->students->count(),
+            'paid_students' => $group->payments()
+                ->where('month', $currentMonth)
+                ->where('year', $currentYear)
+                ->where('is_paid', true)
+                ->count(),
+            'unpaid_students' => $group->students->count() - $group->payments()
+                ->where('month', $currentMonth)
+                ->where('year', $currentYear)
+                ->where('is_paid', true)
+                ->count(),
+            'total_amount' => $group->payments()
+                ->where('month', $currentMonth)
+                ->where('year', $currentYear)
+                ->where('is_paid', true)
+                ->sum('amount'),
+            'current_month' => now()->format('F Y'),
+            'current_month_arabic' => now()->locale('ar')->monthName . ' ' . now()->year,
+        ];
         
         return Inertia::render('Groups/Show', [
             'group' => $group,
-            'availableStudents' => $availableStudents
+            'availableStudents' => $availableStudents,
+            'paymentSummary' => $paymentSummary,
         ]);
     }
 

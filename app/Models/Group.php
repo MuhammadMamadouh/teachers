@@ -36,6 +36,11 @@ class Group extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

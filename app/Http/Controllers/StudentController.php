@@ -91,10 +91,36 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $student->load('group');
+        $student->load(['group', 'groups', 'payments.group']);
+
+        // Get recent payments (last 6 months)
+        $recentPayments = $student->payments()
+            ->with('group')
+            ->where('year', '>=', now()->subMonths(6)->year)
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->take(6)
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'id' => $payment->id,
+                    'month' => $payment->month,
+                    'year' => $payment->year,
+                    'month_name' => $payment->month_name,
+                    'formatted_date' => $payment->formatted_date,
+                    'is_paid' => $payment->is_paid,
+                    'amount' => $payment->amount,
+                    'paid_date' => $payment->paid_date?->format('Y-m-d'),
+                    'group' => $payment->group ? [
+                        'id' => $payment->group->id,
+                        'name' => $payment->group->name,
+                    ] : null,
+                ];
+            });
 
         return Inertia::render('Students/Show', [
             'student' => $student,
+            'recentPayments' => $recentPayments,
         ]);
     }
 

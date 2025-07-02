@@ -61,6 +61,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
         Route::get('/attendance/summary/{group}', [AttendanceController::class, 'summary'])->name('attendance.summary');
         
+        // Payment routes
+        Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/show', [\App\Http\Controllers\PaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments', [\App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
+        Route::post('/payments/bulk-update', [\App\Http\Controllers\PaymentController::class, 'bulkUpdate'])->name('payments.bulk-update');
+        Route::delete('/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'destroy'])->name('payments.destroy');
+        
         // Plan management routes
         Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
         Route::post('/plans/upgrade', [PlanController::class, 'upgrade'])->name('plans.upgrade');

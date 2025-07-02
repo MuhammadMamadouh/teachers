@@ -2,9 +2,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Show({ group, availableStudents }) {
+export default function Show({ group, availableStudents, paymentSummary }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [showRemoveStudentModal, setShowRemoveStudentModal] = useState(false);
+    const [studentToRemove, setStudentToRemove] = useState(null);
     const [selectedStudents, setSelectedStudents] = useState([]);
 
     const handleDelete = () => {
@@ -31,6 +33,19 @@ export default function Show({ group, availableStudents }) {
 
     const handleRemoveStudent = (studentId) => {
         router.delete(route('groups.remove-student', [group.id, studentId]));
+    };
+
+    const confirmRemoveStudent = (student) => {
+        setStudentToRemove(student);
+        setShowRemoveStudentModal(true);
+    };
+
+    const executeRemoveStudent = () => {
+        if (studentToRemove) {
+            router.delete(route('groups.remove-student', [group.id, studentToRemove.id]));
+            setShowRemoveStudentModal(false);
+            setStudentToRemove(null);
+        }
     };
 
     const handleStudentSelection = (studentId) => {
@@ -65,6 +80,12 @@ export default function Show({ group, availableStudents }) {
                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         >
                             تسجيل الحضور
+                        </Link>
+                        <Link
+                            href={route('payments.index', { group_id: group.id })}
+                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            إدارة المدفوعات
                         </Link>
                         <button
                             onClick={() => setShowAssignModal(true)}
@@ -103,7 +124,7 @@ export default function Show({ group, availableStudents }) {
                                     <p className="text-gray-600 mb-4">{group.description}</p>
                                 )}
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-blue-50 p-4 rounded-lg">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
@@ -145,6 +166,27 @@ export default function Show({ group, availableStudents }) {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {paymentSummary && (
+                                        <div className="bg-amber-50 p-4 rounded-lg">
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0">
+                                                    <svg className="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                <div className="ml-4">
+                                                    <h4 className="text-lg font-medium text-amber-900">المدفوعات</h4>
+                                                    <p className="text-2xl font-bold text-amber-900">
+                                                        {paymentSummary.paid_students}/{paymentSummary.total_students}
+                                                    </p>
+                                                    <p className="text-xs text-amber-700">
+                                                        {paymentSummary.total_amount || 0} ج.م
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -192,7 +234,7 @@ export default function Show({ group, availableStudents }) {
                                                             )}
                                                         </div>
                                                         <button
-                                                            onClick={() => handleRemoveStudent(student.id)}
+                                                            onClick={() => confirmRemoveStudent(student)}
                                                             className="text-red-600 hover:text-red-800 text-sm"
                                                             title="إزالة من المجموعة"
                                                         >
@@ -308,6 +350,35 @@ export default function Show({ group, availableStudents }) {
                                 </div>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Remove Student Modal */}
+            {showRemoveStudentModal && studentToRemove && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                    <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">تأكيد إزالة الطالب</h3>
+                        <p className="text-sm text-gray-500 mb-6">
+                            هل أنت متأكد من أنك تريد إزالة الطالب "<span className="font-medium">{studentToRemove.name}</span>" من المجموعة "{group.name}"؟
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={() => {
+                                    setShowRemoveStudentModal(false);
+                                    setStudentToRemove(null);
+                                }}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                            >
+                                إلغاء
+                            </button>
+                            <button
+                                onClick={executeRemoveStudent}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                            >
+                                إزالة الطالب
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

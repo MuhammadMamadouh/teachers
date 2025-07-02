@@ -50,6 +50,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     الحضور
                                 </NavLink>
                                 <NavLink
+                                    href={route('payments.index')}
+                                    active={route().current('payments.*')}
+                                >
+                                    المدفوعات
+                                </NavLink>
+                                <NavLink
                                     href={route('plans.index')}
                                     active={route().current('plans.*')}
                                 >
@@ -196,6 +202,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('attendance.*')}
                                 >
                                     الحضور
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('payments.index')}
+                                    active={route().current('payments.*')}
+                                >
+                                    المدفوعات
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
                                     href={route('plans.index')}

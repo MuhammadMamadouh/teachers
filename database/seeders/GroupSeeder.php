@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Group;
+use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -87,6 +88,23 @@ class GroupSeeder extends Seeder
             if ($createdGroups->isNotEmpty()) {
                 $randomGroup = $createdGroups->random();
                 $randomGroup->students()->attach($student->id);
+                
+                // Create sample payment records for the last 3 months
+                for ($monthsBack = 0; $monthsBack < 3; $monthsBack++) {
+                    $date = now()->subMonths($monthsBack);
+                    $isPaid = $monthsBack < 2; // Make recent payments paid
+                    
+                    Payment::create([
+                        'student_id' => $student->id,
+                        'group_id' => $randomGroup->id,
+                        'month' => $date->month,
+                        'year' => $date->year,
+                        'is_paid' => $isPaid,
+                        'amount' => $isPaid ? 200.00 : null,
+                        'paid_date' => $isPaid ? $date->startOfMonth()->addDays(rand(1, 10)) : null,
+                        'notes' => $isPaid ? 'تم الدفع نقداً' : null,
+                    ]);
+                }
             }
         }
     }

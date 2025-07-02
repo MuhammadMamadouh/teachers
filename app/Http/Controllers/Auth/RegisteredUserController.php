@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -51,12 +52,15 @@ class RegisteredUserController extends Controller
         ]);
 
         // Create default subscription for new user
+        $defaultPlan = Plan::where('is_default', true)->first();
+        
         Subscription::create([
             'user_id' => $user->id,
-            'max_students' => 5,
+            'plan_id' => $defaultPlan ? $defaultPlan->id : null,
+            'max_students' => $defaultPlan ? $defaultPlan->max_students : 5, // Fallback to 5
             'is_active' => true,
             'start_date' => now(),
-            'end_date' => null, // No end date for free tier
+            'end_date' => null, // No end date for basic plan
         ]);
 
         event(new Registered($user));

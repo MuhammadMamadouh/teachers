@@ -67,6 +67,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all students for the user.
+     */
+    public function students(): HasMany
+    {
+        return $this->hasMany(Student::class);
+    }
+
+    /**
      * Get the user's active subscription.
      */
     public function activeSubscription(): HasOne
@@ -79,7 +87,7 @@ class User extends Authenticatable
      */
     public function getSubscriptionLimits(): array
     {
-        $subscription = $this->activeSubscription()->first();
+        $subscription = $this->activeSubscription()->with('plan')->first();
         
         if (!$subscription || !$subscription->isCurrentlyActive()) {
             return [
@@ -88,10 +96,14 @@ class User extends Authenticatable
             ];
         }
 
+        // Use plan's max_students if available, fallback to subscription's max_students
+        $maxStudents = $subscription->plan ? $subscription->plan->max_students : $subscription->max_students;
+
         return [
-            'max_students' => $subscription->max_students,
+            'max_students' => $maxStudents,
             'has_active_subscription' => true,
             'subscription' => $subscription,
+            'plan' => $subscription->plan,
         ];
     }
 
@@ -106,10 +118,17 @@ class User extends Authenticatable
             return false;
         }
 
-        // TODO: When students table is created, check current student count
-        // For now, assume 0 students
-        $currentStudentCount = 0;
+        // Get current student count
+        $currentStudentCount = $this->students()->count();
         
         return ($currentStudentCount + $count) <= $limits['max_students'];
+    }
+
+    /**
+     * Get current student count for the user.
+     */
+    public function getStudentCount(): int
+    {
+        return $this->students()->count();
     }
 }

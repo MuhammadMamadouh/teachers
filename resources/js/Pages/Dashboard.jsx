@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
-export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents }) {
+export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans }) {
     return (
         <AuthenticatedLayout
             header={
@@ -38,10 +38,14 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                         <h4 className="text-lg font-medium text-gray-900">Students</h4>
                                         <p className="text-2xl font-bold text-gray-900">
                                             {currentStudentCount} of {subscriptionLimits.max_students || 0}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {subscriptionLimits.has_active_subscription ? 'Active Plan' : 'No Active Plan'}
-                                        </p>
+                                        </p>                        <p className="text-sm text-gray-500">
+                            {subscriptionLimits.has_active_subscription ? 'Active Plan' : 'No Active Plan'}
+                        </p>
+                        {subscriptionLimits.plan && (
+                            <p className="text-xs text-blue-600 font-medium mt-1">
+                                {subscriptionLimits.plan.name} Plan
+                            </p>
+                        )}
                                     </div>
                                 </div>
                             </div>
@@ -62,13 +66,16 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">Subscription</h4>
-                                        <p className={`text-sm font-medium ${
-                                            subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
-                                        }`}>
-                                            {subscriptionLimits.has_active_subscription ? 'Active' : 'Inactive'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">Free Plan</p>
+                                        <h4 className="text-lg font-medium text-gray-900">Subscription</h4>                        <p className={`text-sm font-medium ${
+                            subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                            {subscriptionLimits.has_active_subscription ? 'Active' : 'Inactive'}
+                        </p>
+                        {subscriptionLimits.plan ? (
+                            <p className="text-sm text-gray-500">{subscriptionLimits.plan.name} Plan</p>
+                        ) : (
+                            <p className="text-sm text-gray-500">No Plan</p>
+                        )}
                                     </div>
                                 </div>
                             </div>
@@ -108,8 +115,9 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6">
                             <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <Link
+                                    href={canAddStudents ? route('students.create') : '#'}
                                     className={`p-4 border-2 border-dashed rounded-lg text-center transition-colors ${
                                         canAddStudents
                                             ? 'border-gray-300 hover:border-gray-400'
@@ -124,15 +132,31 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <span className="block text-xs text-gray-500 mt-1">
                                         {canAddStudents ? 'Add students to your class' : 'Subscription limit reached'}
                                     </span>
-                                </button>
+                                </Link>
 
-                                <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors">
+                                <Link
+                                    href={route('students.index')}
+                                    className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors"
+                                >
                                     <svg className="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
-                                    <span className="text-sm font-medium text-gray-900">Take Attendance</span>
-                                    <span className="block text-xs text-gray-500 mt-1">Mark student attendance</span>
-                                </button>
+                                    <span className="text-sm font-medium text-gray-900">Manage Students</span>
+                                    <span className="block text-xs text-gray-500 mt-1">View and edit your students</span>
+                                </Link>
+
+                                {availablePlans && availablePlans.length > 0 && (
+                                    <Link
+                                        href={route('plans.index')}
+                                        className="p-4 border-2 border-dashed border-indigo-300 rounded-lg text-center hover:border-indigo-400 transition-colors bg-indigo-50"
+                                    >
+                                        <svg className="mx-auto h-12 w-12 text-indigo-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                        <span className="text-sm font-medium text-indigo-900">Upgrade Plan</span>
+                                        <span className="block text-xs text-indigo-700 mt-1">Get more student slots</span>
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>

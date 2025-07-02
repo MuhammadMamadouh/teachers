@@ -30,13 +30,37 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                {!user.is_admin && (
+                                    <>
+                                        <NavLink
+                                            href={route('students.index')}
+                                            active={route().current('students.*')}
+                                        >
+                                            Students
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('plans.index')}
+                                            active={route().current('plans.*')}
+                                        >
+                                            Plans
+                                        </NavLink>
+                                    </>
+                                )}
                                 {user.is_admin && (
-                                    <NavLink
-                                        href={route('admin.users')}
-                                        active={route().current('admin.users')}
-                                    >
-                                        User Approvals
-                                    </NavLink>
+                                    <>
+                                        <NavLink
+                                            href={route('admin.users')}
+                                            active={route().current('admin.users')}
+                                        >
+                                            User Approvals
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('admin.plans.index')}
+                                            active={route().current('admin.plans.*')}
+                                        >
+                                            Manage Plans
+                                        </NavLink>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -142,13 +166,37 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        {!user.is_admin && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('students.index')}
+                                    active={route().current('students.*')}
+                                >
+                                    Students
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('plans.index')}
+                                    active={route().current('plans.*')}
+                                >
+                                    Plans
+                                </ResponsiveNavLink>
+                            </>
+                        )}
                         {user.is_admin && (
-                            <ResponsiveNavLink
-                                href={route('admin.users')}
-                                active={route().current('admin.users')}
-                            >
-                                User Approvals
-                            </ResponsiveNavLink>
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('admin.users')}
+                                    active={route().current('admin.users')}
+                                >
+                                    User Approvals
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.plans.index')}
+                                    active={route().current('admin.plans.*')}
+                                >
+                                    Manage Plans
+                                </ResponsiveNavLink>
+                            </>
                         )}
                     </div>
 

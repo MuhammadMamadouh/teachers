@@ -9,6 +9,7 @@ class Student extends Model
 {
     protected $fillable = [
         'user_id',
+        'group_id',
         'name',
         'phone',
         'guardian_name',
@@ -21,5 +22,13 @@ class Student extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the group that the student belongs to.
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PendingApprovalController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
@@ -48,6 +49,7 @@ Route::middleware('auth')->group(function () {
     // Student management routes (only for approved non-admin users)
     Route::middleware(['approved', 'not-admin'])->group(function () {
         Route::resource('students', StudentController::class);
+        Route::resource('groups', GroupController::class);
         
         // Plan management routes
         Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');

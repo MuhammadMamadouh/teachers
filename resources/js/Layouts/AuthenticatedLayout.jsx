@@ -38,6 +38,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     الطلاب
                                 </NavLink>
                                 <NavLink
+                                    href={route('groups.index')}
+                                    active={route().current('groups.*')}
+                                >
+                                    المجموعات
+                                </NavLink>
+                                <NavLink
                                     href={route('plans.index')}
                                     active={route().current('plans.*')}
                                 >
@@ -172,6 +178,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('students.*')}
                                 >
                                     الطلاب
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('groups.index')}
+                                    active={route().current('groups.*')}
+                                >
+                                    المجموعات
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
                                     href={route('plans.index')}

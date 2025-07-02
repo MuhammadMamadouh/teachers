@@ -95,6 +95,9 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                                                     الهاتف
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                    المجموعة
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                                     ولي الأمر
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -113,6 +116,15 @@ export default function Index({ students, subscriptionLimits, currentStudentCoun
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                         {student.phone}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                                        {student.group ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {student.group.name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400">غير محدد</span>
+                                                        )}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                         {student.guardian_name}

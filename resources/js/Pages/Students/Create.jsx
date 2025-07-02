@@ -5,12 +5,13 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create() {
+export default function Create({ groups }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         phone: '',
         guardian_name: '',
         guardian_phone: '',
+        group_id: '',
     });
 
     const submit = (e) => {
@@ -92,6 +93,25 @@ export default function Create() {
                                             required
                                         />
                                         <InputError message={errors.phone} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="group_id" value="المجموعة" />
+                                        <select
+                                            id="group_id"
+                                            name="group_id"
+                                            value={data.group_id}
+                                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            onChange={(e) => setData('group_id', e.target.value)}
+                                        >
+                                            <option value="">اختر المجموعة (اختياري)</option>
+                                            {groups && groups.map((group) => (
+                                                <option key={group.id} value={group.id}>
+                                                    {group.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError message={errors.group_id} className="mt-2" />
                                     </div>
                                 </div>
 

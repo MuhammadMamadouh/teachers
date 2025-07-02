@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified', 'approved', 'not-admin'])->group(function
     Route::get('/dashboard/calendar', [DashboardController::class, 'calendar'])->name('dashboard.calendar');
     Route::get('/dashboard/calendar-events', [DashboardController::class, 'getCalendarEvents'])->name('dashboard.calendar-events');
     Route::get('/dashboard/today-sessions', [DashboardController::class, 'getTodaySessions'])->name('dashboard.today-sessions');
+    Route::post('/dashboard/reset-term', [DashboardController::class, 'resetTerm'])->name('dashboard.reset-term');
 });
 
 // Pending approval page - accessible by unapproved users

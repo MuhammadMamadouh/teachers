@@ -11,6 +11,7 @@ use App\Models\GroupSpecialSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -257,5 +258,90 @@ class DashboardController extends Controller
         });
 
         return response()->json($sessions);
+    }
+
+    /**
+     * Reset all data for a new term
+     */
+    public function resetTerm(Request $request)
+    {
+        $request->validate([
+            'confirmation' => 'required|string|in:CONFIRM RESET'
+        ]);
+
+        $user = Auth::user();
+
+        // Don't allow admin users to reset data
+        if ($user->is_admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'المديرون لا يمكنهم إعادة تعيين البيانات.'
+            ], 403);
+        }
+
+        try {
+            DB::transaction(function () use ($user) {
+                // Get all groups belonging to the user
+                $groupIds = Group::where('user_id', $user->id)->pluck('id')->toArray();
+                
+                if (empty($groupIds)) {
+                    // No groups to delete, but still return success
+                    return;
+                }
+
+                // Get all students belonging to the user
+                $studentIds = Student::where('user_id', $user->id)->pluck('id')->toArray();
+
+                // Delete in proper order to avoid foreign key constraints
+                
+                // 1. Delete group special sessions
+                if (!empty($groupIds)) {
+                    GroupSpecialSession::whereIn('group_id', $groupIds)->delete();
+                }
+
+                // 2. Delete group schedules
+                if (!empty($groupIds)) {
+                    DB::table('group_schedules')->whereIn('group_id', $groupIds)->delete();
+                }
+
+                // 3. Delete attendances 
+                if (!empty($groupIds)) {
+                    DB::table('attendances')->whereIn('group_id', $groupIds)->delete();
+                }
+
+                // 4. Delete group_student pivot records
+                if (!empty($groupIds)) {
+                    DB::table('group_student')->whereIn('group_id', $groupIds)->delete();
+                }
+
+                // 5. Delete payments for user's students
+                if (!empty($studentIds)) {
+                    DB::table('payments')->whereIn('student_id', $studentIds)->delete();
+                }
+
+                // 6. Delete students (this will also cascade to related records)
+                if (!empty($studentIds)) {
+                    Student::whereIn('id', $studentIds)->delete();
+                }
+
+                // 7. Finally delete groups
+                if (!empty($groupIds)) {
+                    Group::whereIn('id', $groupIds)->delete();
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إعادة تعيين جميع البيانات بنجاح. يمكنك الآن البدء في فصل دراسي جديد!'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Term reset failed for user ' . $user->id . ': ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إعادة تعيين البيانات. يرجى المحاولة مرة أخرى.'
+            ], 500);
+        }
     }
 }

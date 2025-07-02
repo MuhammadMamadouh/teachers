@@ -1,11 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, BookOpen } from 'lucide-react';
+import { Calendar, Clock, Users, BookOpen, RotateCcw } from 'lucide-react';
+import StartNewTermModal from '@/Components/StartNewTermModal';
 
 export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans }) {
     const [todaySessions, setTodaySessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
+    const [showTermResetModal, setShowTermResetModal] = useState(false);
 
     useEffect(() => {
         // Fetch today's sessions
@@ -216,6 +218,15 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <span className="text-sm font-medium text-blue-900">تقويم الجلسات</span>
                                     <span className="block text-xs text-blue-700 mt-1">عرض جميع جلساتك</span>
                                 </Link>
+
+                                <button
+                                    onClick={() => setShowTermResetModal(true)}
+                                    className="p-4 border-2 border-dashed border-red-300 rounded-lg text-center hover:border-red-400 transition-colors bg-red-50"
+                                >
+                                    <RotateCcw className="mx-auto h-12 w-12 text-red-500 mb-2" />
+                                    <span className="text-sm font-medium text-red-900">بدء فصل جديد</span>
+                                    <span className="block text-xs text-red-700 mt-1">إعادة تعيين جميع البيانات</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -265,6 +276,11 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                     </div>
                 </div>
             </div>
+            
+            <StartNewTermModal 
+                isOpen={showTermResetModal} 
+                onClose={() => setShowTermResetModal(false)} 
+            />
         </AuthenticatedLayout>
     );
 }

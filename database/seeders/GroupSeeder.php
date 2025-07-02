@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Group;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -64,6 +65,28 @@ class GroupSeeder extends Seeder
             
             foreach ($schedules as $schedule) {
                 $group->schedules()->create($schedule);
+            }
+        }
+
+        // Create some sample students and assign them to groups
+        $createdGroups = Group::where('user_id', $user->id)->get();
+        
+        // Create sample students
+        $sampleStudents = [
+            ['name' => 'أحمد علي', 'phone' => '0501234567', 'guardian_name' => 'علي أحمد', 'guardian_phone' => '0509876543'],
+            ['name' => 'فاطمة محمد', 'phone' => '0502345678', 'guardian_name' => 'محمد فاطمة', 'guardian_phone' => '0508765432'],
+            ['name' => 'عبدالله سعد', 'phone' => '0503456789', 'guardian_name' => 'سعد عبدالله', 'guardian_phone' => '0507654321'],
+            ['name' => 'نورا خالد', 'phone' => '0504567890', 'guardian_name' => 'خالد نورا', 'guardian_phone' => '0506543210'],
+            ['name' => 'يوسف عمر', 'phone' => '0505678901', 'guardian_name' => 'عمر يوسف', 'guardian_phone' => '0505432109'],
+        ];
+
+        foreach ($sampleStudents as $studentData) {
+            $student = Student::create(array_merge($studentData, ['user_id' => $user->id]));
+            
+            // Assign each student to a random group
+            if ($createdGroups->isNotEmpty()) {
+                $randomGroup = $createdGroups->random();
+                $randomGroup->students()->attach($student->id);
             }
         }
     }

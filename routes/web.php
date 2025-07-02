@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PendingApprovalController;
@@ -50,6 +51,15 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['approved', 'not-admin'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('groups', GroupController::class);
+        
+        // Group student assignment routes
+        Route::post('/groups/{group}/assign-students', [GroupController::class, 'assignStudents'])->name('groups.assign-students');
+        Route::delete('/groups/{group}/students/{student}', [GroupController::class, 'removeStudent'])->name('groups.remove-student');
+        
+        // Attendance routes
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+        Route::get('/attendance/summary/{group}', [AttendanceController::class, 'summary'])->name('attendance.summary');
         
         // Plan management routes
         Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');

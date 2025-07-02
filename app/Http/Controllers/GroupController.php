@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\GroupSchedule;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -15,7 +16,7 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $groups = Group::where('user_id', Auth::id())->with('schedules')->get();
+        $groups = Group::where('user_id', Auth::id())->with(['schedules', 'students'])->get();
         
         return Inertia::render('Groups/Index', [
             'groups' => $groups
@@ -68,10 +69,16 @@ class GroupController extends Controller
             abort(403);
         }
         
-        $group->load('schedules', 'students');
+        $group->load(['schedules', 'students']);
+        $availableStudents = Student::where('user_id', Auth::id())
+            ->whereDoesntHave('groups', function($query) use ($group) {
+                $query->where('group_id', $group->id);
+            })
+            ->get();
         
         return Inertia::render('Groups/Show', [
-            'group' => $group
+            'group' => $group,
+            'availableStudents' => $availableStudents
         ]);
     }
 
@@ -137,5 +144,50 @@ class GroupController extends Controller
         $group->delete();
         
         return redirect()->route('groups.index')->with('success', 'تم حذف المجموعة بنجاح');
+    }
+
+    /**
+     * Assign students to a group
+     */
+    public function assignStudents(Request $request, Group $group)
+    {
+        // Ensure the group belongs to the authenticated user
+        if ($group->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+        ]);
+
+        // Verify all students belong to the authenticated user
+        $students = Student::where('user_id', Auth::id())
+            ->whereIn('id', $request->student_ids)
+            ->get();
+
+        if ($students->count() !== count($request->student_ids)) {
+            abort(403, 'One or more students do not belong to you.');
+        }
+
+        // Assign students to the group
+        $group->students()->syncWithoutDetaching($request->student_ids);
+
+        return back()->with('success', 'تم تعيين الطلاب للمجموعة بنجاح');
+    }
+
+    /**
+     * Remove a student from a group
+     */
+    public function removeStudent(Group $group, Student $student)
+    {
+        // Ensure the group belongs to the authenticated user
+        if ($group->user_id !== Auth::id() || $student->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $group->students()->detach($student->id);
+
+        return back()->with('success', 'تم إزالة الطالب من المجموعة بنجاح');
     }
 }

@@ -2,8 +2,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Show({ group }) {
+export default function Show({ group, availableStudents }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [selectedStudents, setSelectedStudents] = useState([]);
 
     const handleDelete = () => {
         setShowDeleteModal(true);
@@ -12,6 +14,31 @@ export default function Show({ group }) {
     const confirmDelete = () => {
         router.delete(route('groups.destroy', group.id));
         setShowDeleteModal(false);
+    };
+
+    const handleAssignStudents = () => {
+        if (selectedStudents.length > 0) {
+            router.post(route('groups.assign-students', group.id), {
+                student_ids: selectedStudents
+            }, {
+                onSuccess: () => {
+                    setShowAssignModal(false);
+                    setSelectedStudents([]);
+                }
+            });
+        }
+    };
+
+    const handleRemoveStudent = (studentId) => {
+        router.delete(route('groups.remove-student', [group.id, studentId]));
+    };
+
+    const handleStudentSelection = (studentId) => {
+        setSelectedStudents(prev => 
+            prev.includes(studentId) 
+                ? prev.filter(id => id !== studentId)
+                : [...prev, studentId]
+        );
     };
 
     const getDayName = (dayOfWeek) => {
@@ -33,6 +60,18 @@ export default function Show({ group }) {
                         >
                             تعديل
                         </Link>
+                        <Link
+                            href={route('attendance.index', { group_id: group.id })}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            تسجيل الحضور
+                        </Link>
+                        <button
+                            onClick={() => setShowAssignModal(true)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            إضافة طلاب
+                        </button>
                         <button
                             onClick={handleDelete}
                             className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
@@ -144,11 +183,24 @@ export default function Show({ group }) {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {group.students.map((student) => (
                                                 <div key={student.id} className="bg-white p-4 rounded-lg shadow-sm border">
-                                                    <h5 className="font-medium text-gray-900">{student.name}</h5>
-                                                    <p className="text-sm text-gray-600">{student.phone}</p>
-                                                    {student.guardian_name && (
-                                                        <p className="text-xs text-gray-500">ولي الأمر: {student.guardian_name}</p>
-                                                    )}
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h5 className="font-medium text-gray-900">{student.name}</h5>
+                                                            <p className="text-sm text-gray-600">{student.phone}</p>
+                                                            {student.guardian_name && (
+                                                                <p className="text-xs text-gray-500">ولي الأمر: {student.guardian_name}</p>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleRemoveStudent(student.id)}
+                                                            className="text-red-600 hover:text-red-800 text-sm"
+                                                            title="إزالة من المجموعة"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -200,6 +252,62 @@ export default function Show({ group }) {
                                 حذف
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Assign Students Modal */}
+            {showAssignModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                    <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">إضافة طلاب للمجموعة</h3>
+                        {availableStudents && availableStudents.length > 0 ? (
+                            <>
+                                <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                                    {availableStudents.map((student) => (
+                                        <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedStudents.includes(student.id)}
+                                                onChange={() => handleStudentSelection(student.id)}
+                                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                            />
+                                            <div className="flex-1">
+                                                <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                                                <div className="text-xs text-gray-500">{student.phone}</div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                                <div className="flex justify-end space-x-4">
+                                    <button
+                                        onClick={() => setShowAssignModal(false)}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                                    >
+                                        إلغاء
+                                    </button>
+                                    <button
+                                        onClick={handleAssignStudents}
+                                        disabled={selectedStudents.length === 0}
+                                        className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md disabled:opacity-50"
+                                    >
+                                        إضافة الطلاب المختارين
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm text-gray-500 mb-6">لا يوجد طلاب متاحين للإضافة.</p>
+                                <div className="flex justify-end">
+                                    <button
+                                        onClick={() => setShowAssignModal(false)}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                                    >
+                                        إغلاق
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

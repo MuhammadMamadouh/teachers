@@ -91,7 +91,7 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $student->load(['group', 'groups', 'payments.group']);
+        $student->load(['group', 'payments.group']);
 
         // Get recent payments (last 6 months)
         $recentPayments = $student->payments()

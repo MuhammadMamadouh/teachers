@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
@@ -27,19 +26,12 @@ class Student extends Model
     }
 
     /**
-     * Get the group that the student belongs to.
+     * Get the primary group that the student belongs to.
+     * Each student should belong to only one primary group per tenant (user).
      */
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
-    }
-
-    /**
-     * Get the groups that the student belongs to (many-to-many).
-     */
-    public function groups(): BelongsToMany
-    {
-        return $this->belongsToMany(Group::class);
     }
 
     /**

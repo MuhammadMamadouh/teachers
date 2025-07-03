@@ -6,6 +6,7 @@ use App\Models\Group;
 use App\Models\GroupSchedule;
 use App\Models\GroupSpecialSession;
 use App\Models\Student;
+use App\Rules\StudentNotInGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -17,10 +18,17 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $groups = Group::where('user_id', Auth::id())->with(['schedules', 'students'])->get();
+        $groups = Group::where('user_id', Auth::id())->with(['schedules', 'assignedStudents'])->get();
+        
+        // Transform the data to ensure consistency
+        $transformedGroups = $groups->map(function ($group) {
+            return array_merge($group->toArray(), [
+                'assigned_students' => $group->assignedStudents->toArray()
+            ]);
+        });
         
         return Inertia::render('Groups/Index', [
-            'groups' => $groups
+            'groups' => $transformedGroups
         ]);
     }
 
@@ -71,11 +79,11 @@ class GroupController extends Controller
             abort(403);
         }
         
-        $group->load(['schedules', 'students', 'specialSessions']);
+        $group->load(['schedules', 'assignedStudents', 'specialSessions']);
+        
+        // Get only students that are not assigned to any group
         $availableStudents = Student::where('user_id', Auth::id())
-            ->whereDoesntHave('groups', function($query) use ($group) {
-                $query->where('group_id', $group->id);
-            })
+            ->whereNull('group_id')
             ->get();
 
             
@@ -84,13 +92,13 @@ class GroupController extends Controller
         $currentYear = now()->year;
         
         $paymentSummary = [
-            'total_students' => $group->students->count(),
+            'total_students' => $group->assignedStudents->count(),
             'paid_students' => $group->payments()
                 ->where('month', $currentMonth)
                 ->where('year', $currentYear)
                 ->where('is_paid', true)
                 ->count(),
-            'unpaid_students' => $group->students->count() - $group->payments()
+            'unpaid_students' => $group->assignedStudents->count() - $group->payments()
                 ->where('month', $currentMonth)
                 ->where('year', $currentYear)
                 ->where('is_paid', true)
@@ -105,7 +113,9 @@ class GroupController extends Controller
         ];
         
         return Inertia::render('Groups/Show', [
-            'group' => $group,
+            'group' => array_merge($group->toArray(), [
+                'assigned_students' => $group->assignedStudents->toArray()
+            ]),
             'availableStudents' => $availableStudents,
             'paymentSummary' => $paymentSummary,
         ]);
@@ -186,21 +196,43 @@ class GroupController extends Controller
         }
 
         $request->validate([
-            'student_ids' => 'required|array',
-            'student_ids.*' => 'exists:students,id',
+            'student_ids' => ['required', 'array', new StudentNotInGroup],
+            'student_ids.*' => 'exists:students,id'
         ]);
 
-        // Verify all students belong to the authenticated user
+        // Verify that all students belong to the authenticated user
         $students = Student::where('user_id', Auth::id())
             ->whereIn('id', $request->student_ids)
             ->get();
 
         if ($students->count() !== count($request->student_ids)) {
-            abort(403, 'One or more students do not belong to you.');
+            abort(403, 'يمكنك فقط تعيين طلابك الخاصين');
         }
 
-        // Assign students to the group
-        $group->students()->syncWithoutDetaching($request->student_ids);
+        // Check if any of the students are already assigned to a group
+        $alreadyAssignedStudents = $students->whereNotNull('group_id');
+        if ($alreadyAssignedStudents->count() > 0) {
+            $studentNames = $alreadyAssignedStudents->pluck('name')->join('، ');
+            return back()->withErrors([
+                'assignment' => "الطلاب التالية مُعينين بالفعل في مجموعات أخرى: {$studentNames}"
+            ]);
+        }
+
+        // Check if adding these students would exceed the group's maximum capacity
+        $currentStudentCount = $group->assignedStudents()->count();
+        $newStudentCount = count($request->student_ids);
+        
+        if (($currentStudentCount + $newStudentCount) > $group->max_students) {
+            return back()->withErrors([
+                'capacity' => "لا يمكن إضافة {$newStudentCount} طلاب. الحد الأقصى للمجموعة {$group->max_students} والعدد الحالي {$currentStudentCount}"
+            ]);
+        }
+
+        // Assign students to the group by updating their group_id
+        Student::whereIn('id', $request->student_ids)
+            ->where('user_id', Auth::id())
+            ->whereNull('group_id') // Extra safety check
+            ->update(['group_id' => $group->id]);
 
         return back()->with('success', 'تم تعيين الطلاب للمجموعة بنجاح');
     }
@@ -215,7 +247,9 @@ class GroupController extends Controller
             abort(403);
         }
 
-        $group->students()->detach($student->id);
+        // Remove student from group by setting group_id to null
+        $student->group_id = null;
+        $student->save();
 
         return back()->with('success', 'تم إزالة الطالب من المجموعة بنجاح');
     }

@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Show({ group, availableStudents, paymentSummary }) {
+    const { errors } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [showRemoveStudentModal, setShowRemoveStudentModal] = useState(false);
@@ -154,7 +155,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                             </div>
                                             <div className="ml-4">
                                                 <h4 className="text-lg font-medium text-green-900">الطلاب المسجلين</h4>
-                                                <p className="text-2xl font-bold text-green-900">{group.students ? group.students.length : 0}</p>
+                                                <p className="text-2xl font-bold text-green-900">{group.assigned_students ? group.assigned_students.length : 0}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -226,10 +227,10 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             {/* Students List */}
                             <div>
                                 <h4 className="text-lg font-medium text-gray-900 mb-4">قائمة الطلاب</h4>
-                                {group.students && group.students.length > 0 ? (
+                                {group.assigned_students && group.assigned_students.length > 0 ? (
                                     <div className="bg-gray-50 rounded-lg p-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {group.students.map((student) => (
+                                            {group.assigned_students.map((student) => (
                                                 <div key={student.id} className="bg-white p-4 rounded-lg shadow-sm border">
                                                     <div className="flex justify-between items-start">
                                                         <div>
@@ -309,8 +310,20 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
                     <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">إضافة طلاب للمجموعة</h3>
+                        
+                        {/* Display validation errors */}
+                        {(errors.assignment || errors.capacity) && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                {errors.assignment && <p className="text-sm">{errors.assignment}</p>}
+                                {errors.capacity && <p className="text-sm">{errors.capacity}</p>}
+                            </div>
+                        )}
+                        
                         {availableStudents && availableStudents.length > 0 ? (
                             <>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    يتم عرض الطلاب المتاحين فقط (غير المُعينين في أي مجموعة)
+                                </p>
                                 <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
                                     {availableStudents.map((student) => (
                                         <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
@@ -345,7 +358,9 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             </>
                         ) : (
                             <>
-                                <p className="text-sm text-gray-500 mb-6">لا يوجد طلاب متاحين للإضافة.</p>
+                                <p className="text-sm text-gray-500 mb-6">
+                                    لا يوجد طلاب متاحين للإضافة. جميع طلابك مُعينين بالفعل في مجموعات أخرى.
+                                </p>
                                 <div className="flex justify-end">
                                     <button
                                         onClick={() => setShowAssignModal(false)}

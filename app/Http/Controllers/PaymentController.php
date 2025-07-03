@@ -101,7 +101,7 @@ class PaymentController extends Controller
             ->firstOrFail();
 
         // Verify that the student belongs to the group
-        $student = $group->students()->where('students.id', $request->student_id)->firstOrFail();
+        $student = $group->assignedStudents()->where('students.id', $request->student_id)->firstOrFail();
 
         // Create or update payment record
         $payment = Payment::updateOrCreate(

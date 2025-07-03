@@ -3,13 +3,15 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
 export default function Edit({ group }) {
+    console.log('Editing group:', group);
     const { data, setData, put, processing, errors } = useForm({
         name: group.name || '',
         description: group.description || '',
         max_students: group.max_students || 10,
-        is_active: group.is_active || true,
+        is_active: group.is_active,
         schedules: []
     });
+    console.log('Initial data:', data);
 
     const [selectedDays, setSelectedDays] = useState({});
 

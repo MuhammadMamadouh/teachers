@@ -26,6 +26,19 @@ class Group extends Model
         return $this->hasMany(GroupSchedule::class);
     }
 
+    /**
+     * Get the students that are directly assigned to this group (primary group).
+     */
+    public function assignedStudents(): HasMany
+    {
+        return $this->hasMany(Student::class);
+    }
+    
+    /**
+     * This relationship is deprecated and will be removed in future versions.
+     * Use assignedStudents() instead.
+     * @deprecated
+     */
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class);

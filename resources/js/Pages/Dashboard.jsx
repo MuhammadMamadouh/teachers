@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, BookOpen, RotateCcw } from 'lucide-react';
 import StartNewTermModal from '@/Components/StartNewTermModal';
 
-export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans }) {
+export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans, isAssistant = false, teacherName = '', error }) {
     const [todaySessions, setTodaySessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
     const [showTermResetModal, setShowTermResetModal] = useState(false);
@@ -45,6 +45,30 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                         <div className="p-6 text-gray-900">
                             <h3 className="text-lg font-medium mb-2">مرحباً بك مرة أخرى!</h3>
                             <p className="text-gray-600">قم بإدارة طلابك وتتبع حضورهم.</p>
+                            
+                            {/* Error message */}
+                            {error && (
+                                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+                                    <span className="block sm:inline">{error}</span>
+                                </div>
+                            )}
+                            
+                            {/* Assistant Info Banner */}
+                            {isAssistant && teacherName && (
+                                <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mt-4" role="alert">
+                                    <div className="flex">
+                                        <div className="py-1 ml-2">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="font-bold">مساعد معلم</p>
+                                            <p className="text-sm">أنت تعمل كمساعد للمعلم {teacherName}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -219,14 +243,29 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <span className="block text-xs text-blue-700 mt-1">عرض جميع جلساتك</span>
                                 </Link>
 
-                                <button
-                                    onClick={() => setShowTermResetModal(true)}
-                                    className="p-4 border-2 border-dashed border-red-300 rounded-lg text-center hover:border-red-400 transition-colors bg-red-50"
-                                >
-                                    <RotateCcw className="mx-auto h-12 w-12 text-red-500 mb-2" />
-                                    <span className="text-sm font-medium text-red-900">بدء فصل جديد</span>
-                                    <span className="block text-xs text-red-700 mt-1">إعادة تعيين جميع البيانات</span>
-                                </button>
+                                {!isAssistant && (
+                                    <Link
+                                        href={route('assistants.index')}
+                                        className="p-4 border-2 border-dashed border-teal-300 rounded-lg text-center hover:border-teal-400 transition-colors bg-teal-50"
+                                    >
+                                        <svg className="mx-auto h-12 w-12 text-teal-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                        <span className="text-sm font-medium text-teal-900">إدارة المساعدين</span>
+                                        <span className="block text-xs text-teal-700 mt-1">إضافة وإدارة المساعدين</span>
+                                    </Link>
+                                )}
+
+                                {!isAssistant && (
+                                    <button
+                                        onClick={() => setShowTermResetModal(true)}
+                                        className="p-4 border-2 border-dashed border-red-300 rounded-lg text-center hover:border-red-400 transition-colors bg-red-50"
+                                    >
+                                        <RotateCcw className="mx-auto h-12 w-12 text-red-500 mb-2" />
+                                        <span className="text-sm font-medium text-red-900">بدء فصل جديد</span>
+                                        <span className="block text-xs text-red-700 mt-1">إعادة تعيين جميع البيانات</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -277,10 +316,12 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                 </div>
             </div>
             
-            <StartNewTermModal 
-                isOpen={showTermResetModal} 
-                onClose={() => setShowTermResetModal(false)} 
-            />
+            {!isAssistant && (
+                <StartNewTermModal 
+                    isOpen={showTermResetModal} 
+                    onClose={() => setShowTermResetModal(false)} 
+                />
+            )}
         </AuthenticatedLayout>
     );
 }

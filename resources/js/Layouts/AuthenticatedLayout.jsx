@@ -61,6 +61,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     الخطط
                                 </NavLink>
+                                <NavLink
+                                    href={route('assistants.index')}
+                                    active={route().current('assistants.*')}
+                                >
+                                    المساعدين
+                                </NavLink>
                             </>
                         )}
                         {user.is_admin && (
@@ -214,6 +220,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('plans.*')}
                                 >
                                     الخطط
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('assistants.index')}
+                                    active={route().current('assistants.*')}
+                                >
+                                    المساعدين
                                 </ResponsiveNavLink>
                             </>
                         )}

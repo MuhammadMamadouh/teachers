@@ -55,8 +55,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
+    // Assistant management routes (only for teachers)
+    Route::middleware(['auth', 'approved', 'not-admin', 'teacher-or-admin'])->group(function () {
+        Route::get('/assistants', [App\Http\Controllers\AssistantController::class, 'index'])->name('assistants.index');
+        Route::post('/assistants', [App\Http\Controllers\AssistantController::class, 'store'])->name('assistants.store');
+        Route::get('/assistants/{assistant}/edit', [App\Http\Controllers\AssistantController::class, 'edit'])->name('assistants.edit');
+        Route::put('/assistants/{assistant}', [App\Http\Controllers\AssistantController::class, 'update'])->name('assistants.update');
+        Route::delete('/assistants/{assistant}', [App\Http\Controllers\AssistantController::class, 'destroy'])->name('assistants.destroy');
+        Route::post('/assistants/{assistant}/resend-invitation', [App\Http\Controllers\AssistantController::class, 'resendInvitation'])->name('assistants.resend-invitation');
+    });
+    
     // Student management routes (only for approved non-admin users)
-    Route::middleware(['approved', 'not-admin'])->group(function () {
+    Route::middleware(['approved', 'not-admin', 'scope-by-teacher'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('groups', GroupController::class);
         

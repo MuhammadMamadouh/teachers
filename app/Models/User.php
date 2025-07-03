@@ -30,6 +30,8 @@ class User extends Authenticatable
         'is_approved',
         'is_admin',
         'approved_at',
+        'type',
+        'teacher_id',
     ];
 
     /**
@@ -130,5 +132,75 @@ class User extends Authenticatable
     public function getStudentCount(): int
     {
         return $this->students()->count();
+    }
+
+    /**
+     * Get the teacher that this assistant belongs to.
+     */
+    public function teacher()
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    /**
+     * Get all assistants for this teacher.
+     */
+    public function assistants(): HasMany
+    {
+        return $this->hasMany(User::class, 'teacher_id');
+    }
+
+    /**
+     * Check if user is a teacher.
+     */
+    public function isTeacher(): bool
+    {
+        return $this->type === 'teacher';
+    }
+
+    /**
+     * Check if user is an assistant.
+     */
+    public function isAssistant(): bool
+    {
+        return $this->type === 'assistant';
+    }
+
+    /**
+     * Get the main teacher (if this user is an assistant, return the teacher; if teacher, return self).
+     */
+    public function getMainTeacher(): User
+    {
+        return $this->isAssistant() ? $this->teacher : $this;
+    }
+
+    /**
+     * Check if user can add more assistants.
+     */
+    public function canAddAssistants(int $count = 1): bool
+    {
+        if (!$this->isTeacher()) {
+            return false;
+        }
+
+        $limits = $this->getSubscriptionLimits();
+        
+        if (!$limits['has_active_subscription'] || !$limits['plan']) {
+            return false;
+        }
+
+        // Get max assistants allowed by plan (assuming we'll add this to plans)
+        $maxAssistants = $limits['plan']->max_assistants ?? 0;
+        $currentAssistants = $this->assistants()->count();
+        
+        return ($currentAssistants + $count) <= $maxAssistants;
+    }
+
+    /**
+     * Get current assistant count for the user.
+     */
+    public function getAssistantCount(): int
+    {
+        return $this->assistants()->count();
     }
 }

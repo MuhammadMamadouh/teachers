@@ -28,6 +28,10 @@ class DashboardController extends Controller
             return $this->adminDashboard();
         }
         
+        if ($user->type === 'assistant') {
+            return $this->assistantDashboard($user);
+        }
+        
         return $this->teacherDashboard($user);
     }
     
@@ -105,6 +109,33 @@ class DashboardController extends Controller
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
             'availablePlans' => $availablePlans,
+        ]);
+    }
+    
+    /**
+     * Assistant dashboard with limited information.
+     */
+    private function assistantDashboard(User $user): Response
+    {
+        // Get the main teacher
+        $teacher = $user->teacher;
+        
+        if (!$teacher) {
+            return Inertia::render('Dashboard', [
+                'error' => 'No teacher found for this assistant',
+            ]);
+        }
+        
+        $subscriptionLimits = $teacher->getSubscriptionLimits();
+        $currentStudentCount = $teacher->getStudentCount();
+        
+        return Inertia::render('Dashboard', [
+            'subscriptionLimits' => $subscriptionLimits,
+            'currentStudentCount' => $currentStudentCount,
+            'canAddStudents' => false, // Assistants can't add students directly
+            'availablePlans' => [], // Assistants don't need to see upgrade options
+            'isAssistant' => true,
+            'teacherName' => $teacher->name,
         ]);
     }
 

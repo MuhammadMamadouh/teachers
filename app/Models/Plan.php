@@ -10,6 +10,7 @@ class Plan extends Model
     protected $fillable = [
         'name',
         'max_students',
+        'max_assistants',
         'price_per_month',
         'is_default',
     ];

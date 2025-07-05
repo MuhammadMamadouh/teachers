@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use App\Models\Subscription;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -21,3 +22,10 @@ Schedule::command('backup:clean')
     ->name('backup-cleanup')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/backup.log'));
+
+// Schedule daily check for expired subscriptions
+Schedule::call(function () {
+    Subscription::where('end_date', '<', now()->toDateString())
+        ->where('is_active', true)
+        ->update(['is_active' => false]);
+})->daily()->name('deactivate-expired-subscriptions');

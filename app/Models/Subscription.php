@@ -12,12 +12,14 @@ class Subscription extends Model
         'plan_id',
         'max_students',
         'is_active',
+        'is_trial',
         'start_date',
         'end_date',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_trial' => 'boolean',
         'start_date' => 'date',
         'end_date' => 'date',
     ];
@@ -61,5 +63,33 @@ class Subscription extends Model
 
         // Check if current date is within the subscription period
         return $now->between($this->start_date, $this->end_date);
+    }
+
+    /**
+     * Get days remaining in subscription.
+     */
+    public function getDaysRemainingAttribute(): int
+    {
+        if (!$this->end_date || !$this->isCurrentlyActive()) {
+            return 0;
+        }
+
+        return now()->diffInDays($this->end_date, false);
+    }
+
+    /**
+     * Check if subscription is expired.
+     */
+    public function isExpired(): bool
+    {
+        return $this->end_date && now()->isAfter($this->end_date);
+    }
+
+    /**
+     * Mark subscription as expired.
+     */
+    public function markAsExpired(): void
+    {
+        $this->update(['is_active' => false]);
     }
 }

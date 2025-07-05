@@ -23,7 +23,12 @@ class AdminPlanController extends Controller
                     'id' => $plan->id,
                     'name' => $plan->name,
                     'max_students' => $plan->max_students,
-                    'price_per_month' => $plan->price_per_month,
+                    'max_assistants' => $plan->max_assistants,
+                    'duration_days' => $plan->duration_days,
+                    'price' => $plan->price,
+                    'formatted_price' => $plan->formatted_price,
+                    'formatted_duration' => $plan->formatted_duration,
+                    'is_trial' => $plan->is_trial,
                     'is_default' => $plan->is_default,
                     'subscribers_count' => $plan->subscriptions_count,
                     'created_at' => $plan->created_at,
@@ -51,7 +56,10 @@ class AdminPlanController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:plans,name',
             'max_students' => 'required|integer|min:1|max:10000',
-            'price_per_month' => 'required|numeric|min:0|max:9999.99',
+            'max_assistants' => 'required|integer|min:0|max:100',
+            'duration_days' => 'required|integer|in:30,90,365',
+            'price' => 'required|numeric|min:0|max:99999',
+            'is_trial' => 'boolean',
             'is_default' => 'boolean',
         ]);
 
@@ -60,11 +68,18 @@ class AdminPlanController extends Controller
             Plan::where('is_default', true)->update(['is_default' => false]);
         }
 
+        // If this is a trial plan, ensure only one trial plan can be default
+        if ($validated['is_trial'] ?? false) {
+            if ($validated['is_default'] ?? false) {
+                Plan::where('is_trial', true)->where('is_default', true)->update(['is_default' => false]);
+            }
+        }
+
         Plan::create($validated);
 
         return redirect()
             ->route('admin.plans.index')
-            ->with('success', 'Plan created successfully!');
+            ->with('success', 'تم إنشاء الخطة بنجاح!');
     }
 
     /**
@@ -79,7 +94,12 @@ class AdminPlanController extends Controller
                 'id' => $plan->id,
                 'name' => $plan->name,
                 'max_students' => $plan->max_students,
-                'price_per_month' => $plan->price_per_month,
+                'max_assistants' => $plan->max_assistants,
+                'duration_days' => $plan->duration_days,
+                'price' => $plan->price,
+                'formatted_price' => $plan->formatted_price,
+                'formatted_duration' => $plan->formatted_duration,
+                'is_trial' => $plan->is_trial,
                 'is_default' => $plan->is_default,
                 'created_at' => $plan->created_at,
                 'updated_at' => $plan->updated_at,
@@ -88,6 +108,7 @@ class AdminPlanController extends Controller
                         'id' => $subscription->id,
                         'user' => $subscription->user,
                         'is_active' => $subscription->is_active,
+                        'is_trial' => $subscription->is_trial,
                         'start_date' => $subscription->start_date,
                         'end_date' => $subscription->end_date,
                     ];
@@ -106,7 +127,10 @@ class AdminPlanController extends Controller
                 'id' => $plan->id,
                 'name' => $plan->name,
                 'max_students' => $plan->max_students,
-                'price_per_month' => $plan->price_per_month,
+                'max_assistants' => $plan->max_assistants,
+                'duration_days' => $plan->duration_days,
+                'price' => $plan->price,
+                'is_trial' => $plan->is_trial,
                 'is_default' => $plan->is_default,
             ],
         ]);
@@ -120,7 +144,10 @@ class AdminPlanController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('plans')->ignore($plan->id)],
             'max_students' => 'required|integer|min:1|max:10000',
-            'price_per_month' => 'required|numeric|min:0|max:9999.99',
+            'max_assistants' => 'required|integer|min:0|max:100',
+            'duration_days' => 'required|integer|in:30,90,365',
+            'price' => 'required|numeric|min:0|max:99999',
+            'is_trial' => 'boolean',
             'is_default' => 'boolean',
         ]);
 
@@ -131,11 +158,21 @@ class AdminPlanController extends Controller
                 ->update(['is_default' => false]);
         }
 
+        // If this is a trial plan, ensure only one trial plan can be default
+        if ($validated['is_trial'] ?? false) {
+            if ($validated['is_default'] ?? false) {
+                Plan::where('is_trial', true)
+                    ->where('is_default', true)
+                    ->where('id', '!=', $plan->id)
+                    ->update(['is_default' => false]);
+            }
+        }
+
         $plan->update($validated);
 
         return redirect()
             ->route('admin.plans.index')
-            ->with('success', 'Plan updated successfully!');
+            ->with('success', 'تم تحديث الخطة بنجاح!');
     }
 
     /**
@@ -149,14 +186,14 @@ class AdminPlanController extends Controller
         if ($activeSubscriptions > 0) {
             return redirect()
                 ->back()
-                ->withErrors(['plan' => "Cannot delete plan with {$activeSubscriptions} active subscriptions."]);
+                ->withErrors(['plan' => "لا يمكن حذف خطة تحتوي على {$activeSubscriptions} اشتراك نشط."]);
         }
 
         // Don't allow deleting the default plan if it's the only plan
         if ($plan->is_default && Plan::count() === 1) {
             return redirect()
                 ->back()
-                ->withErrors(['plan' => 'Cannot delete the only remaining plan.']);
+                ->withErrors(['plan' => 'لا يمكن حذف الخطة الوحيدة المتبقية.']);
         }
 
         // If deleting the default plan, set another plan as default
@@ -171,7 +208,7 @@ class AdminPlanController extends Controller
 
         return redirect()
             ->route('admin.plans.index')
-            ->with('success', 'Plan deleted successfully!');
+            ->with('success', 'تم حذف الخطة بنجاح!');
     }
 
     /**
@@ -187,6 +224,6 @@ class AdminPlanController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', "{$plan->name} is now the default plan!");
+            ->with('success', "{$plan->name} أصبحت الآن الخطة الافتراضية!");
     }
 }

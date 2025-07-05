@@ -25,6 +25,7 @@ import {
     Search,
 } from 'lucide-react';
 import axios from 'axios';
+import { successAlert, errorAlert, infoAlert } from '@/utils/sweetAlert';
 
 export default function Index() {
     const { groups } = usePage().props;
@@ -57,7 +58,10 @@ export default function Index() {
 
     const fetchPayments = async () => {
         if (!selectedGroup) {
-            alert('يرجى اختيار المجموعة');
+            infoAlert({
+                title: 'تنبيه',
+                text: 'يرجى اختيار المجموعة'
+            });
             return;
         }
 
@@ -74,7 +78,10 @@ export default function Index() {
             setPayments(response.data.payments);
         } catch (error) {
             console.error('Error fetching payments:', error);
-            alert('حدث خطأ في جلب بيانات المدفوعات');
+            errorAlert({
+                title: 'خطأ',
+                text: 'حدث خطأ في جلب بيانات المدفوعات'
+            });
         } finally {
             setLoading(false);
         }
@@ -110,10 +117,16 @@ export default function Index() {
                 payments: paymentsToSave
             });
 
-            alert('تم حفظ جميع المدفوعات بنجاح');
+            successAlert({
+                title: 'تم بنجاح',
+                text: 'تم حفظ جميع المدفوعات بنجاح'
+            });
         } catch (error) {
             console.error('Error saving payments:', error);
-            alert('حدث خطأ في حفظ المدفوعات');
+            errorAlert({
+                title: 'خطأ',
+                text: 'حدث خطأ في حفظ المدفوعات'
+            });
         } finally {
             setSaving(false);
         }

@@ -11,13 +11,16 @@ class Plan extends Model
         'name',
         'max_students',
         'max_assistants',
-        'price_per_month',
+        'duration_days',
+        'price',
+        'is_trial',
         'is_default',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
-        'price_per_month' => 'decimal:2',
+        'is_trial' => 'boolean',
+        'price' => 'decimal:2',
     ];
 
     /**
@@ -29,11 +32,13 @@ class Plan extends Model
     }
 
     /**
-     * Get the default plan.
+     * Get the default trial plan.
      */
-    public static function getDefault(): ?Plan
+    public static function getDefaultTrial(): ?Plan
     {
-        return static::where('is_default', true)->first();
+        return static::where('is_trial', true)
+                    ->where('is_default', true)
+                    ->first();
     }
 
     /**
@@ -41,6 +46,24 @@ class Plan extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price_per_month, 2);
+        return number_format($this->price, 2) . ' ج.م';
+    }
+
+    /**
+     * Get duration in a human-readable format.
+     */
+    public function getFormattedDurationAttribute(): string
+    {
+        $days = $this->duration_days;
+        
+        if ($days == 30) {
+            return 'شهر واحد';
+        } elseif ($days == 90) {
+            return '3 أشهر';
+        } elseif ($days == 365) {
+            return 'سنة واحدة';
+        } else {
+            return $days . ' يوم';
+        }
     }
 }

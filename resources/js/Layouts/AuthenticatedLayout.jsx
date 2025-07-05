@@ -3,13 +3,34 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { successAlert, errorAlert } from '@/utils/sweetAlert';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { auth, errors, flash } = usePage().props;
+    const user = auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    // Handle flash messages globally for all authenticated pages
+    useEffect(() => {
+        if (flash?.success) {
+            successAlert({
+                title: 'تم بنجاح',
+                text: flash.success
+            });
+        }
+        
+        if (errors && Object.keys(errors).length > 0) {
+            // Show first error message
+            const firstError = Object.values(errors)[0];
+            errorAlert({
+                title: 'خطأ',
+                text: firstError
+            });
+        }
+    }, [flash, errors]);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -82,6 +103,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('admin.plans.*')}
                                 >
                                     إدارة الخطط
+                                </NavLink>
+                                <NavLink
+                                    href={route('admin.plan-upgrade-requests.index')}
+                                    active={route().current('admin.plan-upgrade-requests.*')}
+                                >
+                                    طلبات ترقية الخطط
                                 </NavLink>
                             </>
                         )}
@@ -242,6 +269,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('admin.plans.*')}
                                 >
                                     إدارة الخطط
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.plan-upgrade-requests.index')}
+                                    active={route().current('admin.plan-upgrade-requests.*')}
+                                >
+                                    طلبات ترقية الخطط
                                 </ResponsiveNavLink>
                             </>
                         )}

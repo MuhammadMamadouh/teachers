@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import axios from 'axios';
+import { successAlert } from '@/utils/sweetAlert';
 
 export default function StartNewTermModal({ isOpen, onClose }) {
     const [confirmationText, setConfirmationText] = useState('');
@@ -25,9 +26,13 @@ export default function StartNewTermModal({ isOpen, onClose }) {
             });
 
             if (response.data.success) {
-                alert(response.data.message);
-                // Redirect to dashboard to refresh the page
-                router.visit(route('dashboard'));
+                successAlert({
+                    title: 'تم بنجاح',
+                    text: response.data.message
+                }).then(() => {
+                    // Redirect to dashboard to refresh the page
+                    router.visit(route('dashboard'));
+                });
             } else {
                 setError(response.data.message);
             }

@@ -77,6 +77,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all plan upgrade requests for the user.
+     */
+    public function planUpgradeRequests(): HasMany
+    {
+        return $this->hasMany(PlanUpgradeRequest::class);
+    }
+
+    /**
+     * Get pending plan upgrade requests for the user.
+     */
+    public function pendingPlanUpgradeRequests(): HasMany
+    {
+        return $this->hasMany(PlanUpgradeRequest::class)->where('status', 'pending');
+    }
+
+    /**
+     * Check if user has a pending plan upgrade request.
+     */
+    public function hasPendingPlanUpgrade(): bool
+    {
+        return $this->pendingPlanUpgradeRequests()->exists();
+    }
+
+    /**
      * Get the user's active subscription.
      */
     public function activeSubscription(): HasOne
@@ -202,5 +226,47 @@ class User extends Authenticatable
     public function getAssistantCount(): int
     {
         return $this->assistants()->count();
+    }
+
+    /**
+     * Check if user has had a trial subscription before.
+     */
+    public function hasHadTrial(): bool
+    {
+        return $this->subscriptions()->where('is_trial', true)->exists();
+    }
+
+    /**
+     * Create a trial subscription for the user.
+     */
+    public function createTrialSubscription(): ?Subscription
+    {
+        // Don't create trial if user already had one
+        if ($this->hasHadTrial()) {
+            return null;
+        }
+
+        $trialPlan = Plan::getDefaultTrial();
+        if (!$trialPlan) {
+            return null;
+        }
+
+        return $this->subscriptions()->create([
+            'plan_id' => $trialPlan->id,
+            'max_students' => $trialPlan->max_students,
+            'is_active' => true,
+            'is_trial' => true,
+            'start_date' => now(),
+            'end_date' => now()->addDays($trialPlan->duration_days),
+        ]);
+    }
+
+    /**
+     * Check if user has an active subscription.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        $subscription = $this->activeSubscription()->first();
+        return $subscription && $subscription->isCurrentlyActive();
     }
 }

@@ -49,7 +49,7 @@ class AdminController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'User approved successfully!');
+        return redirect()->back()->with('success', 'تم الموافقة على المستخدم بنجاح!');
     }
 
     /**
@@ -59,6 +59,6 @@ class AdminController extends Controller
     {
         $user->delete();
 
-        return redirect()->back()->with('success', 'User rejected and deleted successfully!');
+        return redirect()->back()->with('success', 'تم رفض وحذف المستخدم بنجاح!');
     }
 }

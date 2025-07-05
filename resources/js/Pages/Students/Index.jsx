@@ -1,13 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import { confirmDialog } from '@/utils/sweetAlert';
 
 export default function Index({ students, subscriptionLimits, currentStudentCount, canAddStudents }) {
     const handleDelete = (student) => {
-        if (confirm(`هل أنت متأكد من حذف ${student.name}؟`)) {
-            router.delete(route('students.destroy', student.id), {
-                preserveScroll: true,
-            });
-        }
+        confirmDialog({
+            title: 'حذف الطالب',
+            text: `هل أنت متأكد من حذف ${student.name}؟`,
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(route('students.destroy', student.id), {
+                    preserveScroll: true,
+                });
+            }
+        });
     };
 
     return (

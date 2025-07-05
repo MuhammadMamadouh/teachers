@@ -22,7 +22,7 @@ class AssistantController extends Controller
         
         // Only teachers can access this page
         if ($user->type !== 'teacher') {
-            abort(403, 'Only teachers can manage assistants');
+            abort(403, 'يمكن للمعلمين فقط إدارة المساعدين');
         }
         
         $assistants = $user->assistants()
@@ -50,7 +50,7 @@ class AssistantController extends Controller
         
         // Validate the teacher can add assistants
         if ($user->type !== 'teacher') {
-            abort(403, 'Only teachers can add assistants');
+            abort(403, 'يمكن للمعلمين فقط إضافة مساعدين');
         }
         
         if (!$user->canAddAssistants()) {
@@ -102,7 +102,7 @@ class AssistantController extends Controller
         
         // Verify this is an assistant belonging to the current teacher
         if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'You can only remove your own assistants');
+            abort(403, 'يمكنك فقط إزالة مساعديك الخاصين');
         }
         
         $assistant->delete();
@@ -119,7 +119,7 @@ class AssistantController extends Controller
         
         // Verify this is an assistant belonging to the current teacher
         if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'You can only manage your own assistants');
+            abort(403, 'يمكنك فقط إدارة مساعديك الخاصين');
         }
         
         // Generate a new temporary password
@@ -145,7 +145,7 @@ class AssistantController extends Controller
         
         // Verify this is an assistant belonging to the current teacher
         if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'You can only edit your own assistants');
+            abort(403, 'يمكنك فقط تعديل مساعديك الخاصين');
         }
         
         return Inertia::render('Assistants/Edit', [
@@ -162,7 +162,7 @@ class AssistantController extends Controller
         
         // Verify this is an assistant belonging to the current teacher
         if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'You can only edit your own assistants');
+            abort(403, 'يمكنك فقط تعديل مساعديك الخاصين');
         }
         
         $rules = [

@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
+import { confirmDialog } from '@/utils/sweetAlert';
 
 export default function UserApproval({ unapprovedUsers }) {
     const handleApprove = (userId) => {
@@ -9,11 +10,18 @@ export default function UserApproval({ unapprovedUsers }) {
     };
 
     const handleReject = (userId) => {
-        if (confirm('Are you sure you want to reject this user? This action cannot be undone.')) {
-            router.delete(`/admin/users/${userId}/reject`, {
-                preserveScroll: true,
-            });
-        }
+        confirmDialog({
+            title: 'رفض المستخدم',
+            text: 'هل أنت متأكد من رفض هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.',
+            confirmButtonText: 'نعم، ارفض',
+            cancelButtonText: 'إلغاء',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(`/admin/users/${userId}/reject`, {
+                    preserveScroll: true,
+                });
+            }
+        });
     };
 
     return (

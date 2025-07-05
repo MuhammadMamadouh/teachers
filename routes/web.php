@@ -9,6 +9,7 @@ use App\Http\Controllers\PendingApprovalController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SubscriptionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,11 +24,19 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'approved'])
+    ->middleware(['auth', 'verified', 'approved', 'subscription'])
     ->name('dashboard');
 
+// Subscription management routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/subscription/expired', [SubscriptionController::class, 'expired'])->name('subscription.expired');
+    Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans');
+    Route::get('/subscription/status', [SubscriptionController::class, 'status'])->name('subscription.status');
+    Route::post('/subscription/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+});
+
 // Dashboard calendar routes (for approved teachers)
-Route::middleware(['auth', 'verified', 'approved', 'not-admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'approved', 'not-admin', 'subscription'])->group(function () {
     Route::get('/dashboard/calendar', [DashboardController::class, 'calendar'])->name('dashboard.calendar');
     Route::get('/dashboard/calendar-events', [DashboardController::class, 'getCalendarEvents'])->name('dashboard.calendar-events');
     Route::get('/dashboard/today-sessions', [DashboardController::class, 'getTodaySessions'])->name('dashboard.today-sessions');
@@ -48,6 +57,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // Admin plan management
     Route::resource('plans', AdminPlanController::class, ['as' => 'admin']);
     Route::post('/plans/{plan}/set-default', [AdminPlanController::class, 'setDefault'])->name('admin.plans.set-default');
+    
+    // Plan upgrade request management
+    Route::get('/plan-upgrade-requests', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'index'])->name('admin.plan-upgrade-requests.index');
+    Route::get('/plan-upgrade-requests/{planUpgradeRequest}', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'show'])->name('admin.plan-upgrade-requests.show');
+    Route::post('/plan-upgrade-requests/{planUpgradeRequest}/approve', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'approve'])->name('admin.plan-upgrade-requests.approve');
+    Route::post('/plan-upgrade-requests/{planUpgradeRequest}/reject', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'reject'])->name('admin.plan-upgrade-requests.reject');
 });
 
 Route::middleware('auth')->group(function () {
@@ -56,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Assistant management routes (only for teachers)
-    Route::middleware(['auth', 'approved', 'not-admin', 'teacher-or-admin'])->group(function () {
+    Route::middleware(['auth', 'approved', 'not-admin', 'teacher-or-admin', 'subscription'])->group(function () {
         Route::get('/assistants', [App\Http\Controllers\AssistantController::class, 'index'])->name('assistants.index');
         Route::post('/assistants', [App\Http\Controllers\AssistantController::class, 'store'])->name('assistants.store');
         Route::get('/assistants/{assistant}/edit', [App\Http\Controllers\AssistantController::class, 'edit'])->name('assistants.edit');
@@ -66,7 +81,7 @@ Route::middleware('auth')->group(function () {
     });
     
     // Student management routes (only for approved non-admin users)
-    Route::middleware(['approved', 'not-admin', 'scope-by-teacher'])->group(function () {
+    Route::middleware(['approved', 'not-admin', 'scope-by-teacher', 'subscription'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('groups', GroupController::class);
         

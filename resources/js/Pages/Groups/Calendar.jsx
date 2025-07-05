@@ -6,6 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Plus, Calendar as CalendarIcon, Clock, FileText } from 'lucide-react';
+import { confirmDialog, successAlert, errorAlert } from '@/utils/sweetAlert';
 
 export default function Calendar({ group }) {
     const [showAddModal, setShowAddModal] = useState(false);
@@ -83,12 +84,18 @@ export default function Calendar({ group }) {
                     calendarRef.current.getApi().refetchEvents();
                 }
                 
-                // Show success message (you might want to add a toast notification)
-                alert(response.data.message);
+                // Show success message
+                successAlert({
+                    title: 'تم بنجاح',
+                    text: response.data.message
+                });
             }
         } catch (error) {
             console.error('Error adding special session:', error);
-            alert('حدث خطأ أثناء إضافة الجلسة الخاصة');
+            errorAlert({
+                title: 'خطأ',
+                text: 'حدث خطأ أثناء إضافة الجلسة الخاصة'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -115,11 +122,17 @@ export default function Calendar({ group }) {
                     calendarRef.current.getApi().refetchEvents();
                 }
                 
-                alert(response.data.message);
+                successAlert({
+                    title: 'تم بنجاح',
+                    text: response.data.message
+                });
             }
         } catch (error) {
             console.error('Error updating special session:', error);
-            alert('حدث خطأ أثناء تحديث الجلسة الخاصة');
+            errorAlert({
+                title: 'خطأ',
+                text: 'حدث خطأ أثناء تحديث الجلسة الخاصة'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -127,7 +140,18 @@ export default function Calendar({ group }) {
 
     // Handle deleting special session
     const handleDeleteSession = async () => {
-        if (!selectedEvent || !confirm('هل أنت متأكد من حذف هذه الجلسة الخاصة؟')) {
+        if (!selectedEvent) {
+            return;
+        }
+
+        const result = await confirmDialog({
+            title: 'حذف الجلسة الخاصة',
+            text: 'هل أنت متأكد من حذف هذه الجلسة الخاصة؟',
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء',
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
@@ -148,11 +172,17 @@ export default function Calendar({ group }) {
                     calendarRef.current.getApi().refetchEvents();
                 }
                 
-                alert(response.data.message);
+                successAlert({
+                    title: 'تم بنجاح',
+                    text: response.data.message
+                });
             }
         } catch (error) {
             console.error('Error deleting special session:', error);
-            alert('حدث خطأ أثناء حذف الجلسة الخاصة');
+            errorAlert({
+                title: 'خطأ',
+                text: 'حدث خطأ أثناء حذف الجلسة الخاصة'
+            });
         } finally {
             setIsLoading(false);
         }

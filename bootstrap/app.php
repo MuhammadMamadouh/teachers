@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'not-admin' => \App\Http\Middleware\EnsureUserIsNotAdmin::class,
             'teacher-or-admin' => \App\Http\Middleware\EnsureUserIsTeacherOrAdmin::class,
             'scope-by-teacher' => \App\Http\Middleware\ScopeResourcesByTeacher::class,
+            'subscription' => \App\Http\Middleware\EnsureSubscriptionIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

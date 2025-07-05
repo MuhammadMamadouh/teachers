@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\Plan;
 
 class PlansSeeder extends Seeder
@@ -13,29 +14,72 @@ class PlansSeeder extends Seeder
      */
     public function run(): void
     {
-        // Only create plans if they don't exist
-        if (Plan::count() == 0) {
-            // Create the subscription plans
-            Plan::create([
-                'name' => 'Basic',
-                'max_students' => 10,
-                'price_per_month' => 9.99,
-                'is_default' => true,
-            ]);
-
-            Plan::create([
-                'name' => 'Standard',
-                'max_students' => 25,
-                'price_per_month' => 19.99,
-                'is_default' => false,
-            ]);
-
-            Plan::create([
-                'name' => 'Pro',
+        // Clear existing plans safely
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Plan::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        // Create the subscription plans with the new structure
+        $plans = [
+            [
+                'name' => 'خطة تجريبية',
+                'max_students' => 20,
+                'max_assistants' => 0,
+                'duration_days' => 30,
+                'price' => 0,
+                'is_trial' => true,
+                'is_default' => true
+            ],
+            [
+                'name' => 'خطة شهرية أساسية',
                 'max_students' => 100,
-                'price_per_month' => 39.99,
-                'is_default' => false,
-            ]);
+                'max_assistants' => 1,
+                'duration_days' => 30,
+                'price' => 100, // 100 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+            [
+                'name' => 'خطة شهرية متقدمة',
+                'max_students' => 500,
+                'max_assistants' => 2,
+                'duration_days' => 30,
+                'price' => 200, // 200 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+            [
+                'name' => 'خطة شهرية موسعة',
+                'max_students' => 2000,
+                'max_assistants' => 4,
+                'duration_days' => 30,
+                'price' => 800, // 800 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+            
+            [
+                'name' => 'خطة ربع سنوية',
+                'max_students' => 50,
+                'max_assistants' => 2,
+                'duration_days' => 90,
+                'price' => 600, // 600 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+            [
+                'name' => 'خطة سنوية',
+                'max_students' => 100,
+                'max_assistants' => 3,
+                'duration_days' => 365,
+                'price' => 2000, // 2000 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+        ];
+
+        foreach ($plans as $plan) {
+            Plan::create($plan);
         }
     }
 }

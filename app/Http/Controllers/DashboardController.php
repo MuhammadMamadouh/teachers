@@ -53,7 +53,7 @@ class DashboardController extends Controller
                 return [
                     'name' => $plan->name,
                     'max_students' => $plan->max_students,
-                    'price' => $plan->price_per_month,
+                    'price' => $plan->formatted_price,
                     'subscribers' => $plan->subscriptions_count,
                     'is_default' => $plan->is_default,
                 ];

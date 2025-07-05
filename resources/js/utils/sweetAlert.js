@@ -1,13 +1,20 @@
 import Swal from 'sweetalert2';
 
-// Configure SweetAlert with Arabic defaults
+// Configure SweetAlert with Arabic defaults and RTL support
 const MySwal = Swal.mixin({
     customClass: {
-        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md mr-2',
-        cancelButton: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md ml-2'
+        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md ml-2',
+        cancelButton: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md mr-2',
+        popup: 'swal2-rtl',
+        title: 'text-right',
+        content: 'text-right',
+        actions: 'flex-row-reverse'
     },
     buttonsStyling: false,
-    reverseButtons: true
+    reverseButtons: false, // Set to false since we're handling RTL manually
+    heightAuto: false,
+    allowOutsideClick: false,
+    allowEscapeKey: true
 });
 
 // Confirmation dialog with Arabic text
@@ -21,6 +28,15 @@ export const confirmDialog = (options = {}) => {
         cancelButtonText: 'إلغاء',
         confirmButtonColor: '#d33',
         cancelButtonColor: '#6b7280',
+        didOpen: () => {
+            // Apply RTL styling when dialog opens
+            const popup = Swal.getPopup();
+            if (popup) {
+                popup.style.direction = 'rtl';
+                popup.style.textAlign = 'right';
+                popup.style.fontFamily = "'Cairo', sans-serif";
+            }
+        }
     };
 
     return MySwal.fire({ ...defaultOptions, ...options });
@@ -32,6 +48,15 @@ export const successAlert = (options = {}) => {
         icon: 'success',
         confirmButtonText: 'موافق',
         confirmButtonColor: '#16a34a',
+        didOpen: () => {
+            // Apply RTL styling when dialog opens
+            const popup = Swal.getPopup();
+            if (popup) {
+                popup.style.direction = 'rtl';
+                popup.style.textAlign = 'right';
+                popup.style.fontFamily = "'Cairo', sans-serif";
+            }
+        }
     };
 
     return MySwal.fire({ ...defaultOptions, ...options });
@@ -43,6 +68,15 @@ export const errorAlert = (options = {}) => {
         icon: 'error',
         confirmButtonText: 'موافق',
         confirmButtonColor: '#d33',
+        didOpen: () => {
+            // Apply RTL styling when dialog opens
+            const popup = Swal.getPopup();
+            if (popup) {
+                popup.style.direction = 'rtl';
+                popup.style.textAlign = 'right';
+                popup.style.fontFamily = "'Cairo', sans-serif";
+            }
+        }
     };
 
     return MySwal.fire({ ...defaultOptions, ...options });

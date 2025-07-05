@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* RTL Support */
+html[dir="rtl"] {
+    direction: rtl;
+}
+
+html[dir="rtl"] body {
+    font-family: 'Cairo', sans-serif;
+    text-align: right;
+}
+
+/* Input direction handling */
+.input-auto-dir {
+    direction: ltr;
+    text-align: left;
+}
+
+.input-auto-dir:focus {
+    direction: ltr;
+    text-align: left;
+}
+
+/* When input contains Arabic text, switch to RTL */
+.input-auto-dir[data-dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Form elements RTL support */
+html[dir="rtl"] .form-input,
+html[dir="rtl"] .form-select,
+html[dir="rtl"] .form-textarea {
+    text-align: right;
+}
+
+/* Button and navigation RTL adjustments */
+html[dir="rtl"] .flex {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+}
+
 /* FullCalendar Styling for RTL support */
 .calendar-container .fc {
     direction: rtl;
@@ -75,4 +118,55 @@
 .calendar-container .fc-today-button:hover {
     background-color: #047857;
     border-color: #047857;
+}
+
+/* Additional RTL utility classes */
+.rtl-flex {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.rtl-space-x > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+    margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+/* Table RTL support */
+html[dir="rtl"] table {
+    text-align: right;
+}
+
+html[dir="rtl"] th,
+html[dir="rtl"] td {
+    text-align: right;
+}
+
+/* Modal and dropdown RTL support */
+html[dir="rtl"] .dropdown-content {
+    right: 0;
+    left: auto;
+}
+
+/* Pagination RTL support */
+html[dir="rtl"] .pagination {
+    flex-direction: row-reverse;
+}
+
+/* Form validation messages RTL */
+.form-error,
+.form-success {
+    text-align: right;
+    direction: rtl;
+}
+
+/* SweetAlert RTL support */
+.swal2-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.swal2-rtl .swal2-title,
+.swal2-rtl .swal2-content {
+    text-align: right;
 }

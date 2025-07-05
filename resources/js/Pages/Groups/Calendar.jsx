@@ -91,7 +91,6 @@ export default function Calendar({ group }) {
                 });
             }
         } catch (error) {
-            console.error('Error adding special session:', error);
             errorAlert({
                 title: 'خطأ',
                 text: 'حدث خطأ أثناء إضافة الجلسة الخاصة'
@@ -128,7 +127,6 @@ export default function Calendar({ group }) {
                 });
             }
         } catch (error) {
-            console.error('Error updating special session:', error);
             errorAlert({
                 title: 'خطأ',
                 text: 'حدث خطأ أثناء تحديث الجلسة الخاصة'

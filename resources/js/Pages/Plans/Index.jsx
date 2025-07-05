@@ -4,7 +4,7 @@ import { questionDialog } from '@/utils/sweetAlert';
 
 export default function PlansIndex({ currentPlan, availablePlans, currentStudentCount, pendingUpgradeRequest }) {
 
-    console.log('Current Plan:', currentPlan);
+
     const handleUpgrade = (planId) => {
         questionDialog({
             title: 'طلب ترقية الخطة',
@@ -12,7 +12,7 @@ export default function PlansIndex({ currentPlan, availablePlans, currentStudent
             confirmButtonText: 'نعم، أرسل الطلب',
             cancelButtonText: 'إلغاء',
         }).then((result) => {
-            console.log('Upgrade plan ID:', planId);
+
             if (result.isConfirmed) {
                 console.log('Sending upgrade request for plan ID:', planId);
                 router.post(route('plans.upgrade'), {

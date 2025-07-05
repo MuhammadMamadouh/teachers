@@ -4,9 +4,9 @@ import { Head } from '@inertiajs/react';
 export default function PendingApproval() {
     return (
         <GuestLayout>
-            <Head title="Pending Approval" />
+            <Head title="بانتظار الموافقة" />
 
-            <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100" dir="rtl">
                 <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-md">
                     <div className="px-6 py-8">
                         <div className="text-center">
@@ -28,16 +28,16 @@ export default function PendingApproval() {
                             </div>
                             
                             <h2 className="mb-4 text-2xl font-bold text-gray-900">
-                                Account Pending Approval
+                                الحساب بانتظار الموافقة
                             </h2>
                             
                             <p className="mb-6 text-gray-600">
-                                Your account is pending approval by our administrators. 
-                                You will be notified via email when your account is activated.
+                                حسابك بانتظار الموافقة من قبل المشرفين. 
+                                سيتم إشعارك عبر البريد الإلكتروني عند تفعيل حسابك.
                             </p>
                             
                             <p className="text-sm text-gray-500">
-                                This usually takes 1-2 business days. Thank you for your patience!
+                                هذا عادة ما يستغرق 1-2 أيام عمل. شكراً لصبرك!
                             </p>
                             
                             <div className="mt-6">
@@ -58,7 +58,7 @@ export default function PendingApproval() {
                                         form.submit();
                                     }}
                                 >
-                                    Logout
+                                    تسجيل الخروج
                                 </a>
                             </div>
                         </div>

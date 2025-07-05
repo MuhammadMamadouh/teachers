@@ -28,18 +28,18 @@ export default function UserApproval({ unapprovedUsers }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    User Approval Panel
+                    لوحة الموافقة على المستخدمين
                 </h2>
             }
         >
-            <Head title="User Approval" />
+            <Head title="الموافقة على المستخدمين" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <h3 className="mb-6 text-lg font-medium text-gray-900">
-                                Pending Teacher Approvals ({unapprovedUsers.length})
+                                الموافقات المعلقة للمعلمين ({unapprovedUsers.length})
                             </h3>
 
                             {unapprovedUsers.length === 0 ? (
@@ -59,7 +59,7 @@ export default function UserApproval({ unapprovedUsers }) {
                                             />
                                         </svg>
                                     </div>
-                                    <p className="text-gray-500">No pending approvals!</p>
+                                    <p className="text-gray-500">لا توجد موافقات معلقة!</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -80,18 +80,18 @@ export default function UserApproval({ unapprovedUsers }) {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm text-gray-600">
-                                                            <span className="font-medium">Phone:</span> {user.phone}
+                                                            <span className="font-medium">الهاتف:</span> {user.phone}
                                                         </p>
                                                         <p className="text-sm text-gray-600">
-                                                            <span className="font-medium">City:</span> {user.city}
+                                                            <span className="font-medium">المدينة:</span> {user.city}
                                                         </p>
                                                     </div>
                                                     <div>
                                                         <p className="text-sm text-gray-600">
-                                                            <span className="font-medium">Subject:</span> {user.subject}
+                                                            <span className="font-medium">المادة:</span> {user.subject}
                                                         </p>
                                                         <p className="text-sm text-gray-600">
-                                                            <span className="font-medium">Registered:</span>{' '}
+                                                            <span className="font-medium">تاريخ التسجيل:</span>{' '}
                                                             {new Date(user.created_at).toLocaleDateString()}
                                                         </p>
                                                     </div>
@@ -101,13 +101,13 @@ export default function UserApproval({ unapprovedUsers }) {
                                                         onClick={() => handleApprove(user.id)}
                                                         className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                                                     >
-                                                        Approve
+                                                        موافقة
                                                     </button>
                                                     <button
                                                         onClick={() => handleReject(user.id)}
                                                         className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                                     >
-                                                        Reject
+                                                        رفض
                                                     </button>
                                                 </div>
                                             </div>

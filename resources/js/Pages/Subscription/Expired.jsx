@@ -6,11 +6,11 @@ export default function Expired({ plans, currentSubscription, hasHadTrial }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Subscription Expired
+                    انتهت صلاحية الاشتراك
                 </h2>
             }
         >
-            <Head title="Subscription Expired" />
+            <Head title="انتهت صلاحية الاشتراك" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -18,17 +18,17 @@ export default function Expired({ plans, currentSubscription, hasHadTrial }) {
                         <div className="p-6 text-gray-900">
                             <div className="text-center mb-8">
                                 <h1 className="text-3xl font-bold text-red-600 mb-4">
-                                    Your Subscription Has Expired
+                                    انتهت صلاحية اشتراكك
                                 </h1>
                                 <p className="text-lg text-gray-600 mb-6">
-                                    Please contact an administrator to renew your subscription.
+                                    يرجى التواصل مع المدير لتجديد اشتراكك.
                                 </p>
 
                                 {currentSubscription && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                                         <p className="text-sm text-red-700">
-                                            Your {currentSubscription.plan.name} subscription expired on{' '}
-                                            {new Date(currentSubscription.end_date).toLocaleDateString()}.
+                                            انتهت صلاحية اشتراك {currentSubscription.plan.name} في{' '}
+                                            {new Date(currentSubscription.end_date).toLocaleDateString('ar-SA')}.
                                         </p>
                                     </div>
                                 )}
@@ -57,25 +57,25 @@ export default function Expired({ plans, currentSubscription, hasHadTrial }) {
                                                     <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                     </svg>
-                                                    Up to {plan.max_students} students
+                                                    حتى {plan.max_students} طالب
                                                 </li>
                                                 <li className="flex items-center">
                                                     <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                     </svg>
-                                                    Up to {plan.max_assistants} assistants
+                                                    حتى {plan.max_assistants} مساعد
                                                 </li>
                                                 <li className="flex items-center">
                                                     <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                     </svg>
-                                                    {plan.formatted_duration} access
+                                                    {plan.formatted_duration} وصول
                                                 </li>
                                             </ul>
 
                                             <div className="text-center">
                                                 <p className="text-sm text-gray-600 mb-4">
-                                                    Contact administrator to subscribe to this plan.
+                                                    تواصل مع المدير للاشتراك في هذه الخطة.
                                                 </p>
                                             </div>
                                         </div>
@@ -85,7 +85,7 @@ export default function Expired({ plans, currentSubscription, hasHadTrial }) {
 
                             <div className="text-center mt-8">
                                 <p className="text-sm text-gray-600">
-                                    Need help? Contact support or an administrator.
+                                    تحتاج مساعدة؟ تواصل مع الدعم الفني أو المدير.
                                 </p>
                             </div>
                         </div>

@@ -23,11 +23,11 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
+            <Head title="إعادة تعيين كلمة المرور" />
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="البريد الإلكتروني" />
 
                     <TextInput
                         id="email"
@@ -43,7 +43,7 @@ export default function ResetPassword({ token, email }) {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="كلمة المرور الجديدة" />
 
                     <TextInput
                         id="password"
@@ -62,7 +62,7 @@ export default function ResetPassword({ token, email }) {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="تأكيد كلمة المرور"
                     />
 
                     <TextInput
@@ -85,7 +85,7 @@ export default function ResetPassword({ token, email }) {
 
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        Reset Password
+                        إعادة تعيين كلمة المرور
                     </PrimaryButton>
                 </div>
             </form>

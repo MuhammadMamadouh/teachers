@@ -60,6 +60,8 @@ class User extends Authenticatable
         ];
     }
 
+   
+
     /**
      * Get all subscriptions for the user.
      */

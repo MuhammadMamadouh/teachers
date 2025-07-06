@@ -88,7 +88,7 @@ class AdminPlanController extends Controller
     public function show(Plan $plan)
     {
         $plan->load(['subscriptions.user:id,name,email']);
-        
+
         return Inertia::render('Admin/Plans/Show', [
             'plan' => [
                 'id' => $plan->id,
@@ -182,7 +182,7 @@ class AdminPlanController extends Controller
     {
         // Check if plan has active subscriptions
         $activeSubscriptions = $plan->subscriptions()->where('is_active', true)->count();
-        
+
         if ($activeSubscriptions > 0) {
             return redirect()
                 ->back()
@@ -218,7 +218,7 @@ class AdminPlanController extends Controller
     {
         // Remove default from all plans
         Plan::where('is_default', true)->update(['is_default' => false]);
-        
+
         // Set this plan as default
         $plan->update(['is_default' => true]);
 

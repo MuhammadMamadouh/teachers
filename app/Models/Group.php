@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Group extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'name',
@@ -34,15 +36,7 @@ class Group extends Model
         return $this->hasMany(Student::class);
     }
     
-    /**
-     * This relationship is deprecated and will be removed in future versions.
-     * Use assignedStudents() instead.
-     * @deprecated
-     */
-    public function students(): BelongsToMany
-    {
-        return $this->belongsToMany(Student::class);
-    }
+   
 
     public function attendances(): HasMany
     {

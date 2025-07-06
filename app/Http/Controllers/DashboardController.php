@@ -17,6 +17,13 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+
+    const TEACHER = 'teacher';
+    const ASSISTANT = 'assistant';
+    
+
+
+
     /**
      * Display the dashboard.
      */
@@ -40,10 +47,14 @@ class DashboardController extends Controller
      */
     private function adminDashboard(): Response
     {
+        $totalTeachers = User::where('is_admin', false)
+        ->where('type', self::TEACHER) // Exclude assistants
+        ;
         // System statistics
-        $totalUsers = User::where('is_admin', false)->count();
-        $approvedUsers = User::where('is_admin', false)->where('is_approved', true)->count();
-        $pendingUsers = User::where('is_admin', false)->where('is_approved', false)->count();
+        $approvedTeachers = $totalTeachers->where('is_approved', true)->count();
+        $pendingTeachers = $totalTeachers->where('is_approved', false)->count();
+        $totalTeachers = $totalTeachers->count();
+       
         $totalStudents = Student::count();
         
         // Plan statistics
@@ -51,11 +62,11 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($plan) {
                 return [
-                    'name' => $plan->name,
-                    'max_students' => $plan->max_students,
-                    'price' => $plan->formatted_price,
-                    'subscribers' => $plan->subscriptions_count,
-                    'is_default' => $plan->is_default,
+                    'name'          => $plan->name,
+                    'max_students'  => $plan->max_students,
+                    'price'        => $plan->formatted_price,
+                    'subscribers'  => $plan->subscriptions_count,
+                    'is_default'   => $plan->is_default,
                 ];
             });
         
@@ -67,6 +78,7 @@ class DashboardController extends Controller
         
         // Usage statistics
         $usageStats = User::where('is_admin', false)
+        // ->where('type', self::TEACHER) // Exclude assistants
             ->where('is_approved', true)
             ->with(['students', 'activeSubscription.plan'])
             ->get()
@@ -82,9 +94,9 @@ class DashboardController extends Controller
         
         return Inertia::render('Admin/Dashboard', [
             'systemStats' => [
-                'total_users' => $totalUsers,
-                'approved_users' => $approvedUsers,
-                'pending_users' => $pendingUsers,
+                'total_users' => $totalTeachers,
+                'approved_users' => $approvedTeachers,
+                'pending_users' => $pendingTeachers,
                 'total_students' => $totalStudents,
             ],
             'planStats' => $planStats,

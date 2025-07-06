@@ -16,8 +16,8 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
-        $groups = Group::where('user_id', Auth::id())->with('students')->get();
-        
+        $groups = Group::where('user_id', Auth::id())->with('assignedStudents')->get();
+
         $selectedGroup = null;
         $selectedDate = $request->get('date', now()->format('Y-m-d'));
         $attendances = collect();
@@ -25,7 +25,7 @@ class AttendanceController extends Controller
         if ($request->has('group_id')) {
             $selectedGroup = Group::where('user_id', Auth::id())
                 ->where('id', $request->group_id)
-                ->with('students')
+                ->with('assignedStudents')
                 ->first();
                 
             if ($selectedGroup) {

@@ -13,8 +13,8 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
     });
 
     useEffect(() => {
-        if (selectedGroup && selectedGroup.students) {
-            const attendanceData = selectedGroup.students.map(student => ({
+        if (selectedGroup && selectedGroup.assigned_students) {
+            const attendanceData = selectedGroup.assigned_students.map(student => ({
                 student_id: student.id,
                 is_present: attendances[student.id]?.is_present || false,
                 notes: attendances[student.id]?.notes || ''
@@ -80,8 +80,8 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                     >
                                         <option value="">اختر المجموعة</option>
                                         {groups.map((group) => (
-                                            <option key={group.id} value={group.id}>
-                                                {group.name} ({group.students.length} طلاب)
+                                            <option key={group.id} value={group.id}> 
+                                                {group.name} ({group.assigned_students.length} طلاب)
                                             </option>
                                         ))}
                                     </select>
@@ -101,8 +101,8 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                 </div>
                             </div>
 
-                            {selectedGroup && selectedGroup.students ? (
-                                selectedGroup.students.length > 0 ? (
+                            {selectedGroup && selectedGroup.assigned_students ? (
+                                selectedGroup.assigned_students.length > 0 ? (
                                     <form onSubmit={submit}>
                                         <div className="mb-6">
                                             <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -110,7 +110,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                             </h3>
                                             
                                             <div className="space-y-4">
-                                                {selectedGroup.students.map((student, index) => (
+                                                {selectedGroup.assigned_students.map((student, index) => (
                                                     <div key={student.id} className="border border-gray-200 rounded-lg p-4">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center space-x-4">
@@ -154,7 +154,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
 
                                         <div className="flex justify-between items-center">
                                             <div className="text-sm text-gray-500">
-                                                المجموع: {selectedGroup.students.length} طالب
+                                                المجموع: {selectedGroup.assigned_students.length} طالب
                                                 {data.attendances && (
                                                     <span className="ml-4">
                                                         الحاضرين: {data.attendances.filter(a => a.is_present).length}

@@ -23,7 +23,7 @@ class PlansSeeder extends Seeder
         $plans = [
             [
                 'name' => 'خطة تجريبية',
-                'max_students' => 20,
+                'max_students' => 50,
                 'max_assistants' => 0,
                 'duration_days' => 30,
                 'price' => 0,
@@ -53,17 +53,35 @@ class PlansSeeder extends Seeder
                 'max_students' => 2000,
                 'max_assistants' => 4,
                 'duration_days' => 30,
-                'price' => 800, // 800 ج.م
+                'price' => 500, // 500 ج.م
                 'is_trial' => false,
                 'is_default' => false
             ],
             
             [
-                'name' => 'خطة ربع سنوية',
-                'max_students' => 50,
+                'name' => 'خطة ربع سنوية أساسية',
+                'max_students' => 100,
+                'max_assistants' => 1,
+                'duration_days' => 30,
+                'price' => 250, // 250 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+             [
+                'name' => 'خطة ربع سنوية متقدمة',
+                'max_students' => 500,
                 'max_assistants' => 2,
-                'duration_days' => 90,
-                'price' => 600, // 600 ج.م
+                'duration_days' => 30,
+                'price' => 500, // 500 ج.م
+                'is_trial' => false,
+                'is_default' => false
+            ],
+            [
+                'name' => 'خطة ربع سنوية موسعة',
+                'max_students' => 2000,
+                'max_assistants' => 4,
+                'duration_days' => 30,
+                'price' => 1200, // 1200 ج.م
                 'is_trial' => false,
                 'is_default' => false
             ],

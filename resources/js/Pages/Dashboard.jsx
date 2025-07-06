@@ -304,7 +304,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                                     {formatTime(session.start_time)} - {formatTime(session.end_time)}
                                                 </span>
                                                 <p className="text-xs text-gray-500">
-                                                    {session.type === 'special' ? 'جلسة خاصة' : 'جلسة عادية'}
+                                                    {session.type === 'special' ? 'جلسة خاصة' : 'جلسة منتظمة'}
                                                 </p>
                                             </div>
                                         </div>

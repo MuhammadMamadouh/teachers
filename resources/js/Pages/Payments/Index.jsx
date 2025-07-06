@@ -134,7 +134,7 @@ export default function Index() {
 
     const getPaymentStatus = (payment) => {
         if (payment.is_paid) {
-            return <Badge className="bg-green-100 text-green-800">مدفوع</Badge>;
+            return <Badge className="">مدفوع</Badge>;
         }
         return <Badge variant="secondary">غير مدفوع</Badge>;
     };
@@ -194,7 +194,7 @@ export default function Index() {
                                     <Label>الشهر</Label>
                                     <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="اختر الشهر" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {months.map((month) => (
@@ -210,7 +210,7 @@ export default function Index() {
                                     <Label>السنة</Label>
                                     <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="اختر السنة" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {years.map((year) => (

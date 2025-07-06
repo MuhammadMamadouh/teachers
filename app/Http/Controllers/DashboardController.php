@@ -53,8 +53,10 @@ class DashboardController extends Controller
         // System statistics
         $approvedTeachers = $totalTeachers->where('is_approved', true)->count();
         $pendingTeachers = $totalTeachers->where('is_approved', false)->count();
-        $totalTeachers = $totalTeachers->count();
        
+        
+        $totalTeachers = User::where('is_admin', false)
+        ->where('type', self::TEACHER)->count();
         $totalStudents = Student::count();
         
         // Plan statistics
@@ -204,7 +206,7 @@ class DashboardController extends Controller
                                     'type' => 'recurring',
                                     'groupId' => $group->id,
                                     'groupName' => $group->name,
-                                    'sessionType' => 'جلسة عادية'
+                                    'sessionType' => 'جلسة منتظمة'
                                 ],
                                 'editable' => false
                             ];
@@ -272,7 +274,7 @@ class DashboardController extends Controller
                         'start_time' => $schedule->start_time,
                         'end_time' => $schedule->end_time,
                         'type' => 'recurring',
-                        'description' => 'جلسة عادية',
+                        'description' => 'جلسة منتظمة',
                         'group_id' => $group->id
                     ];
                 }

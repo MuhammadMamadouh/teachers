@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkUpdatePaymentRequest;
+use App\Http\Requests\ShowPaymentRequest;
+use App\Http\Requests\StorePaymentRequest;
 use App\Models\Payment;
 use App\Models\Group;
 use App\Models\Student;
@@ -16,7 +19,7 @@ class PaymentController extends Controller
         $user = Auth::user();
         
         $groups = Group::where('user_id', $user->id)
-            ->with(['students', 'payments.student'])
+            ->with(['assignedStudents', 'payments.student'])
             ->get();
 
         return Inertia::render('Payments/Index', [
@@ -24,19 +27,13 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function show(Request $request)
+    public function show(ShowPaymentRequest $request)
     {
         $user = Auth::user();
-        
-        $request->validate([
-            'group_id' => 'required|exists:groups,id',
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2020|max:2050',
-        ]);
 
         $group = Group::where('user_id', $user->id)
             ->where('id', $request->group_id)
-            ->with(['students'])
+            ->with(['assignedStudents'])
             ->firstOrFail();
 
         // Get existing payments for this group, month, and year
@@ -48,7 +45,7 @@ class PaymentController extends Controller
             ->keyBy('student_id');
 
         // Create payment data for all students in the group
-        $studentPayments = $group->students->map(function ($student) use ($payments, $request) {
+        $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $request) {
             $payment = $payments->get($student->id);
             
             return [
@@ -80,20 +77,9 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePaymentRequest $request)
     {
         $user = Auth::user();
-
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'group_id' => 'required|exists:groups,id',
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2020|max:2050',
-            'is_paid' => 'boolean',
-            'amount' => 'nullable|numeric|min:0',
-            'paid_date' => 'nullable|date',
-            'notes' => 'nullable|string|max:1000',
-        ]);
 
         // Verify that the group belongs to the authenticated user
         $group = Group::where('user_id', $user->id)
@@ -125,21 +111,9 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function bulkUpdate(Request $request)
+    public function bulkUpdate(BulkUpdatePaymentRequest $request)
     {
         $user = Auth::user();
-
-        $request->validate([
-            'payments' => 'required|array',
-            'payments.*.student_id' => 'required|exists:students,id',
-            'payments.*.group_id' => 'required|exists:groups,id',
-            'payments.*.month' => 'required|integer|min:1|max:12',
-            'payments.*.year' => 'required|integer|min:2020|max:2050',
-            'payments.*.is_paid' => 'boolean',
-            'payments.*.amount' => 'nullable|numeric|min:0',
-            'payments.*.paid_date' => 'nullable|date',
-            'payments.*.notes' => 'nullable|string|max:1000',
-        ]);
 
         $paymentsData = $request->payments;
         $groupIds = collect($paymentsData)->pluck('group_id')->unique();

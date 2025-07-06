@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AssignStudentsRequest;
+use App\Http\Requests\StoreGroupRequest;
+use App\Http\Requests\StoreSpecialSessionRequest;
+use App\Http\Requests\UpdateGroupRequest;
+use App\Http\Requests\UpdateSpecialSessionRequest;
 use App\Models\Group;
 use App\Models\GroupSchedule;
 use App\Models\GroupSpecialSession;
 use App\Models\Student;
-use App\Rules\StudentNotInGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -43,19 +47,8 @@ class GroupController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreGroupRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'max_students' => 'required|integer|min:1',
-            'is_active' => 'boolean',
-            'schedules' => 'required|array|min:1',
-            'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
-            'schedules.*.start_time' => 'required|date_format:H:i',
-            'schedules.*.end_time' => 'required|date_format:H:i|after:schedules.*.start_time',
-        ]);
-
         $group = Group::create(array_merge(
             $request->only(['name', 'description', 'max_students', 'is_active']),
             ['user_id' => Auth::id()]
@@ -141,23 +134,12 @@ class GroupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Group $group)
+    public function update(UpdateGroupRequest $request, Group $group)
     {
         // Ensure the group belongs to the authenticated user
         if ($group->user_id !== Auth::id()) {
             abort(403);
         }
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'max_students' => 'required|integer|min:1',
-            'is_active' => 'boolean',
-            'schedules' => 'required|array|min:1',
-            'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
-            'schedules.*.start_time' => 'required|date_format:H:i',
-            'schedules.*.end_time' => 'required|date_format:H:i|after:schedules.*.start_time',
-        ]);
 
         $group->update($request->only(['name', 'description', 'max_students', 'is_active']));
 
@@ -188,17 +170,12 @@ class GroupController extends Controller
     /**
      * Assign students to a group
      */
-    public function assignStudents(Request $request, Group $group)
+    public function assignStudents(AssignStudentsRequest $request, Group $group)
     {
         // Ensure the group belongs to the authenticated user
         if ($group->user_id !== Auth::id()) {
             abort(403);
         }
-
-        $request->validate([
-            'student_ids' => ['required', 'array', new StudentNotInGroup],
-            'student_ids.*' => 'exists:students,id'
-        ]);
 
         // Verify that all students belong to the authenticated user
         $students = Student::where('user_id', Auth::id())
@@ -298,7 +275,7 @@ class GroupController extends Controller
                     if ($schedule->day_of_week == $dayOfWeek) {
                         $events[] = [
                             'id' => 'schedule_' . $schedule->id . '_' . $startDate->format('Y-m-d'),
-                            'title' => $group->name . ' - جلسة عادية',
+                            'title' => $group->name . ' - جلسة منتظمة',
                             'start' => $startDate->format('Y-m-d') . 'T' . $schedule->start_time,
                             'end' => $startDate->format('Y-m-d') . 'T' . $schedule->end_time,
                             'backgroundColor' => '#3b82f6',
@@ -346,19 +323,12 @@ class GroupController extends Controller
     /**
      * Store a new special session
      */
-    public function storeSpecialSession(Request $request, Group $group)
+    public function storeSpecialSession(StoreSpecialSessionRequest $request, Group $group)
     {
         // Ensure the group belongs to the authenticated user
         if ($group->user_id !== Auth::id()) {
             abort(403);
         }
-
-        $request->validate([
-            'date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'description' => 'nullable|string|max:255',
-        ]);
 
         $specialSession = $group->specialSessions()->create($request->only([
             'date', 'start_time', 'end_time', 'description'
@@ -374,19 +344,12 @@ class GroupController extends Controller
     /**
      * Update a special session
      */
-    public function updateSpecialSession(Request $request, Group $group, GroupSpecialSession $specialSession)
+    public function updateSpecialSession(UpdateSpecialSessionRequest $request, Group $group, GroupSpecialSession $specialSession)
     {
         // Ensure the group and session belong to the authenticated user
         if ($group->user_id !== Auth::id() || $specialSession->group_id !== $group->id) {
             abort(403);
         }
-
-        $request->validate([
-            'date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'description' => 'nullable|string|max:255',
-        ]);
 
         $specialSession->update($request->only([
             'date', 'start_time', 'end_time', 'description'

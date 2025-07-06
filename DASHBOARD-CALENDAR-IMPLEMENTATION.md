@@ -113,7 +113,7 @@ Route::middleware(['auth', 'verified', 'approved', 'not-admin'])->group(function
       "type": "recurring",
       "groupId": 1,
       "groupName": "مجموعة الصباح",
-      "sessionType": "جلسة عادية"
+      "sessionType": "جلسة منتظمة"
     },
     "editable": false
   },
@@ -145,7 +145,7 @@ Route::middleware(['auth', 'verified', 'approved', 'not-admin'])->group(function
     "start_time": "09:00",
     "end_time": "10:30",
     "type": "recurring",
-    "description": "جلسة عادية",
+    "description": "جلسة منتظمة",
     "group_id": 1
   },
   {

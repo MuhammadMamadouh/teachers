@@ -4,6 +4,7 @@ import { Badge } from '@/Components/ui/badge';
 import { confirmDialog } from '@/utils/sweetAlert';
 
 export default function Show({ student, recentPayments }) {
+    console.log('Student Data:', student, 'Recent Payments:', recentPayments);
     const handleDelete = () => {
         confirmDialog({
             title: 'حذف الطالب',
@@ -118,7 +119,7 @@ export default function Show({ student, recentPayments }) {
                                     <div>
                                         <dt className="text-sm font-medium text-gray-500">تاريخ التسجيل</dt>
                                         <dd className="text-sm text-gray-900">
-                                            {new Date(student.created_at).toLocaleDateString('ar-SA', {
+                                            {new Date(student.created_at).toLocaleString('ar-EG', {
                                                 year: 'numeric',
                                                 month: 'long',
                                                 day: 'numeric'
@@ -146,7 +147,7 @@ export default function Show({ student, recentPayments }) {
                                                             </p>
                                                         )}
                                                     </div>
-                                                    <Badge className={payment.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                                                    <Badge className={payment.is_paid ? 'bg-green-500' : 'bg-red-500'}>
                                                         {payment.is_paid ? 'مدفوع' : 'غير مدفوع'}
                                                     </Badge>
                                                 </div>
@@ -157,7 +158,11 @@ export default function Show({ student, recentPayments }) {
                                                 )}
                                                 {payment.paid_date && (
                                                     <p className="text-xs text-gray-500">
-                                                        تاريخ الدفع: {new Date(payment.paid_date).toLocaleDateString('ar-SA')}
+                                                        تاريخ الدفع: {new Date(payment.paid_date).toLocaleString('ar-EG', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
                                                     </p>
                                                 )}
                                             </div>

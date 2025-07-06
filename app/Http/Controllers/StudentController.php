@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,18 +17,50 @@ class StudentController extends Controller
     /**
      * Display a listing of the students.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        /** @var User $user */
         $user = Auth::user();
-        $students = Student::where('user_id', $user->id)->with('group')->orderBy('name')->get();
+        
+        // Build the query with search filters
+        $query = Student::where('user_id', $user->id)->with('group');
+        
+        // Search by name
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('guardian_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('guardian_phone', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by group
+        if ($request->filled('group_id')) {
+            if ($request->input('group_id') === 'unassigned') {
+                $query->whereNull('group_id');
+            } else {
+                $query->where('group_id', $request->input('group_id'));
+            }
+        }
+        
+        $students = $query->orderBy('name')->get();
+        $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
+        
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
 
         return Inertia::render('Students/Index', [
             'students' => $students,
+            'groups' => $groups,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
+            'filters' => [
+                'search' => $request->input('search', ''),
+                'group_id' => $request->input('group_id', ''),
+            ],
         ]);
     }
 
@@ -36,17 +69,21 @@ class StudentController extends Controller
      */
     public function create(): Response
     {
+        /** @var User $user */
         $user = Auth::user();
         
-        if (!$user->canAddStudents()) {
-            return redirect()->route('students.index')
-                ->with('error', 'You have reached your subscription limit for students.');
-        }
-
+        // Check subscription limits and pass to view
+        $canAdd = $user->canAddStudents();
+        $subscriptionLimits = $user->getSubscriptionLimits();
+        $currentStudentCount = $user->getStudentCount();
+        
         $groups = Group::where('user_id', $user->id)->where('is_active', true)->get();
 
         return Inertia::render('Students/Create', [
-            'groups' => $groups
+            'groups' => $groups,
+            'canAddStudents' => $canAdd,
+            'subscriptionLimits' => $subscriptionLimits,
+            'currentStudentCount' => $currentStudentCount,
         ]);
     }
 
@@ -55,12 +92,13 @@ class StudentController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        /** @var User $user */
         $user = Auth::user();
         
         // Check subscription limit before creating
         if (!$user->canAddStudents()) {
             throw ValidationException::withMessages([
-                'subscription' => 'You have reached your subscription limit for students.',
+                'subscription' => 'لقد وصلت إلى الحد الأقصى للطلاب في خطتك الحالية.',
             ]);
         }
 

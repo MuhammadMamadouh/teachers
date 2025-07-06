@@ -354,10 +354,10 @@ class DashboardController extends Controller
                     DB::table('attendances')->whereIn('group_id', $groupIds)->delete();
                 }
 
-                // 4. Delete group_student pivot records
-                if (!empty($groupIds)) {
-                    DB::table('group_student')->whereIn('group_id', $groupIds)->delete();
-                }
+                // // 4. Delete group_student pivot records
+                // if (!empty($groupIds)) {
+                //     DB::table('group_student')->whereIn('group_id', $groupIds)->delete();
+                // }
 
                 // 5. Delete payments for user's students
                 if (!empty($studentIds)) {

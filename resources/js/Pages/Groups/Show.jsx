@@ -1,6 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { 
+    MagnifyingGlassIcon,
+    XMarkIcon
+} from '@heroicons/react/24/outline';
 
 export default function Show({ group, availableStudents, paymentSummary }) {
     const { errors } = usePage().props;
@@ -9,6 +13,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
     const [showRemoveStudentModal, setShowRemoveStudentModal] = useState(false);
     const [studentToRemove, setStudentToRemove] = useState(null);
     const [selectedStudents, setSelectedStudents] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const handleDelete = () => {
         setShowDeleteModal(true);
@@ -27,6 +32,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                 onSuccess: () => {
                     setShowAssignModal(false);
                     setSelectedStudents([]);
+                    setSearchTerm('');
                 }
             });
         }
@@ -55,6 +61,18 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                 ? prev.filter(id => id !== studentId)
                 : [...prev, studentId]
         );
+    };
+
+    // Filter available students based on search term
+    const filteredStudents = availableStudents?.filter(student =>
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.phone.includes(searchTerm) ||
+        (student.guardian_name && student.guardian_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (student.guardian_phone && student.guardian_phone.includes(searchTerm))
+    ) || [];
+
+    const clearSearch = () => {
+        setSearchTerm('');
     };
 
     const getDayName = (dayOfWeek) => {
@@ -308,7 +326,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
             {/* Assign Students Modal */}
             {showAssignModal && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-                    <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
+                    <div className="relative bg-white rounded-lg shadow-lg max-w-lg mx-auto p-6">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">إضافة طلاب للمجموعة</h3>
                         
                         {/* Display validation errors */}
@@ -324,25 +342,76 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                 <p className="text-sm text-gray-600 mb-4">
                                     يتم عرض الطلاب المتاحين فقط (غير المُعينين في أي مجموعة)
                                 </p>
+                                
+                                {/* Search Input */}
+                                <div className="relative mb-4">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="البحث باسم الطالب، ولي الأمر، أو رقم الهاتف..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                    {searchTerm && (
+                                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <button
+                                                onClick={clearSearch}
+                                                className="text-gray-400 hover:text-gray-600"
+                                            >
+                                                <XMarkIcon className="h-5 w-5" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Search Results Summary */}
+                                {searchTerm && (
+                                    <div className="mb-3 text-sm text-gray-600">
+                                        {filteredStudents.length > 0 
+                                            ? `تم العثور على ${filteredStudents.length} طالب`
+                                            : 'لم يتم العثور على نتائج للبحث'
+                                        }
+                                    </div>
+                                )}
+                                
                                 <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
-                                    {availableStudents.map((student) => (
-                                        <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedStudents.includes(student.id)}
-                                                onChange={() => handleStudentSelection(student.id)}
-                                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                            />
-                                            <div className="flex-1">
-                                                <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                                                <div className="text-xs text-gray-500">{student.phone}</div>
-                                            </div>
-                                        </label>
-                                    ))}
+                                    {filteredStudents.length > 0 ? (
+                                        filteredStudents.map((student) => (
+                                            <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedStudents.includes(student.id)}
+                                                    onChange={() => handleStudentSelection(student.id)}
+                                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                                                    <div className="text-xs text-gray-500">{student.phone}</div>
+                                                    {student.guardian_name && (
+                                                        <div className="text-xs text-gray-400">ولي الأمر: {student.guardian_name}</div>
+                                                    )}
+                                                </div>
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-4 text-gray-500">
+                                            {searchTerm 
+                                                ? 'لا توجد نتائج مطابقة للبحث' 
+                                                : 'لا يوجد طلاب متاحين'
+                                            }
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex justify-end space-x-4">
                                     <button
-                                        onClick={() => setShowAssignModal(false)}
+                                        onClick={() => {
+                                            setShowAssignModal(false);
+                                            setSearchTerm('');
+                                            setSelectedStudents([]);
+                                        }}
                                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
                                     >
                                         إلغاء
@@ -352,7 +421,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                         disabled={selectedStudents.length === 0}
                                         className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md disabled:opacity-50"
                                     >
-                                        إضافة الطلاب المختارين
+                                        إضافة الطلاب المختارين ({selectedStudents.length})
                                     </button>
                                 </div>
                             </>

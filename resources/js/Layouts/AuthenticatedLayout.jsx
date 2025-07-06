@@ -22,6 +22,13 @@ export default function AuthenticatedLayout({ header, children }) {
             });
         }
         
+        if (flash?.error) {
+            errorAlert({
+                title: 'خطأ',
+                text: flash.error
+            });
+        }
+        
         if (errors && Object.keys(errors).length > 0) {
             // Show first error message
             const firstError = Object.values(errors)[0];

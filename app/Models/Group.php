@@ -17,10 +17,13 @@ class Group extends Model
         'description',
         'max_students',
         'is_active',
+        'payment_type',
+        'student_price',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'student_price' => 'decimal:2',
     ];
 
     public function schedules(): HasMany
@@ -56,5 +59,56 @@ class Group extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Calculate expected monthly income for this group
+     */
+    public function getExpectedMonthlyIncome(): float
+    {
+        if ($this->payment_type === 'monthly') {
+            $studentCount = $this->assignedStudents()->count();
+            return $studentCount * $this->student_price;
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Calculate expected income per session for this group
+     */
+    public function getExpectedIncomePerSession(): float
+    {
+        if ($this->payment_type === 'per_session') {
+            $studentCount = $this->assignedStudents()->count();
+            return $studentCount * $this->student_price;
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Calculate actual income for a specific attendance session
+     */
+    public function getActualIncomeForAttendance($attendanceId): float
+    {
+        if ($this->payment_type === 'per_session') {
+            $presentStudents = $this->attendances()
+                ->where('id', $attendanceId)
+                ->where('is_present', true)
+                ->count();
+            
+            return $presentStudents * $this->student_price;
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Get payment type label in Arabic
+     */
+    public function getPaymentTypeLabel(): string
+    {
+        return $this->payment_type === 'monthly' ? 'شهري' : 'بالجلسة';
     }
 }

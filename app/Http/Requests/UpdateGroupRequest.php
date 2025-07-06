@@ -26,6 +26,8 @@ class UpdateGroupRequest extends FormRequest
             'description' => 'nullable|string',
             'max_students' => 'required|integer|min:1|max:200',
             'is_active' => 'boolean',
+            'payment_type' => 'required|in:monthly,per_session',
+            'student_price' => 'required|numeric|min:0|max:999999.99',
             'schedules' => 'required|array|min:1|max:7',
             'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
             'schedules.*.start_time' => 'required|date_format:H:i',
@@ -53,6 +55,14 @@ class UpdateGroupRequest extends FormRequest
             'max_students.max' => 'الحد الأقصى للطلاب يجب ألا يتجاوز 200.',
             
             'is_active.boolean' => 'حالة المجموعة يجب أن تكون صحيحة أو خاطئة.',
+            
+            'payment_type.required' => 'نوع الدفع مطلوب.',
+            'payment_type.in' => 'نوع الدفع يجب أن يكون شهري أو بالجلسة.',
+
+            'student_price.required' => 'سعر الطالب مطلوب.',
+            'student_price.numeric' => 'سعر الطالب يجب أن يكون رقم.',
+            'student_price.min' => 'سعر الطالب يجب أن يكون 0 أو أكثر.',
+            'student_price.max' => 'سعر الطالب يجب ألا يتجاوز 999,999.99.',
             
             'schedules.required' => 'جدول المجموعة مطلوب.',
             'schedules.array' => 'جدول المجموعة يجب أن يكون مصفوفة.',

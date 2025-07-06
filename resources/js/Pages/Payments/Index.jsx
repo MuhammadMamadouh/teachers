@@ -33,6 +33,7 @@ export default function Index() {
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [payments, setPayments] = useState([]);
+    const [groupInfo, setGroupInfo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -74,8 +75,9 @@ export default function Index() {
                     year: selectedYear,
                 }
             });
-            
+            console.log('Fetched payments:', response.data.payments);
             setPayments(response.data.payments);
+            setGroupInfo(response.data.group);
         } catch (error) {
             console.error('Error fetching payments:', error);
             errorAlert({
@@ -108,7 +110,7 @@ export default function Index() {
                 month: payment.month,
                 year: payment.year,
                 is_paid: payment.payment.is_paid,
-                amount: payment.payment.amount ? parseFloat(payment.payment.amount) : null,
+                amount: groupInfo?.student_price || 0,
                 paid_date: payment.payment.paid_date || null,
                 notes: payment.payment.notes || null,
             }));
@@ -144,10 +146,10 @@ export default function Index() {
     };
 
     const getTotalAmount = () => {
-        return payments
-            .filter(p => p.payment.is_paid && p.payment.amount)
-            .reduce((sum, p) => sum + parseFloat(p.payment.amount || 0), 0)
-            .toFixed(2);
+        if (!groupInfo?.student_price) return '0.00';
+        
+        const paidCount = payments.filter(p => p.payment.is_paid).length;
+        return (paidCount * parseFloat(groupInfo.student_price)).toFixed(2);
     };
 
     return (
@@ -164,7 +166,7 @@ export default function Index() {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                    {/* Filter Section */}
+                    /* Filter Section */
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -176,7 +178,11 @@ export default function Index() {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
                                     <Label>المجموعة</Label>
-                                    <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                                    <Select value={selectedGroup} onValueChange={(value) => {
+                                        setSelectedGroup(value);
+                                        setPayments([]);
+                                        setGroupInfo(null);
+                                    }}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="اختر المجموعة" />
                                         </SelectTrigger>
@@ -194,7 +200,7 @@ export default function Index() {
                                     <Label>الشهر</Label>
                                     <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="اختر الشهر" />
+                                            <SelectValue placeholder="اختر الشهر" selectedValue={selectedMonth} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {months.map((month) => (
@@ -236,8 +242,8 @@ export default function Index() {
                     </Card>
 
                     {/* Summary Section */}
-                    {payments.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {payments.length > 0 && groupInfo && (
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <Card>
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-2">
@@ -269,6 +275,21 @@ export default function Index() {
                                         <div>
                                             <p className="text-sm text-gray-600">إجمالي المبلغ</p>
                                             <p className="text-2xl font-bold">{getTotalAmount()} ج.م</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="p-4">
+                                    <div className="flex items-center gap-2">
+                                        <DollarSign className="h-5 w-5 text-blue-500" />
+                                        <div>
+                                            <p className="text-sm text-gray-600">سعر الطالب</p>
+                                            <p className="text-2xl font-bold">{groupInfo.student_price} ج.م</p>
+                                            <p className="text-xs text-gray-500">
+                                                {groupInfo.payment_type === 'monthly' ? 'شهرياً' : 'لكل حصة'}
+                                            </p>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -324,12 +345,16 @@ export default function Index() {
                                                         <Label className="text-sm font-medium">المبلغ</Label>
                                                         <Input
                                                             type="number"
-                                                            step="0.01"
+                                                            step="1"
                                                             min="0"
                                                             placeholder="0.00"
-                                                            value={payment.payment.amount || ''}
-                                                            onChange={(e) => updatePayment(index, 'amount', e.target.value)}
+                                                            value={groupInfo?.student_price || ''}
+                                                            readOnly
+                                                            className="bg-gray-50"
                                                         />
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            سعر الطالب المحدد للمجموعة
+                                                        </p>
                                                     </div>
 
                                                     <div>

@@ -50,7 +50,7 @@ class GroupController extends Controller
     public function store(StoreGroupRequest $request)
     {
         $group = Group::create(array_merge(
-            $request->only(['name', 'description', 'max_students', 'is_active']),
+            $request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price']),
             ['user_id' => Auth::id()]
         ));
 
@@ -107,7 +107,10 @@ class GroupController extends Controller
         
         return Inertia::render('Groups/Show', [
             'group' => array_merge($group->toArray(), [
-                'assigned_students' => $group->assignedStudents->toArray()
+                'assigned_students' => $group->assignedStudents->toArray(),
+                'expected_monthly_income' => $group->getExpectedMonthlyIncome(),
+                'expected_income_per_session' => $group->getExpectedIncomePerSession(),
+                'payment_type_label' => $group->getPaymentTypeLabel(),
             ]),
             'availableStudents' => $availableStudents,
             'paymentSummary' => $paymentSummary,
@@ -141,7 +144,7 @@ class GroupController extends Controller
             abort(403);
         }
 
-        $group->update($request->only(['name', 'description', 'max_students', 'is_active']));
+        $group->update($request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price']));
 
         // Delete existing schedules and create new ones
         $group->schedules()->delete();

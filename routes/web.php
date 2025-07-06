@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified', 'approved', 'not-admin', 'subscription'])
     Route::get('/dashboard/calendar', [DashboardController::class, 'calendar'])->name('dashboard.calendar');
     Route::get('/dashboard/calendar-events', [DashboardController::class, 'getCalendarEvents'])->name('dashboard.calendar-events');
     Route::get('/dashboard/today-sessions', [DashboardController::class, 'getTodaySessions'])->name('dashboard.today-sessions');
+    Route::get('/dashboard/reports', [DashboardController::class, 'getReports'])->name('dashboard.reports');
     Route::post('/dashboard/reset-term', [DashboardController::class, 'resetTerm'])->name('dashboard.reset-term');
 });
 

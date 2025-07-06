@@ -1,13 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, BookOpen, RotateCcw } from 'lucide-react';
+import { Calendar, Clock, Users, BookOpen, RotateCcw, DollarSign, TrendingUp, BarChart3, PieChart } from 'lucide-react';
 import StartNewTermModal from '@/Components/StartNewTermModal';
 
 export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans, isAssistant = false, teacherName = '', error }) {
     const [todaySessions, setTodaySessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
     const [showTermResetModal, setShowTermResetModal] = useState(false);
+    const [reports, setReports] = useState(null);
+    const [loadingReports, setLoadingReports] = useState(true);
 
     useEffect(() => {
         // Fetch today's sessions
@@ -20,6 +22,18 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
             .catch(error => {
                 console.error('Error fetching today sessions:', error);
                 setLoadingSessions(false);
+            });
+
+        // Fetch dashboard reports
+        fetch(route('dashboard.reports'))
+            .then(response => response.json())
+            .then(data => {
+                setReports(data);
+                setLoadingReports(false);
+            })
+            .catch(error => {
+                console.error('Error fetching reports:', error);
+                setLoadingReports(false);
             });
     }, []);
 
@@ -152,6 +166,190 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+ {/* Reports Section */}
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
+                        <div className="p-6">
+                            <div className="flex items-center mb-6">
+                                <BarChart3 className="w-5 h-5 text-purple-600 ml-2" />
+                                <h3 className="text-lg font-medium text-gray-900">تقارير شاملة</h3>
+                            </div>
+                            
+                            {loadingReports ? (
+                                <div className="text-center py-8">
+                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                                    <p className="text-gray-500 mt-2">جاري تحميل التقارير...</p>
+                                </div>
+                            ) : reports ? (
+                                <div className="space-y-6">
+                                    {/* Financial Reports */}
+                                    <div>
+                                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                                            <DollarSign className="w-4 h-4 text-green-600 ml-2" />
+                                            التقارير المالية
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-green-800">إجمالي الدخل المتوقع (شهرياً)</p>
+                                                        <p className="text-2xl font-bold text-green-900">{reports.financial.total_expected_monthly_income.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <TrendingUp className="h-8 w-8 text-green-600" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-blue-800">إجمالي المدفوعات المحصلة</p>
+                                                        <p className="text-2xl font-bold text-blue-900">{reports.financial.total_collected_payments.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <DollarSign className="h-8 w-8 text-blue-600" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-amber-800">المدفوعات المتأخرة</p>
+                                                        <p className="text-2xl font-bold text-amber-900">{reports.financial.pending_payments.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <Clock className="h-8 w-8 text-amber-600" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                                <h5 className="text-sm font-medium text-gray-800 mb-2">نسبة تحصيل المدفوعات</h5>
+                                                <div className="flex items-center">
+                                                    <div className="flex-1 bg-gray-200 rounded-full h-2 ml-3">
+                                                        <div 
+                                                            className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                                                            style={{ width: `${reports.financial.collection_rate}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-gray-900">{reports.financial.collection_rate}%</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                                <p className="text-sm font-medium text-purple-800">متوسط سعر الطالب</p>
+                                                <p className="text-xl font-bold text-purple-900">{reports.financial.average_student_price.toLocaleString()} ج.م</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Groups and Students Reports */}
+                                    <div>
+                                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                                            <Users className="w-4 h-4 text-blue-600 ml-2" />
+                                            تقارير المجموعات والطلاب
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                                                <Users className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+                                                <p className="text-sm font-medium text-blue-800">إجمالي المجموعات</p>
+                                                <p className="text-2xl font-bold text-blue-900">{reports.groups.total_groups}</p>
+                                            </div>
+                                            
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                                <Users className="mx-auto h-8 w-8 text-green-600 mb-2" />
+                                                <p className="text-sm font-medium text-green-800">إجمالي الطلاب</p>
+                                                <p className="text-2xl font-bold text-green-900">{reports.groups.total_students}</p>
+                                            </div>
+                                            
+                                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                                                <BookOpen className="mx-auto h-8 w-8 text-purple-600 mb-2" />
+                                                <p className="text-sm font-medium text-purple-800">متوسط الطلاب لكل مجموعة</p>
+                                                <p className="text-2xl font-bold text-purple-900">{reports.groups.average_students_per_group}</p>
+                                            </div>
+                                            
+                                            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-center">
+                                                <Calendar className="mx-auto h-8 w-8 text-indigo-600 mb-2" />
+                                                <p className="text-sm font-medium text-indigo-800">إجمالي الجلسات هذا الشهر</p>
+                                                <p className="text-2xl font-bold text-indigo-900">{reports.attendance.total_sessions_this_month}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Attendance Reports */}
+                                    <div>
+                                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                                            <Calendar className="w-4 h-4 text-emerald-600 ml-2" />
+                                            تقارير الحضور
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                                                <p className="text-sm font-medium text-emerald-800">معدل الحضور العام</p>
+                                                <div className="flex items-center mt-2">
+                                                    <div className="flex-1 bg-gray-200 rounded-full h-3 ml-3">
+                                                        <div 
+                                                            className="bg-emerald-600 h-3 rounded-full transition-all duration-300" 
+                                                            style={{ width: `${reports.attendance.overall_attendance_rate}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="text-lg font-bold text-emerald-900">{reports.attendance.overall_attendance_rate}%</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                                                <p className="text-sm font-medium text-cyan-800">إجمالي الحضور هذا الشهر</p>
+                                                <p className="text-2xl font-bold text-cyan-900">{reports.attendance.total_attendances_this_month}</p>
+                                            </div>
+                                            
+                                            <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                                                <p className="text-sm font-medium text-teal-800">متوسط الحضور لكل جلسة</p>
+                                                <p className="text-2xl font-bold text-teal-900">{reports.attendance.average_attendance_per_session}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Top Performing Groups */}
+                                    {reports.groups.top_groups && reports.groups.top_groups.length > 0 && (
+                                        <div>
+                                            <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                                                <TrendingUp className="w-4 h-4 text-yellow-600 ml-2" />
+                                                أفضل المجموعات أداءً
+                                            </h4>
+                                            <div className="space-y-3">
+                                                {reports.groups.top_groups.map((group, index) => (
+                                                    <div key={group.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                                                        <div className="flex items-center">
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-3 ${
+                                                                index === 0 ? 'bg-yellow-500' : 
+                                                                index === 1 ? 'bg-gray-400' : 
+                                                                'bg-orange-600'
+                                                            }`}>
+                                                                {index + 1}
+                                                            </div>
+                                                            <div>
+                                                                <h5 className="font-semibold text-gray-900">{group.name}</h5>
+                                                                <p className="text-sm text-gray-600">{group.students_count} طالب</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <p className="text-sm font-medium text-gray-900">معدل الحضور: {group.attendance_rate}%</p>
+                                                            <p className="text-sm text-gray-600">الدخل الشهري: {group.monthly_income.toLocaleString()} ج.م</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                  
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <PieChart className="mx-auto h-12 w-12 text-gray-400" />
+                                    <p className="text-gray-500 mt-2">تعذر تحميل التقارير</p>
+                                    <p className="text-sm text-gray-400">حاول مرة أخرى لاحقاً</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -313,6 +511,8 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                             )}
                         </div>
                     </div>
+
+                   
                 </div>
             </div>
             

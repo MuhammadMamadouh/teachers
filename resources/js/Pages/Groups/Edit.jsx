@@ -9,6 +9,8 @@ export default function Edit({ group }) {
         description: group.description || '',
         max_students: group.max_students || 10,
         is_active: group.is_active,
+        payment_type: group.payment_type || 'monthly',
+        student_price: group.student_price || 0,
         schedules: []
     });
     console.log('Initial data:', data);
@@ -133,6 +135,54 @@ export default function Edit({ group }) {
                                         required
                                     />
                                     {errors.max_students && <div className="text-red-600 text-sm mt-1">{errors.max_students}</div>}
+                                </div>
+
+                                {/* Payment Type */}
+                                <div>
+                                    <label htmlFor="payment_type" className="block text-sm font-medium text-gray-700">
+                                        نوع الدفع *
+                                    </label>
+                                    <select
+                                        id="payment_type"
+                                        value={data.payment_type}
+                                        onChange={(e) => setData('payment_type', e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        required
+                                    >
+                                        <option value="monthly">شهري</option>
+                                        <option value="per_session">بالجلسة</option>
+                                    </select>
+                                    {errors.payment_type && <div className="text-red-600 text-sm mt-1">{errors.payment_type}</div>}
+                                </div>
+
+                                {/* Student Price */}
+                                <div>
+                                    <label htmlFor="student_price" className="block text-sm font-medium text-gray-700">
+                                        سعر الطالب (جنيه مصري) *
+                                    </label>
+                                    <div className="mt-1 relative rounded-md shadow-sm">
+                                        <input
+                                            id="student_price"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={data.student_price}
+                                            onChange={(e) => setData('student_price', parseFloat(e.target.value) || 0)}
+                                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 pl-12"
+                                            placeholder="0.00"
+                                            required
+                                        />
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span className="text-gray-500 sm:text-sm">ج.م</span>
+                                        </div>
+                                    </div>
+                                    {errors.student_price && <div className="text-red-600 text-sm mt-1">{errors.student_price}</div>}
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        {data.payment_type === 'monthly' 
+                                            ? 'المبلغ الذي يدفعه كل طالب شهرياً' 
+                                            : 'المبلغ الذي يدفعه كل طالب عن كل جلسة حضور'
+                                        }
+                                    </p>
                                 </div>
 
                                 {/* Status */}

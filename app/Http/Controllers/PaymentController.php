@@ -45,7 +45,7 @@ class PaymentController extends Controller
             ->keyBy('student_id');
 
         // Create payment data for all students in the group
-        $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $request) {
+        $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $request, $group) {
             $payment = $payments->get($student->id);
             
             return [
@@ -59,7 +59,7 @@ class PaymentController extends Controller
                 ] : [
                     'id' => null,
                     'is_paid' => false,
-                    'amount' => null,
+                    'amount' => $group->student_price, // Set default amount to group's student price
                     'paid_date' => null,
                     'notes' => null,
                 ],
@@ -70,7 +70,12 @@ class PaymentController extends Controller
         });
 
         return response()->json([
-            'group' => $group,
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'student_price' => $group->student_price,
+                'payment_type' => $group->payment_type,
+            ],
             'payments' => $studentPayments,
             'month' => $request->month,
             'year' => $request->year,

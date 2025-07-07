@@ -95,6 +95,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     المساعدين
                                 </NavLink>
+                                <NavLink
+                                    href={route('feedback.index')}
+                                    active={route().current('feedback.*')}
+                                >
+                                    التواصل والاقتراحات
+                                </NavLink>
                             </>
                         )}
                         {user.is_admin && (
@@ -116,6 +122,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('admin.plan-upgrade-requests.*')}
                                 >
                                     طلبات ترقية الخطط
+                                </NavLink>
+                                <NavLink
+                                    href={route('admin.feedback.index')}
+                                    active={route().current('admin.feedback.*')}
+                                >
+                                    إدارة التواصل والاقتراحات
                                 </NavLink>
                             </>
                         )}
@@ -261,6 +273,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     المساعدين
                                 </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('feedback.index')}
+                                    active={route().current('feedback.*')}
+                                >
+                                    التواصل والاقتراحات
+                                </ResponsiveNavLink>
                             </>
                         )}
                         {user.is_admin && (
@@ -282,6 +300,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('admin.plan-upgrade-requests.*')}
                                 >
                                     طلبات ترقية الخطط
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.feedback.index')}
+                                    active={route().current('admin.feedback.*')}
+                                >
+                                    إدارة التواصل والاقتراحات
                                 </ResponsiveNavLink>
                             </>
                         )}

@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\Admin\AdminTeacherController;
+use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PendingApprovalController;
 use App\Http\Controllers\PlanController;
@@ -87,6 +89,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     
     // Reports
     Route::get('/reports/governorates', [ReportsController::class, 'governorates'])->name('admin.reports.governorates');
+    
+    // Admin feedback management
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
+    Route::get('/feedback/{feedback}', [AdminFeedbackController::class, 'show'])->name('admin.feedback.show');
+    Route::patch('/feedback/{feedback}/status', [AdminFeedbackController::class, 'updateStatus'])->name('admin.feedback.update-status');
+    Route::patch('/feedback/{feedback}/reply', [AdminFeedbackController::class, 'reply'])->name('admin.feedback.reply');
+    Route::delete('/feedback/{feedback}', [AdminFeedbackController::class, 'destroy'])->name('admin.feedback.destroy');
+    Route::patch('/feedback/bulk-status', [AdminFeedbackController::class, 'bulkUpdateStatus'])->name('admin.feedback.bulk-status');
 });
 
 Route::middleware('auth')->group(function () {
@@ -135,6 +145,11 @@ Route::middleware('auth')->group(function () {
         // Plan management routes
         Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
         Route::post('/plans/upgrade', [PlanController::class, 'upgrade'])->name('plans.upgrade');
+        
+        // Feedback routes (for teachers to submit feedback)
+        Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+        Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+        Route::get('/feedback/{feedback}', [FeedbackController::class, 'show'])->name('feedback.show');
     });
 });
 

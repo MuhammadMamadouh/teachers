@@ -195,6 +195,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all feedbacks submitted by this user.
+     */
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class, 'user_id');
+    }
+
+    /**
      * Check if user is a teacher.
      */
     public function isTeacher(): bool

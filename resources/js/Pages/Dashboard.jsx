@@ -454,6 +454,17 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     </Link>
                                 )}
 
+                                <Link
+                                    href={route('feedback.index')}
+                                    className="p-4 border-2 border-dashed border-orange-300 rounded-lg text-center hover:border-orange-400 transition-colors bg-orange-50"
+                                >
+                                    <svg className="mx-auto h-12 w-12 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span className="text-sm font-medium text-orange-900">التواصل والاقتراحات</span>
+                                    <span className="block text-xs text-orange-700 mt-1">أرسل اقتراحاتك أو استفساراتك</span>
+                                </Link>
+
                                 {!isAssistant && (
                                     <button
                                         onClick={() => setShowTermResetModal(true)}

@@ -24,8 +24,8 @@ class AssignTrialSubscription
         $user = $event->user;
         
         // Only assign trial to regular users (not admins)
-        if ($user && !$user->is_admin) {
-            $user->createTrialSubscription();
-        }
+        // if ($user && !$user->is_admin) {
+        //     $user->createTrialSubscription();
+        // }
     }
 }

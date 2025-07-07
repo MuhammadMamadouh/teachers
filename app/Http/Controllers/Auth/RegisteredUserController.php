@@ -90,7 +90,8 @@ class RegisteredUserController extends Controller
             'max_students' => $selectedPlan ? $selectedPlan->max_students : 5, // Fallback to 5
             'is_active' => true,
             'start_date' => now(),
-            'end_date' => null, // No end date for basic plan
+            'end_date' => now()->addDays($selectedPlan ? $selectedPlan->duration_days : 30), // Default to 30 days if no plan
+            'is_trial' => $selectedPlan ? $selectedPlan->is_trial : false, // Use plan's trial status
         ]);
 
         event(new Registered($user));

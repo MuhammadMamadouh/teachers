@@ -132,12 +132,16 @@ class User extends Authenticatable
 
         // Use plan's max_students if available, fallback to subscription's max_students
         $maxStudents = $subscription->plan ? $subscription->plan->max_students : $subscription->max_students;
+        $currentStudentCount = $this->students()->count();
 
         return [
             'max_students' => $maxStudents,
             'has_active_subscription' => true,
             'subscription' => $subscription,
             'plan' => $subscription->plan,
+            'current_students' => $currentStudentCount,
+            'current_assistants' => $this->assistants()->count(),
+            'max_assistants' => $subscription->plan ? $subscription->plan->max_assistants : 0,
         ];
     }
 

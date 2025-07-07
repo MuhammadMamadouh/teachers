@@ -1,12 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 // import { Head } from '@inertiajs/react';
 import { Head, Link } from '@inertiajs/react';
+import { TrendingUp, DollarSign, Users, BarChart3, PieChart, Activity, Clock, Target } from 'lucide-react';
 
 export default function AdminDashboard({ 
     systemStats, 
     planStats, 
     recentUsers, 
-    usageStats 
+    usageStats,
+    adminReports 
 }) {
     const totalCapacity = usageStats.reduce((sum, user) => sum + user.max_students, 0);
     const totalUsed = usageStats.reduce((sum, user) => sum + user.student_count, 0);
@@ -161,36 +163,151 @@ export default function AdminDashboard({
                         </div>
                     </div>
 
-                    {/* Recent Users */}
-                    <div className="mb-8">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">المعلمون الجدد</h3>
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <div className="space-y-4">
-                                    {recentUsers.map((user) => (
-                                        <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                 
+
+                    {/* Comprehensive Admin Reports */}
+                    {adminReports && (
+                        <div className="space-y-8">
+                            {/* Financial Reports */}
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                    <DollarSign className="w-5 h-5 text-green-600 ml-2" />
+                                    التقارير المالية
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+                                        <div className="flex items-center justify-between">
                                             <div>
-                                                <h4 className="text-sm font-medium text-gray-900">{user.name}</h4>
-                                                <p className="text-sm text-gray-500">{user.email}</p>
-                                                <p className="text-xs text-gray-400">
-                                                    انضم في {new Date(user.created_at).toLocaleDateString('ar-SA')}
-                                                </p>
+                                                <p className="text-sm font-medium text-green-800">إجمالي الإيرادات</p>
+                                                <p className="text-2xl font-bold text-green-900">${adminReports.financial.total_revenue.toLocaleString()}</p>
                                             </div>
-                                            <div>
-                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                    user.is_approved 
-                                                        ? 'bg-green-100 text-green-800' 
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                    {user.is_approved ? 'معتمد' : 'في انتظار الموافقة'}
-                                                </span>
-                                            </div>
+                                            <TrendingUp className="h-8 w-8 text-green-600" />
                                         </div>
-                                    ))}
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-medium text-blue-800">إيرادات هذا الشهر</p>
+                                                <p className="text-2xl font-bold text-blue-900">${adminReports.financial.monthly_revenue.toLocaleString()}</p>
+                                            </div>
+                                            <DollarSign className="h-8 w-8 text-blue-600" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-medium text-purple-800">معدل النمو</p>
+                                                <p className="text-2xl font-bold text-purple-900">{adminReports.financial.growth_rate}%</p>
+                                            </div>
+                                            <BarChart3 className="h-8 w-8 text-purple-600" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-medium text-orange-800">الاشتراكات النشطة</p>
+                                                <p className="text-2xl font-bold text-orange-900">{adminReports.plans.total_active_subscriptions}</p>
+                                            </div>
+                                            <Target className="h-8 w-8 text-orange-600" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* System Activity Reports */}
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                    <Activity className="w-5 h-5 text-blue-600 ml-2" />
+                                    نشاط النظام
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                                        <Users className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+                                        <p className="text-sm font-medium text-blue-800">إجمالي المجموعات</p>
+                                        <p className="text-2xl font-bold text-blue-900">{adminReports.system.total_groups}</p>
+                                    </div>
+                                    
+                                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6 text-center">
+                                        <Clock className="mx-auto h-8 w-8 text-indigo-600 mb-2" />
+                                        <p className="text-sm font-medium text-indigo-800">الجلسات هذا الشهر</p>
+                                        <p className="text-2xl font-bold text-indigo-900">{adminReports.system.total_sessions_this_month}</p>
+                                    </div>
+                                    
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 text-center">
+                                        <TrendingUp className="mx-auto h-8 w-8 text-emerald-600 mb-2" />
+                                        <p className="text-sm font-medium text-emerald-800">إجمالي الحضور</p>
+                                        <p className="text-2xl font-bold text-emerald-900">{adminReports.system.total_attendances_this_month}</p>
+                                    </div>
+                                    
+                                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 text-center">
+                                        <BarChart3 className="mx-auto h-8 w-8 text-purple-600 mb-2" />
+                                        <p className="text-sm font-medium text-purple-800">معدل الاستخدام</p>
+                                        <p className="text-2xl font-bold text-purple-900">{adminReports.system.utilization_rate}%</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                      
+                            {/* Plan Distribution */}
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                    <PieChart className="w-5 h-5 text-indigo-600 ml-2" />
+                                    توزيع الخطط
+                                </h3>
+                                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                    <div className="p-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                {adminReports.plans.distribution.map((plan, index) => (
+                                                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                                                        <div>
+                                                            <h5 className="font-medium text-gray-900">{plan.name}</h5>
+                                                            <p className="text-sm text-gray-600">{plan.subscribers} مشترك</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <p className="text-lg font-bold text-indigo-600">{plan.percentage}%</p>
+                                                            <div className="w-20 bg-gray-200 rounded-full h-2 mt-1">
+                                                                <div 
+                                                                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                                                                    style={{ width: `${plan.percentage}%` }}
+                                                                ></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            
+                                            {/* Registration Trends */}
+                                            <div>
+                                                <h4 className="font-medium text-gray-900 mb-4">اتجاه التسجيلات (آخر 6 أشهر)</h4>
+                                                <div className="space-y-3">
+                                                    {adminReports.teachers.registration_trends.map((trend, index) => (
+                                                        <div key={index} className="flex items-center justify-between">
+                                                            <span className="text-sm text-gray-600">{trend.month}</span>
+                                                            <div className="flex items-center">
+                                                                <span className="text-sm font-medium text-gray-900 mr-2">{trend.count}</span>
+                                                                <div className="w-12 bg-gray-200 rounded-full h-2">
+                                                                    <div 
+                                                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                                                        style={{ width: `${Math.max(trend.count * 10, 5)}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                           
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

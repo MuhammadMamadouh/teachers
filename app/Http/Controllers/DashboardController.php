@@ -93,6 +93,9 @@ class DashboardController extends Controller
                     'plan_name' => $subscription && $subscription->plan ? $subscription->plan->name : 'No Plan',
                 ];
             });
+
+        // Get comprehensive admin reports
+        $adminReports = $this->getAdminReports();
         
         return Inertia::render('Admin/Dashboard', [
             'systemStats' => [
@@ -104,6 +107,7 @@ class DashboardController extends Controller
             'planStats' => $planStats,
             'recentUsers' => $recentUsers,
             'usageStats' => $usageStats,
+            'adminReports' => $adminReports,
         ]);
     }
     
@@ -552,5 +556,188 @@ class DashboardController extends Controller
                 'average_attendance_per_session' => $averageAttendancePerSession,
             ],
         ]);
+    }
+
+    /**
+     * Get comprehensive admin reports for system overview
+     */
+    private function getAdminReports(): array
+    {
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+        
+        // Financial Overview
+        $totalRevenue = DB::table('subscriptions')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->where('subscriptions.is_active', true)
+            ->sum('plans.price');
+
+        $monthlyRevenue = DB::table('subscriptions')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->where('subscriptions.is_active', true)
+            ->whereMonth('subscriptions.created_at', $currentMonth)
+            ->whereYear('subscriptions.created_at', $currentYear)
+            ->sum('plans.price');
+
+        // Growth metrics
+        $lastMonthTeachers = User::where('is_admin', false)
+            ->where('type', self::TEACHER)
+            ->where('is_approved', true)
+            ->whereMonth('created_at', $currentMonth - 1)
+            ->whereYear('created_at', $currentYear)
+            ->count();
+
+        $thisMonthTeachers = User::where('is_admin', false)
+            ->where('type', self::TEACHER)
+            ->where('is_approved', true)
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->count();
+
+        $teacherGrowthRate = $lastMonthTeachers > 0 ? 
+            round((($thisMonthTeachers - $lastMonthTeachers) / $lastMonthTeachers) * 100, 1) : 0;
+
+        // System Activity
+        $totalGroups = DB::table('groups')->count();
+        $totalSessions = DB::table('attendances')
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->distinct('date', 'group_id')
+            ->count();
+
+        $totalAttendances = DB::table('attendances')
+            ->where('is_present', true)
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->count();
+
+        // Top performing teachers
+        $topTeachers = User::where('is_admin', false)
+            ->where('type', self::TEACHER)
+            ->where('is_approved', true)
+            ->withCount('students')
+            ->with(['students', 'groups'])
+            ->get()
+            ->map(function ($teacher) use ($currentMonth, $currentYear) {
+                $teacherGroups = $teacher->groups->pluck('id');
+                
+                $attendances = DB::table('attendances')
+                    ->whereIn('group_id', $teacherGroups)
+                    ->whereMonth('date', $currentMonth)
+                    ->whereYear('date', $currentYear)
+                    ->get();
+
+                $totalSessions = $attendances->groupBy(['date', 'group_id'])->count();
+                $totalPresent = $attendances->where('is_present', true)->count();
+                $attendanceRate = $attendances->count() > 0 ? 
+                    round(($totalPresent / $attendances->count()) * 100, 1) : 0;
+
+                return [
+                    'id' => $teacher->id,
+                    'name' => $teacher->name,
+                    'students_count' => $teacher->students_count,
+                    'groups_count' => $teacher->groups->count(),
+                    'sessions_this_month' => $totalSessions,
+                    'attendance_rate' => $attendanceRate,
+                ];
+            })
+            ->sortByDesc('students_count')
+            ->take(5)
+            ->values();
+
+        // Plan distribution
+        $planDistribution = Plan::withCount(['subscriptions' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->get()
+            ->map(function ($plan) {
+                return [
+                    'name' => $plan->name,
+                    'subscribers' => $plan->subscriptions_count,
+                    'percentage' => 0, // Will be calculated below
+                ];
+            });
+
+        $totalActiveSubscriptions = $planDistribution->sum('subscribers');
+        $planDistribution = $planDistribution->map(function ($plan) use ($totalActiveSubscriptions) {
+            $plan['percentage'] = $totalActiveSubscriptions > 0 ? 
+                round(($plan['subscribers'] / $totalActiveSubscriptions) * 100, 1) : 0;
+            return $plan;
+        });
+
+        // Recent activity summary
+        $recentPayments = DB::table('payments')
+            ->join('students', 'payments.student_id', '=', 'students.id')
+            ->join('users', 'students.user_id', '=', 'users.id')
+            ->where('payments.is_paid', true)
+            ->orderBy('payments.paid_date', 'desc')
+            ->select(
+                'students.name as student_name',
+                'users.name as teacher_name',
+                'payments.amount',
+                'payments.paid_date'
+            )
+            ->limit(10)
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'student_name' => $payment->student_name,
+                    'teacher_name' => $payment->teacher_name,
+                    'amount' => $payment->amount,
+                    'paid_date' => \Carbon\Carbon::parse($payment->paid_date)->format('Y-m-d'),
+                ];
+            });
+
+        // System utilization
+        $systemCapacity = DB::table('subscriptions')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->where('subscriptions.is_active', true)
+            ->sum('plans.max_students');
+
+        $usedCapacity = Student::count();
+        $utilizationRate = $systemCapacity > 0 ? 
+            round(($usedCapacity / $systemCapacity) * 100, 1) : 0;
+
+        // Registration trends (last 6 months)
+        $registrationTrends = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $count = User::where('is_admin', false)
+                ->where('type', self::TEACHER)
+                ->whereMonth('created_at', $month->month)
+                ->whereYear('created_at', $month->year)
+                ->count();
+            
+            $registrationTrends[] = [
+                'month' => $month->format('M Y'),
+                'count' => $count,
+            ];
+        }
+
+        return [
+            'financial' => [
+                'total_revenue' => $totalRevenue,
+                'monthly_revenue' => $monthlyRevenue,
+                'growth_rate' => $teacherGrowthRate,
+                'recent_payments' => $recentPayments,
+            ],
+            'system' => [
+                'total_groups' => $totalGroups,
+                'total_sessions_this_month' => $totalSessions,
+                'total_attendances_this_month' => $totalAttendances,
+                'system_capacity' => $systemCapacity,
+                'used_capacity' => $usedCapacity,
+                'utilization_rate' => $utilizationRate,
+            ],
+            'teachers' => [
+                'top_performers' => $topTeachers,
+                'growth_rate' => $teacherGrowthRate,
+                'registration_trends' => $registrationTrends,
+            ],
+            'plans' => [
+                'distribution' => $planDistribution,
+                'total_active_subscriptions' => $totalActiveSubscriptions,
+            ],
+        ];
     }
 }

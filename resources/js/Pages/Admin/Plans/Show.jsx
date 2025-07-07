@@ -101,11 +101,19 @@ export default function ShowPlan({ plan }) {
                             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <h4 className="text-sm font-medium text-gray-500">تم الإنشاء</h4>
-                                    <p className="mt-1 text-sm text-gray-900">{new Date(plan.created_at).toLocaleDateString('ar-EG')} في {new Date(plan.created_at).toLocaleTimeString('ar-EG')}</p>
+                                    <p className="mt-1 text-sm text-gray-900">{new Date(plan.created_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })} في {new Date(plan.created_at).toLocaleTimeString('ar-EG')}</p>
                                 </div>
                                 <div>
                                     <h4 className="text-sm font-medium text-gray-500">آخر تحديث</h4>
-                                    <p className="mt-1 text-sm text-gray-900">{new Date(plan.updated_at).toLocaleDateString('ar-EG')} في {new Date(plan.updated_at).toLocaleTimeString('ar-EG')}</p>
+                                    <p className="mt-1 text-sm text-gray-900">{new Date(plan.updated_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })} في {new Date(plan.updated_at).toLocaleTimeString('ar-EG')}</p>
                                 </div>
                             </div>
                         </div>

@@ -105,7 +105,11 @@ export default function PlansIndex({ plans }) {
                                                             <div>
                                                                 <div className="text-sm font-medium text-gray-900">{plan.name}</div>
                                                                 <div className="text-sm text-gray-500">
-                                                                    تم الإنشاء في {new Date(plan.created_at).toLocaleDateString('ar-EG')}
+                                                                    تم الإنشاء في {new Date(plan.created_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                                                 </div>
                                                             </div>
                                                         </div>

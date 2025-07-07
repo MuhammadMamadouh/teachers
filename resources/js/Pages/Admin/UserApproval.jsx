@@ -92,7 +92,11 @@ export default function UserApproval({ unapprovedUsers }) {
                                                         </p>
                                                         <p className="text-sm text-gray-600">
                                                             <span className="font-medium">تاريخ التسجيل:</span>{' '}
-                                                            {new Date(user.created_at).toLocaleDateString()}
+                                                            {new Date(user.created_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                                         </p>
                                                     </div>
                                                 </div>

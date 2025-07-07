@@ -177,6 +177,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all groups for the user.
+     */
+    public function groups(): HasMany
+    {
+        return $this->hasMany(Group::class, 'user_id');
+    }
+
+    /**
      * Check if user is a teacher.
      */
     public function isTeacher(): bool

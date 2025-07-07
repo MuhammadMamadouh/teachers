@@ -82,7 +82,7 @@
 
 **Characteristics:**
 - 1-50 students per teacher
-- Focus on Arabic language, Quran, or Islamic studies
+- Focus on Egyptian social and cultural context
 - Located in Arabic-speaking countries
 - Value traditional teaching methods with modern tools
 - Price-sensitive market

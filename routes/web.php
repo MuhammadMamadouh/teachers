@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminPlanController;
+use App\Http\Controllers\Admin\AdminTeacherController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
@@ -20,6 +21,18 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'plans' => \App\Models\Plan::orderBy('price')->get()->map(function ($plan) {
+            return [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'price' => $plan->price,
+                'max_students' => $plan->max_students,
+                'max_assistants' => $plan->max_assistants,
+                'duration_days' => $plan->duration_days,
+                'is_trial' => $plan->is_trial,
+                'is_default' => $plan->is_default,
+            ];
+        }), 
     ]);
 });
 
@@ -54,6 +67,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
     Route::post('/users/{user}/approve', [AdminController::class, 'approveUser'])->name('admin.users.approve');
     Route::delete('/users/{user}/reject', [AdminController::class, 'rejectUser'])->name('admin.users.reject');
+    
+    // Admin teacher management
+    Route::resource('teachers', AdminTeacherController::class, ['as' => 'admin']);
+    Route::post('/teachers/{teacher}/activate', [AdminTeacherController::class, 'activate'])->name('admin.teachers.activate');
+    Route::post('/teachers/{teacher}/deactivate', [AdminTeacherController::class, 'deactivate'])->name('admin.teachers.deactivate');
+    Route::post('/teachers/bulk-action', [AdminTeacherController::class, 'bulkAction'])->name('admin.teachers.bulk-action');
     
     // Admin plan management
     Route::resource('plans', AdminPlanController::class, ['as' => 'admin']);

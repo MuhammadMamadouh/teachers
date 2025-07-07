@@ -168,6 +168,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                             الملف الشخصي
                                         </Dropdown.Link>
                                         <Dropdown.Link
+                                            href={route('onboarding.show')}
+                                        >
+                                            الجولة التعريفية
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
                                             as="button"
@@ -324,6 +329,9 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 الملف الشخصي
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('onboarding.show')}>
+                                الجولة التعريفية
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"

@@ -35,6 +35,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        // Check if user needs to complete onboarding first
+        if (!$user->onboarding_completed && !$user->is_admin) {
+            return redirect()->route('onboarding.show');
+        }
+
         // Check if user is approved
         if (!$user->is_approved && !$user->is_admin) {
             return redirect()->route('pending-approval');

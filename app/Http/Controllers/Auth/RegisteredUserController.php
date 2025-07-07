@@ -97,6 +97,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('pending-approval', absolute: false));
+        // Redirect new users to onboarding
+        return redirect(route('onboarding.show', absolute: false));
     }
 }

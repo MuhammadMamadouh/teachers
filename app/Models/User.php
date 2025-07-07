@@ -34,6 +34,8 @@ class User extends Authenticatable
         'approved_at',
         'type',
         'teacher_id',
+        'onboarding_completed',
+        'onboarding_completed_at',
     ];
 
     /**
@@ -59,6 +61,8 @@ class User extends Authenticatable
             'is_approved' => 'boolean',
             'is_admin' => 'boolean',
             'approved_at' => 'datetime',
+            'onboarding_completed' => 'boolean',
+            'onboarding_completed_at' => 'datetime',
         ];
     }
 

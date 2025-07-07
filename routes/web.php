@@ -40,7 +40,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'approved', 'subscription'])
+    ->middleware(['auth', 'verified', 'onboarding', 'approved', 'subscription'])
     ->name('dashboard');
 
 // Subscription management routes
@@ -49,10 +49,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans');
     Route::get('/subscription/status', [SubscriptionController::class, 'status'])->name('subscription.status');
     Route::post('/subscription/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+    
+    // Onboarding routes
+    Route::get('/onboarding', [\App\Http\Controllers\Auth\OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('/onboarding/complete', [\App\Http\Controllers\Auth\OnboardingController::class, 'complete'])->name('onboarding.complete');
 });
 
 // Dashboard calendar routes (for approved teachers)
-Route::middleware(['auth', 'verified', 'approved', 'not-admin', 'subscription'])->group(function () {
+Route::middleware(['auth', 'verified', 'onboarding', 'approved', 'not-admin', 'subscription'])->group(function () {
     Route::get('/dashboard/calendar', [DashboardController::class, 'calendar'])->name('dashboard.calendar');
     Route::get('/dashboard/calendar-events', [DashboardController::class, 'getCalendarEvents'])->name('dashboard.calendar-events');
     Route::get('/dashboard/today-sessions', [DashboardController::class, 'getTodaySessions'])->name('dashboard.today-sessions');
@@ -105,7 +109,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Assistant management routes (only for teachers)
-    Route::middleware(['auth', 'approved', 'not-admin', 'teacher-or-admin', 'subscription'])->group(function () {
+    Route::middleware(['auth', 'onboarding', 'approved', 'not-admin', 'teacher-or-admin', 'subscription'])->group(function () {
         Route::get('/assistants', [App\Http\Controllers\AssistantController::class, 'index'])->name('assistants.index');
         Route::post('/assistants', [App\Http\Controllers\AssistantController::class, 'store'])->name('assistants.store');
         Route::get('/assistants/{assistant}/edit', [App\Http\Controllers\AssistantController::class, 'edit'])->name('assistants.edit');
@@ -115,7 +119,7 @@ Route::middleware('auth')->group(function () {
     });
     
     // Student management routes (only for approved non-admin users)
-    Route::middleware(['approved', 'not-admin', 'scope-by-teacher', 'subscription'])->group(function () {
+    Route::middleware(['onboarding', 'approved', 'not-admin', 'scope-by-teacher', 'subscription'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('groups', GroupController::class);
         

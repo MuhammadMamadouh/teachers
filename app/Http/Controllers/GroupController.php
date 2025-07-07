@@ -20,9 +20,21 @@ class GroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $groups = Group::where('user_id', Auth::id())->with(['schedules', 'assignedStudents'])->get();
+        $query = Group::where('user_id', Auth::id())->with(['schedules', 'assignedStudents', 'academicYear']);
+        
+        // Apply search filter
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        
+        // Apply academic year filter
+        if ($request->filled('academic_year_id')) {
+            $query->where('academic_year_id', $request->academic_year_id);
+        }
+        
+        $groups = $query->get();
         
         // Transform the data to ensure consistency
         $transformedGroups = $groups->map(function ($group) {
@@ -31,8 +43,12 @@ class GroupController extends Controller
             ]);
         });
         
+        $academicYears = \App\Models\AcademicYear::all();
+        
         return Inertia::render('Groups/Index', [
-            'groups' => $transformedGroups
+            'groups' => $transformedGroups,
+            'academicYears' => $academicYears,
+            'filters' => $request->only(['search', 'academic_year_id'])
         ]);
     }
 
@@ -41,7 +57,11 @@ class GroupController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Groups/Create');
+        $academicYears = \App\Models\AcademicYear::all();
+        
+        return Inertia::render('Groups/Create', [
+            'academicYears' => $academicYears,
+        ]);
     }
 
     /**
@@ -50,7 +70,7 @@ class GroupController extends Controller
     public function store(StoreGroupRequest $request)
     {
         $group = Group::create(array_merge(
-            $request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price']),
+            $request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id']),
             ['user_id' => Auth::id()]
         ));
 
@@ -72,11 +92,12 @@ class GroupController extends Controller
             abort(403);
         }
         
-        $group->load(['schedules', 'assignedStudents', 'specialSessions']);
+        $group->load(['schedules', 'assignedStudents', 'specialSessions', 'academicYear']);
         
-        // Get only students that are not assigned to any group
+        // Get only students that are not assigned to any group and have matching academic year
         $availableStudents = Student::where('user_id', Auth::id())
             ->whereNull('group_id')
+            ->where('academic_year_id', $group->academic_year_id)
             ->get();
 
             
@@ -127,10 +148,12 @@ class GroupController extends Controller
             abort(403);
         }
         
-        $group->load('schedules');
+        $group->load(['schedules', 'academicYear']);
+        $academicYears = \App\Models\AcademicYear::all();
         
         return Inertia::render('Groups/Edit', [
-            'group' => $group
+            'group' => $group,
+            'academicYears' => $academicYears,
         ]);
     }
 
@@ -144,7 +167,9 @@ class GroupController extends Controller
             abort(403);
         }
 
-        $group->update($request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price']));
+        $group->update($request->only([
+            'name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id'
+        ]));
 
         // Delete existing schedules and create new ones
         $group->schedules()->delete();
@@ -187,6 +212,20 @@ class GroupController extends Controller
 
         if ($students->count() !== count($request->student_ids)) {
             abort(403, 'يمكنك فقط تعيين طلابك الخاصين');
+        }
+
+        // Check if group has an academic year and students match it
+        if ($group->academic_year_id) {
+            $mismatchedStudents = $students->filter(function ($student) use ($group) {
+                return $student->academic_year_id && $student->academic_year_id !== $group->academic_year_id;
+            });
+
+            if ($mismatchedStudents->count() > 0) {
+                $studentNames = $mismatchedStudents->pluck('name')->join('، ');
+                return back()->withErrors([
+                    'assignment' => "لا يمكن إضافة الطلاب التالية لأنهم في صف دراسي مختلف: {$studentNames}"
+                ]);
+            }
         }
 
         // Check if any of the students are already assigned to a group

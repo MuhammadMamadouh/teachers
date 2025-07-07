@@ -23,14 +23,13 @@ class StudentController extends Controller
         $user = Auth::user();
         
         // Build the query with search filters
-        $query = Student::where('user_id', $user->id)->with('group');
+        $query = Student::where('user_id', $user->id)->with(['group', 'academicYear']);
         
         // Search by name
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('guardian_name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('guardian_phone', 'like', "%{$search}%");
             });
@@ -44,9 +43,15 @@ class StudentController extends Controller
                 $query->where('group_id', $request->input('group_id'));
             }
         }
+
+        // Filter by academic year
+        if ($request->filled('academic_year_id')) {
+            $query->where('academic_year_id', $request->input('academic_year_id'));
+        }
         
         $students = $query->orderBy('name')->get();
         $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
+        $academicYears = \App\Models\AcademicYear::all();
         
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
@@ -54,12 +59,14 @@ class StudentController extends Controller
         return Inertia::render('Students/Index', [
             'students' => $students,
             'groups' => $groups,
+            'academicYears' => $academicYears,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
             'filters' => [
                 'search' => $request->input('search', ''),
                 'group_id' => $request->input('group_id', ''),
+                'academic_year_id' => $request->input('academic_year_id', ''),
             ],
         ]);
     }
@@ -77,10 +84,12 @@ class StudentController extends Controller
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
         
-        $groups = Group::where('user_id', $user->id)->where('is_active', true)->get();
+        $groups = Group::where('user_id', $user->id)->where('is_active', true)->with('academicYear')->get();
+        $academicYears = \App\Models\AcademicYear::all();
 
         return Inertia::render('Students/Create', [
             'groups' => $groups,
+            'academicYears' => $academicYears,
             'canAddStudents' => $canAdd,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
@@ -105,10 +114,20 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'guardian_name' => 'required|string|max:255',
             'guardian_phone' => 'required|string|max:20',
+            'academic_year_id' => 'required|exists:academic_years,id',
             'group_id' => 'nullable|exists:groups,id',
         ]);
+
+        // Validate that if a group is selected, it matches the academic year
+        if ($validated['group_id']) {
+            $group = Group::find($validated['group_id']);
+            if ($group && $group->academic_year_id && $group->academic_year_id != $validated['academic_year_id']) {
+                throw ValidationException::withMessages([
+                    'group_id' => 'لا يمكن إضافة الطالب إلى هذه المجموعة لأنها لا تنتمي لنفس الصف الدراسي.',
+                ]);
+            }
+        }
 
         // Add user_id to the validated data
         $validated['user_id'] = $user->id;
@@ -129,7 +148,7 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $student->load(['group', 'payments.group']);
+        $student->load(['group', 'academicYear', 'payments.group']);
 
         // Get recent payments (last 6 months)
         $recentPayments = $student->payments()
@@ -155,7 +174,7 @@ class StudentController extends Controller
                     ] : null,
                 ];
             });
-
+// dd($student->toArray());
         return Inertia::render('Students/Show', [
             'student' => $student,
             'recentPayments' => $recentPayments,
@@ -172,11 +191,13 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $groups = Group::where('user_id', Auth::id())->where('is_active', true)->get();
+        $groups = Group::where('user_id', Auth::id())->where('is_active', true)->with('academicYear')->get();
+        $academicYears = \App\Models\AcademicYear::all();
 
         return Inertia::render('Students/Edit', [
-            'student' => $student,
-            'groups' => $groups
+            'student' => $student->load('academicYear'),
+            'groups' => $groups,
+            'academicYears' => $academicYears,
         ]);
     }
 
@@ -193,10 +214,20 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'guardian_name' => 'required|string|max:255',
             'guardian_phone' => 'required|string|max:20',
+            'academic_year_id' => 'required|exists:academic_years,id',
             'group_id' => 'nullable|exists:groups,id',
         ]);
+
+        // Validate that if a group is selected, it matches the academic year
+        if ($validated['group_id']) {
+            $group = Group::find($validated['group_id']);
+            if ($group && $group->academic_year_id && $group->academic_year_id != $validated['academic_year_id']) {
+                throw ValidationException::withMessages([
+                    'group_id' => 'لا يمكن إضافة الطالب إلى هذه المجموعة لأنها لا تنتمي لنفس الصف الدراسي.',
+                ]);
+            }
+        }
 
         $student->update($validated);
 

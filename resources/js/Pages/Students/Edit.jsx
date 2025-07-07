@@ -5,14 +5,19 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ student, groups }) {
+export default function Edit({ student, groups, academicYears }) {
     const { data, setData, put, processing, errors } = useForm({
         name: student.name,
         phone: student.phone,
-        guardian_name: student.guardian_name,
         guardian_phone: student.guardian_phone,
+        academic_year_id: student.academic_year_id || '',
         group_id: student.group_id || '',
     });
+
+    // Filter groups based on selected academic year
+    const filteredGroups = groups ? groups.filter(group => 
+        !data.academic_year_id || group.academic_year_id == data.academic_year_id
+    ) : [];
 
     const submit = (e) => {
         e.preventDefault();
@@ -76,6 +81,32 @@ export default function Edit({ student, groups }) {
                                     </div>
 
                                     <div>
+                                        <InputLabel htmlFor="academic_year_id" value="الصف الدراسي" />
+                                        <select
+                                            id="academic_year_id"
+                                            name="academic_year_id"
+                                            value={data.academic_year_id}
+                                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            onChange={(e) => {
+                                                setData('academic_year_id', e.target.value);
+                                                // Reset group selection when academic year changes
+                                                if (data.group_id) {
+                                                    setData('group_id', '');
+                                                }
+                                            }}
+                                            required
+                                        >
+                                            <option value="">اختر الصف الدراسي</option>
+                                            {academicYears && academicYears.map((year) => (
+                                                <option key={year.id} value={year.id}>
+                                                    {year.name_ar}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError message={errors.academic_year_id} className="mt-2" />
+                                    </div>
+
+                                    <div>
                                         <InputLabel htmlFor="group_id" value="المجموعة" />
                                         <select
                                             id="group_id"
@@ -83,36 +114,29 @@ export default function Edit({ student, groups }) {
                                             value={data.group_id}
                                             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                             onChange={(e) => setData('group_id', e.target.value)}
+                                            disabled={!data.academic_year_id}
                                         >
                                             <option value="">اختر المجموعة (اختياري)</option>
-                                            {groups && groups.map((group) => (
+                                            {filteredGroups.map((group) => (
                                                 <option key={group.id} value={group.id}>
                                                     {group.name}
+                                                    {group.academic_year && ` - ${group.academic_year.name_ar}`}
                                                 </option>
                                             ))}
                                         </select>
                                         <InputError message={errors.group_id} className="mt-2" />
+                                        {!data.academic_year_id && (
+                                            <p className="mt-1 text-sm text-gray-500">
+                                                يرجى اختيار الصف الدراسي أولاً
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* Guardian Information */}
                                 <div className="border-t border-gray-200 pt-6">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">معلومات ولي الأمر</h3>
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div>
-                                            <InputLabel htmlFor="guardian_name" value="اسم ولي الأمر" />
-                                            <TextInput
-                                                id="guardian_name"
-                                                name="guardian_name"
-                                                value={data.guardian_name}
-                                                className="mt-1 block w-full"
-                                                autoComplete="name"
-                                                onChange={(e) => setData('guardian_name', e.target.value)}
-                                                required
-                                            />
-                                            <InputError message={errors.guardian_name} className="mt-2" />
-                                        </div>
-
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-1">
                                         <div>
                                             <InputLabel htmlFor="guardian_phone" value="هاتف ولي الأمر" />
                                             <TextInput

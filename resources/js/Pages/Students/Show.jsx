@@ -85,6 +85,30 @@ export default function Show({ student, recentPayments }) {
                                                     </a>
                                                 </dd>
                                             </div>
+                                            <div>
+                                                <dt className="text-sm font-medium text-gray-500">الصف الدراسي</dt>
+                                                <dd className="text-sm text-gray-900">
+                                                    {student.academic_year ? (
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            {student.academic_year.name_ar}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400">غير محدد</span>
+                                                    )}
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-sm font-medium text-gray-500">المجموعة</dt>
+                                                <dd className="text-sm text-gray-900">
+                                                    {student.group ? (
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            {student.group.name}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400">غير محدد</span>
+                                                    )}
+                                                </dd>
+                                            </div>
                                         </dl>
                                     </div>
                                 </div>
@@ -93,10 +117,6 @@ export default function Show({ student, recentPayments }) {
                                     <div>
                                         <h4 className="text-lg font-medium text-gray-900 mb-4">معلومات ولي الأمر</h4>
                                         <dl className="space-y-3">
-                                            <div>
-                                                <dt className="text-sm font-medium text-gray-500">اسم ولي الأمر</dt>
-                                                <dd className="text-sm text-gray-900">{student.guardian_name}</dd>
-                                            </div>
                                             <div>
                                                 <dt className="text-sm font-medium text-gray-500">هاتف ولي الأمر</dt>
                                                 <dd className="text-sm text-gray-900">
@@ -179,7 +199,7 @@ export default function Show({ student, recentPayments }) {
                                 </div>
                             )}
 
-                            {/* Quick Actions */}
+                            {/* Quick Actions 
                             <div className="border-t border-gray-200 pt-6 mt-6">
                                 <h4 className="text-lg font-medium text-gray-900 mb-4">الإجراءات السريعة</h4>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -203,6 +223,7 @@ export default function Show({ student, recentPayments }) {
                                     </Link>
                                 </div>
                             </div>
+                            */}
                         </div>
                     </div>
                 </div>

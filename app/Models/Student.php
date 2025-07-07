@@ -15,8 +15,8 @@ class Student extends Model
         'group_id',
         'name',
         'phone',
-        'guardian_name',
         'guardian_phone',
+        'academic_year_id',
     ];
 
     /**
@@ -42,6 +42,14 @@ class Student extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    /**
+     * Get the academic year that the student belongs to.
+     */
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 
     /**

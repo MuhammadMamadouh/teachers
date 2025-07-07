@@ -67,7 +67,6 @@ export default function Show({ group, availableStudents, paymentSummary }) {
     const filteredStudents = availableStudents?.filter(student =>
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.phone.includes(searchTerm) ||
-        (student.guardian_name && student.guardian_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (student.guardian_phone && student.guardian_phone.includes(searchTerm))
     ) || [];
 
@@ -137,7 +136,17 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             {/* Group Info */}
                             <div className="mb-8">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">{group.name}</h3>
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-gray-900">{group.name}</h3>
+                                        {group.academic_year && (
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                الصف الدراسي: 
+                                                <span className="inline-flex items-center px-2 py-1 ml-2 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                                    {group.academic_year.name_ar}
+                                                </span>
+                                            </p>
+                                        )}
+                                    </div>
                                     <span className={`px-3 py-1 text-sm font-medium rounded-full ${
                                         group.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                     }`}>

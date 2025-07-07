@@ -19,6 +19,7 @@ class Group extends Model
         'is_active',
         'payment_type',
         'student_price',
+        'academic_year_id',
     ];
 
     protected $casts = [
@@ -59,6 +60,14 @@ class Group extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the academic year that the group belongs to.
+     */
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 
     /**

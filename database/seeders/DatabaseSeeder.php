@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             GovernorateSeeder::class,
             PlansSeeder::class,
             AdminUserSeeder::class,
+            AcademicYearSeeder::class,
             // DefaultSubscriptionSeeder::class,
             // GroupSeeder::class,
         ]);

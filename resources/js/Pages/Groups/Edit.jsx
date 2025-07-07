@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
-export default function Edit({ group }) {
+export default function Edit({ group, academicYears }) {
     console.log('Editing group:', group);
     const { data, setData, put, processing, errors } = useForm({
         name: group.name || '',
@@ -11,6 +11,7 @@ export default function Edit({ group }) {
         is_active: group.is_active,
         payment_type: group.payment_type || 'monthly',
         student_price: group.student_price || 0,
+        academic_year_id: group.academic_year_id || '',
         schedules: []
     });
     console.log('Initial data:', data);
@@ -118,6 +119,28 @@ export default function Edit({ group }) {
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     />
                                     {errors.description && <div className="text-red-600 text-sm mt-1">{errors.description}</div>}
+                                </div>
+
+                                {/* Academic Year */}
+                                <div>
+                                    <label htmlFor="academic_year_id" className="block text-sm font-medium text-gray-700">
+                                        الصف الدراسي *
+                                    </label>
+                                    <select
+                                        id="academic_year_id"
+                                        value={data.academic_year_id}
+                                        onChange={(e) => setData('academic_year_id', e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        required
+                                    >
+                                        <option value="">اختر الصف الدراسي</option>
+                                        {academicYears && academicYears.map((year) => (
+                                            <option key={year.id} value={year.id}>
+                                                {year.name_ar}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.academic_year_id && <div className="text-red-600 text-sm mt-1">{errors.academic_year_id}</div>}
                                 </div>
 
                                 {/* Max Students */}

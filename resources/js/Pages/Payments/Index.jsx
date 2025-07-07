@@ -164,12 +164,11 @@ export default function Index() {
         >
             <Head title="إدارة المدفوعات" />
 
-            <div className="py-12">
+            <div className="py-12 dir-rtl" dir="rtl">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                    /* Filter Section */
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-right">
                                 <Search className="h-5 w-5" />
                                 فلترة المدفوعات
                             </CardTitle>
@@ -246,51 +245,51 @@ export default function Index() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <Card>
                                 <CardContent className="p-4">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 text-right">
+                                        <div className="flex-1">
+                                            <p className="text-sm text-gray-600 text-right">إجمالي الطلاب</p>
+                                            <p className="text-2xl font-bold text-right">{payments.length}</p>
+                                        </div>
                                         <Users className="h-5 w-5 text-blue-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">إجمالي الطلاب</p>
-                                            <p className="text-2xl font-bold">{payments.length}</p>
-                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
                             <Card>
                                 <CardContent className="p-4">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 text-right">
+                                        <div className="flex-1">
+                                            <p className="text-sm text-gray-600 text-right">المدفوعات المكتملة</p>
+                                            <p className="text-2xl font-bold text-right">{getTotalPaid()}</p>
+                                        </div>
                                         <CheckCircle className="h-5 w-5 text-green-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">المدفوعات المكتملة</p>
-                                            <p className="text-2xl font-bold">{getTotalPaid()}</p>
-                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
                             <Card>
                                 <CardContent className="p-4">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 text-right">
+                                        <div className="flex-1">
+                                            <p className="text-sm text-gray-600 text-right">إجمالي المبلغ</p>
+                                            <p className="text-2xl font-bold text-right">{getTotalAmount()} ج.م</p>
+                                        </div>
                                         <DollarSign className="h-5 w-5 text-yellow-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">إجمالي المبلغ</p>
-                                            <p className="text-2xl font-bold">{getTotalAmount()} ج.م</p>
-                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
                             <Card>
                                 <CardContent className="p-4">
-                                    <div className="flex items-center gap-2">
-                                        <DollarSign className="h-5 w-5 text-blue-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">سعر الطالب</p>
-                                            <p className="text-2xl font-bold">{groupInfo.student_price} ج.م</p>
-                                            <p className="text-xs text-gray-500">
+                                    <div className="flex items-center gap-2 text-right">
+                                        <div className="flex-1">
+                                            <p className="text-sm text-gray-600 text-right">سعر الطالب</p>
+                                            <p className="text-2xl font-bold text-right">{groupInfo.student_price} ج.م</p>
+                                            <p className="text-xs text-gray-500 text-right">
                                                 {groupInfo.payment_type === 'monthly' ? 'شهرياً' : 'لكل حصة'}
                                             </p>
                                         </div>
+                                        <DollarSign className="h-5 w-5 text-blue-500" />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -302,7 +301,7 @@ export default function Index() {
                         <Card>
                             <CardHeader>
                                 <div className="flex justify-between items-center">
-                                    <CardTitle className="flex items-center gap-2">
+                                    <CardTitle className="flex items-center gap-2 text-right">
                                         <CalendarDays className="h-5 w-5" />
                                         مدفوعات {months.find(m => m.value === selectedMonth)?.label} {selectedYear}
                                     </CardTitle>
@@ -321,23 +320,23 @@ export default function Index() {
                                     {payments.map((payment, index) => (
                                         <Card key={payment.student.id} className="border">
                                             <CardContent className="p-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                                                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center text-right">
                                                     <div>
                                                         <Label className="text-sm font-medium">اسم الطالب</Label>
-                                                        <p className="text-lg">{payment.student.name}</p>
+                                                        <p className="text-lg text-right">{payment.student.name}</p>
                                                     </div>
 
                                                     <div>
                                                         <Label className="text-sm font-medium">حالة الدفع</Label>
-                                                        <div className="flex items-center space-x-2 mt-1">
+                                                        <div className="flex items-center gap-2 mt-1" dir="rtl">
+                                                            <Label htmlFor={`paid-${payment.student.id}`} className="mr-0">
+                                                                مدفوع
+                                                            </Label>
                                                             <Checkbox
                                                                 id={`paid-${payment.student.id}`}
                                                                 checked={payment.payment.is_paid}
                                                                 onCheckedChange={(checked) => updatePayment(index, 'is_paid', checked)}
                                                             />
-                                                            <Label htmlFor={`paid-${payment.student.id}`} className="ml-2">
-                                                                مدفوع
-                                                            </Label>
                                                         </div>
                                                     </div>
 
@@ -350,9 +349,9 @@ export default function Index() {
                                                             placeholder="0.00"
                                                             value={groupInfo?.student_price || ''}
                                                             readOnly
-                                                            className="bg-gray-50"
+                                                            className="bg-gray-50 text-right"
                                                         />
-                                                        <p className="text-xs text-gray-500 mt-1">
+                                                        <p className="text-xs text-gray-500 mt-1 text-right">
                                                             سعر الطالب المحدد للمجموعة
                                                         </p>
                                                     </div>
@@ -364,6 +363,7 @@ export default function Index() {
                                                             value={payment.payment.paid_date || ''}
                                                             onChange={(e) => updatePayment(index, 'paid_date', e.target.value)}
                                                             disabled={!payment.payment.is_paid}
+                                                            className="text-right"
                                                         />
                                                     </div>
 
@@ -378,7 +378,7 @@ export default function Index() {
                                                         <Label className="text-sm font-medium">ملاحظات</Label>
                                                         <Textarea
                                                             placeholder="ملاحظات..."
-                                                            className="resize-none h-8"
+                                                            className="resize-none h-8 text-right"
                                                             value={payment.payment.notes || ''}
                                                             onChange={(e) => updatePayment(index, 'notes', e.target.value)}
                                                         />
@@ -397,10 +397,10 @@ export default function Index() {
                         <Card>
                             <CardContent className="p-8 text-center">
                                 <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                <h3 className="text-lg font-medium text-gray-900 mb-2 text-center">
                                     لا توجد بيانات مدفوعات
                                 </h3>
-                                <p className="text-gray-600">
+                                <p className="text-gray-600 text-center">
                                     اختر المجموعة والشهر والسنة لعرض المدفوعات
                                 </p>
                             </CardContent>

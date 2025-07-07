@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\Admin\AdminTeacherController;
+use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
@@ -83,6 +84,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/plan-upgrade-requests/{planUpgradeRequest}', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'show'])->name('admin.plan-upgrade-requests.show');
     Route::post('/plan-upgrade-requests/{planUpgradeRequest}/approve', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'approve'])->name('admin.plan-upgrade-requests.approve');
     Route::post('/plan-upgrade-requests/{planUpgradeRequest}/reject', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'reject'])->name('admin.plan-upgrade-requests.reject');
+    
+    // Reports
+    Route::get('/reports/governorates', [ReportsController::class, 'governorates'])->name('admin.reports.governorates');
 });
 
 Route::middleware('auth')->group(function () {

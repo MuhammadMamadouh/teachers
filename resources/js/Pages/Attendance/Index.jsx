@@ -106,7 +106,11 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                     <form onSubmit={submit}>
                                         <div className="mb-6">
                                             <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                                قائمة طلاب {selectedGroup.name} - {new Date(selectedDate).toLocaleDateString('ar-SA')}
+                                                قائمة طلاب {selectedGroup.name} - {new Date(selectedDate).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                             </h3>
                                             
                                             <div className="space-y-4">

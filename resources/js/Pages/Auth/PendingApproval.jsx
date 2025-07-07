@@ -35,6 +35,15 @@ export default function PendingApproval() {
                                 حسابك بانتظار الموافقة من قبل المشرفين. 
                                 سيتم إشعارك عبر البريد الإلكتروني عند تفعيل حسابك.
                             </p>
+                            <p className="mb-6 text-gray-600">
+                                 من فضلك أرسل الإيصال الخاص بعملية الدفع للإدارة عبر الواتساب مع ذكر الاسم 
+                                <a
+                                    href="https://wa.me/+201270770613" // Replace with actual WhatsApp number
+                                    className="text-indigo-600 hover:underline"
+                                >
+                                    01270770613
+                                </a>
+                            </p> 
                             
                             <p className="text-sm text-gray-500">
                                 هذا عادة ما يستغرق 1-2 أيام عمل. شكراً لصبرك!

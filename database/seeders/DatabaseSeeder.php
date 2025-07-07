@@ -15,10 +15,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call([
+            GovernorateSeeder::class,
             PlansSeeder::class,
             AdminUserSeeder::class,
-            DefaultSubscriptionSeeder::class,
-            GroupSeeder::class,
+            // DefaultSubscriptionSeeder::class,
+            // GroupSeeder::class,
         ]);
         
         // Uncomment one of the following for performance testing:

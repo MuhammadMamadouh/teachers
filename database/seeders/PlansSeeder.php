@@ -22,7 +22,7 @@ class PlansSeeder extends Seeder
         // Create the subscription plans with the new structure
         $plans = [
             [
-                'name' => 'خطة تجريبية',
+                'name' => 'تجريبية',
                 'max_students' => 50,
                 'max_assistants' => 0,
                 'duration_days' => 30,
@@ -31,7 +31,7 @@ class PlansSeeder extends Seeder
                 'is_default' => true
             ],
             [
-                'name' => 'خطة شهرية أساسية',
+                'name' => 'شهرية أساسية',
                 'max_students' => 100,
                 'max_assistants' => 1,
                 'duration_days' => 30,
@@ -40,7 +40,7 @@ class PlansSeeder extends Seeder
                 'is_default' => false
             ],
             [
-                'name' => 'خطة شهرية متقدمة',
+                'name' => 'شهرية متقدمة',
                 'max_students' => 500,
                 'max_assistants' => 2,
                 'duration_days' => 30,
@@ -49,7 +49,7 @@ class PlansSeeder extends Seeder
                 'is_default' => false
             ],
             [
-                'name' => 'خطة شهرية موسعة',
+                'name' => 'شهرية موسعة',
                 'max_students' => 2000,
                 'max_assistants' => 4,
                 'duration_days' => 30,
@@ -59,7 +59,7 @@ class PlansSeeder extends Seeder
             ],
             
             [
-                'name' => 'خطة ربع سنوية أساسية',
+                'name' => 'ربع سنوية أساسية',
                 'max_students' => 100,
                 'max_assistants' => 1,
                 'duration_days' => 30,
@@ -68,7 +68,7 @@ class PlansSeeder extends Seeder
                 'is_default' => false
             ],
              [
-                'name' => 'خطة ربع سنوية متقدمة',
+                'name' => 'ربع سنوية متقدمة',
                 'max_students' => 500,
                 'max_assistants' => 2,
                 'duration_days' => 30,
@@ -77,7 +77,7 @@ class PlansSeeder extends Seeder
                 'is_default' => false
             ],
             [
-                'name' => 'خطة ربع سنوية موسعة',
+                'name' => 'ربع سنوية موسعة',
                 'max_students' => 2000,
                 'max_assistants' => 4,
                 'duration_days' => 30,
@@ -86,7 +86,7 @@ class PlansSeeder extends Seeder
                 'is_default' => false
             ],
             [
-                'name' => 'خطة سنوية',
+                'name' => 'سنوية',
                 'max_students' => 100,
                 'max_assistants' => 3,
                 'duration_days' => 365,

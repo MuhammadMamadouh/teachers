@@ -186,14 +186,22 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">تاريخ التسجيل</dt>
                                             <dd className="mt-1 text-sm text-gray-900">
-                                                {new Date(teacher.created_at).toLocaleDateString('ar-SA')}
+                                                {new Date(teacher.created_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                             </dd>
                                         </div>
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">آخر نشاط</dt>
                                             <dd className="mt-1 text-sm text-gray-900">
                                                 {teacher.last_login_at 
-                                                    ? new Date(teacher.last_login_at).toLocaleDateString('ar-SA') 
+                                                    ? new Date(teacher.last_login_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    }) 
                                                     : 'لم يسجل دخول مطلقاً'
                                                 }
                                             </dd>
@@ -250,13 +258,21 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                 <div>
                                                     <dt className="text-sm font-medium text-gray-500">بداية الاشتراك</dt>
                                                     <dd className="mt-1 text-sm text-gray-900">
-                                                        {new Date(teacher.active_subscription.starts_at).toLocaleDateString('ar-SA')}
+                                                        {new Date(teacher.active_subscription.starts_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                                     </dd>
                                                 </div>
                                                 <div>
                                                     <dt className="text-sm font-medium text-gray-500">انتهاء الاشتراك</dt>
                                                     <dd className="mt-1 text-sm text-gray-900">
-                                                        {new Date(teacher.active_subscription.ends_at).toLocaleDateString('ar-SA')}
+                                                        {new Date(teacher.active_subscription.ends_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                                     </dd>
                                                 </div>
                                                 <div>
@@ -324,7 +340,11 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                     {recentPayments.map((payment) => (
                                                         <tr key={payment.id}>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                                {new Date(payment.payment_date).toLocaleDateString('ar-SA')}
+                                                                {new Date(payment.payment_date).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                                 {payment.amount} ر.س

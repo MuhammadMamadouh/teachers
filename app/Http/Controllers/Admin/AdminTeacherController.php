@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Subscription;
 use App\Models\Plan;
+use App\Models\Governorate;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -23,7 +24,7 @@ class AdminTeacherController extends Controller
     {
         $query = User::where('is_admin', false)
             ->where('type', 'teacher')
-            ->with(['activeSubscription.plan', 'students', 'groups']);
+            ->with(['activeSubscription.plan', 'students', 'groups', 'governorate']);
 
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
@@ -80,9 +81,13 @@ class AdminTeacherController extends Controller
     public function create(): Response
     {
         $plans = Plan::orderBy('max_students')->get();
+        $governorates = Governorate::where('is_active', true)
+            ->orderBy('name_ar')
+            ->get(['id', 'name_ar', 'name_en']);
 
         return Inertia::render('Admin/Teachers/Create', [
-            'plans' => $plans
+            'plans' => $plans,
+            'governorates' => $governorates
         ]);
     }
 
@@ -95,6 +100,9 @@ class AdminTeacherController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'nullable|string|max:20',
+            'subject' => 'nullable|string|max:255',
+            'governorate_id' => 'nullable|exists:governorates,id',
             'is_approved' => 'boolean',
             'plan_id' => 'nullable|exists:plans,id',
         ], [
@@ -112,6 +120,9 @@ class AdminTeacherController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'phone' => $request->phone,
+                'subject' => $request->subject,
+                'governorate_id' => $request->governorate_id,
                 'type' => 'teacher',
                 'is_approved' => $request->boolean('is_approved', true),
                 'approved_at' => $request->boolean('is_approved', true) ? now() : null,
@@ -190,12 +201,16 @@ class AdminTeacherController extends Controller
      */
     public function edit(User $teacher): Response
     {
-        $teacher->load('activeSubscription.plan');
+        $teacher->load('activeSubscription.plan', 'governorate');
         $plans = Plan::orderBy('max_students')->get();
+        $governorates = Governorate::where('is_active', true)
+            ->orderBy('name_ar')
+            ->get(['id', 'name_ar', 'name_en']);
 
         return Inertia::render('Admin/Teachers/Edit', [
             'teacher' => $teacher,
-            'plans' => $plans
+            'plans' => $plans,
+            'governorates' => $governorates
         ]);
     }
 
@@ -208,6 +223,9 @@ class AdminTeacherController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $teacher->id,
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'nullable|string|max:20',
+            'subject' => 'nullable|string|max:255',
+            'governorate_id' => 'nullable|exists:governorates,id',
             'is_approved' => 'boolean',
             'plan_id' => 'nullable|exists:plans,id',
         ], [
@@ -223,6 +241,9 @@ class AdminTeacherController extends Controller
             $updateData = [
                 'name' => $request->name,
                 'email' => $request->email,
+                'phone' => $request->phone,
+                'subject' => $request->subject,
+                'governorate_id' => $request->governorate_id,
                 'is_approved' => $request->boolean('is_approved'),
                 'approved_at' => $request->boolean('is_approved') ? ($teacher->approved_at ?? now()) : null,
             ];

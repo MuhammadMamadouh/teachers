@@ -5,7 +5,7 @@ import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Register() {
+export default function Register({ governorates = [] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -13,7 +13,7 @@ export default function Register() {
         password_confirmation: '',
         phone: '',
         subject: '',
-        city: '',
+        governorate_id: '',
     });
 
     const submit = (e) => {
@@ -81,7 +81,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="subject" value="المادة (مثال: رياضيات - الصف التاسع)" />
+                    <InputLabel htmlFor="subject" value="المادة (مثال: رياضيات - علوم)" />
 
                     <TextInput
                         id="subject"
@@ -89,7 +89,7 @@ export default function Register() {
                         name="subject"
                         value={data.subject}
                         className="mt-1 block w-full"
-                        placeholder="مثال: رياضيات - الصف التاسع، أدب إنجليزي، فيزياء"
+                        placeholder="مثال: رياضيات، أدب إنجليزي، فيزياء"
                         onChange={(e) => setData('subject', e.target.value)}
                         required
                     />
@@ -98,20 +98,25 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="city" value="المدينة" />
+                    <InputLabel htmlFor="governorate_id" value="المحافظة" />
 
-                    <TextInput
-                        id="city"
-                        type="text"
-                        name="city"
-                        value={data.city}
-                        className="mt-1 block w-full"
-                        autoComplete="address-level2"
-                        onChange={(e) => setData('city', e.target.value)}
+                    <select
+                        id="governorate_id"
+                        name="governorate_id"
+                        value={data.governorate_id}
+                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        onChange={(e) => setData('governorate_id', e.target.value)}
                         required
-                    />
+                    >
+                        <option value="">اختر المحافظة</option>
+                        {governorates.map((governorate) => (
+                            <option key={governorate.id} value={governorate.id}>
+                                {governorate.name_ar}
+                            </option>
+                        ))}
+                    </select>
 
-                    <InputError message={errors.city} className="mt-2" />
+                    <InputError message={errors.governorate_id} className="mt-2" />
                 </div>
 
                 <div className="mt-4">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Models\Governorate;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,13 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $governorates = Governorate::where('is_active', true)
+            ->orderBy('name_ar')
+            ->get(['id', 'name_ar', 'name_en']);
+            
+        return Inertia::render('Auth/Register', [
+            'governorates' => $governorates
+        ]);
     }
 
     /**
@@ -38,7 +45,7 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'required|string|max:20',
             'subject' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
+            'governorate_id' => 'required|exists:governorates,id',
         ]);
 
         $user = User::create([
@@ -47,7 +54,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'subject' => $request->subject,
-            'city' => $request->city,
+            'governorate_id' => $request->governorate_id,
             'is_approved' => false,
         ]);
 

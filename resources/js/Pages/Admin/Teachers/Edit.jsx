@@ -77,7 +77,11 @@ export default function TeachersEdit({ teacher, plans }) {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                         <div>
                                             <span className="font-medium text-gray-700">تاريخ التسجيل:</span>
-                                            <div className="text-gray-900">{new Date(teacher.created_at).toLocaleDateString('ar-SA')}</div>
+                                            <div className="text-gray-900">{new Date(teacher.created_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}</div>
                                         </div>
                                         <div>
                                             <span className="font-medium text-gray-700">عدد الطلاب:</span>
@@ -227,7 +231,11 @@ export default function TeachersEdit({ teacher, plans }) {
                                         <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
                                             <p className="text-sm text-blue-800">
                                                 <strong>الخطة الحالية:</strong> {teacher.active_subscription.plan?.name} 
-                                                - تنتهي في: {new Date(teacher.active_subscription.ends_at).toLocaleDateString('ar-SA')}
+                                                - تنتهي في: {new Date(teacher.active_subscription.ends_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                             </p>
                                         </div>
                                     )}

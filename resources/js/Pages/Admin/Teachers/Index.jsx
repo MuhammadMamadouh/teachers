@@ -424,7 +424,11 @@ export default function TeachersIndex({ teachers, filters, stats }) {
                                                 {teacher.groups_count}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(teacher.created_at).toLocaleDateString('ar-SA')}
+                                                {new Date(teacher.created_at).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div className="flex items-center space-x-2 space-x-reverse">

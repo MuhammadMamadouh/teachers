@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -26,6 +27,7 @@ class User extends Authenticatable
         'phone',
         'subject',
         'city',
+        'governorate_id',
         'notes',
         'is_approved',
         'is_admin',
@@ -182,6 +184,14 @@ class User extends Authenticatable
     public function groups(): HasMany
     {
         return $this->hasMany(Group::class, 'user_id');
+    }
+
+    /**
+     * Get the governorate for this user.
+     */
+    public function governorate(): BelongsTo
+    {
+        return $this->belongsTo(Governorate::class, 'governorate_id');
     }
 
     /**

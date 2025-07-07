@@ -28,7 +28,11 @@ export default function Expired({ plans, currentSubscription, hasHadTrial }) {
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                                         <p className="text-sm text-red-700">
                                             انتهت صلاحية اشتراك {currentSubscription.plan.name} في{' '}
-                                            {new Date(currentSubscription.end_date).toLocaleDateString('ar-SA')}.
+                                            {new Date(currentSubscription.end_date).toLocaleDateString('ar-EG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}.
                                         </p>
                                     </div>
                                 )}

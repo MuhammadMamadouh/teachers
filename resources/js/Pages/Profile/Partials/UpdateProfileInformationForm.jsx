@@ -8,6 +8,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
+    governorates = [],
     className = '',
 }) {
     const user = usePage().props.auth.user;
@@ -16,6 +17,9 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            phone: user.phone || '',
+            subject: user.subject || '',
+            governorate_id: user.governorate_id || '',
         });
 
     const submit = (e) => {
@@ -67,6 +71,57 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.email} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="phone" value="الهاتف" />
+
+                    <TextInput
+                        id="phone"
+                        type="tel"
+                        className="mt-1 block w-full"
+                        value={data.phone}
+                        onChange={(e) => setData('phone', e.target.value)}
+                        autoComplete="tel"
+                    />
+
+                    <InputError className="mt-2" message={errors.phone} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="subject" value="المادة" />
+
+                    <TextInput
+                        id="subject"
+                        type="text"
+                        className="mt-1 block w-full"
+                        value={data.subject}
+                        onChange={(e) => setData('subject', e.target.value)}
+                        placeholder="مثال: رياضيات، أدب إنجليزي، فيزياء"
+                    />
+
+                    <InputError className="mt-2" message={errors.subject} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="governorate_id" value="المحافظة" />
+
+                    <select
+                        id="governorate_id"
+                        name="governorate_id"
+                        value={data.governorate_id}
+                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        onChange={(e) => setData('governorate_id', e.target.value)}
+                    >
+                        <option value="">اختر المحافظة</option>
+                        {governorates.map((governorate) => (
+                            <option key={governorate.id} value={governorate.id}>
+                                {governorate.name_ar}
+                            </option>
+                        ))}
+                    </select>
+
+                    <InputError className="mt-2" message={errors.governorate_id} />
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (

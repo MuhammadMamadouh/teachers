@@ -1,5 +1,5 @@
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 export default function PendingApproval() {
     return (
@@ -50,25 +50,15 @@ export default function PendingApproval() {
                             </p>
                             
                             <div className="mt-6">
-                                <a
-                                    href={route('logout')}
+                                <button
+                                    type="button"
                                     className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-700 focus:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-900"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        const form = document.createElement('form');
-                                        form.method = 'POST';
-                                        form.action = route('logout');
-                                        const token = document.createElement('input');
-                                        token.type = 'hidden';
-                                        token.name = '_token';
-                                        token.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                                        form.appendChild(token);
-                                        document.body.appendChild(form);
-                                        form.submit();
+                                    onClick={() => {
+                                        router.post(route('logout'));
                                     }}
                                 >
                                     تسجيل الخروج
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -47,8 +47,8 @@ export default function Welcome({ auth, plans = [] }) {
 
     const testimonials = [
         {
-            name: "أستاذة فاطمة محمد",
-            role: "معلمة قرآن كريم",
+            name: "أستاذة مصطفى عبد المجيد",
+            role: "معلم رياضيات",
             content: "هذا النظام وفر علي الكثير من الوقت في تتبع طلابي ومدفوعاتهم. أصبح التدريس أكثر تنظيماً.",
             rating: 5
         },
@@ -96,7 +96,7 @@ export default function Welcome({ auth, plans = [] }) {
                                     </Link>
                                     <Link
                                         href={route('register')}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                                     >
                                         ابدأ مجاناً
                                     </Link>
@@ -122,7 +122,7 @@ export default function Welcome({ auth, plans = [] }) {
                             {!auth.user && (
                                 <Link
                                     href={route('register')}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-lg text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                                 >
                                     ابدأ مجاناً الآن
                                 </Link>
@@ -421,7 +421,7 @@ export default function Welcome({ auth, plans = [] }) {
                                         
                                         {!auth.user && (
                                             <Link
-                                                href={route('register')}
+                                                href={route('register', { plan: plan.id })}
                                                 className={`w-full py-3 px-4 rounded-lg font-semibold text-center block transition-all duration-300 ${
                                                     isHighlighted 
                                                         ? 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg'

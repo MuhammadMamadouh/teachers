@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plans', function (Blueprint $table) {
-            $table->integer('max_assistants')->default(0)->after('max_students');
+            $table->integer('max_assistants')->default(0);
         });
     }
 

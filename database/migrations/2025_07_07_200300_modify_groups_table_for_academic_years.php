@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('groups', function (Blueprint $table) {
             // Add academic_year_id foreign key as nullable first (since there might be existing data)
-            $table->foreignId('academic_year_id')->nullable()->after('user_id')->constrained('academic_years')->onDelete('cascade');
+            $table->foreignId('academic_year_id')->nullable()->constrained('academic_years')->onDelete('cascade');
         });
     }
 

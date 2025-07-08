@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('subscriptions', function (Blueprint $table) {
             // Add missing fields for subscription system
-            $table->boolean('is_trial')->default(false)->after('is_active');
+            $table->boolean('is_trial')->default(false);
         });
     }
 

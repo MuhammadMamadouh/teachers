@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Add phone column if it doesn't exist
             if (!Schema::hasColumn('users', 'phone')) {
-                $table->string('phone', 20)->nullable()->unique()->after('email');
+                $table->string('phone', 20)->nullable()->unique();
             }
         });
     }

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('groups', function (Blueprint $table) {
-            $table->enum('payment_type', ['monthly', 'per_session'])->default('monthly')->after('is_active');
-            $table->decimal('student_price', 8, 2)->default(0)->after('payment_type');
+            $table->enum('payment_type', ['monthly', 'per_session'])->default('monthly');
+            $table->decimal('student_price', 8, 2)->default(0);
         });
     }
 

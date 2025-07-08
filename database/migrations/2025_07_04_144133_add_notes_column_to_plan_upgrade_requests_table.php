@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plan_upgrade_requests', function (Blueprint $table) {
-            $table->text('notes')->nullable()->after('status');
+            $table->text('notes')->nullable();
         });
     }
 

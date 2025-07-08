@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\BulkUpdatePaymentRequest;
-use App\Http\Requests\ShowPaymentRequest;
-use App\Http\Requests\StorePaymentRequest;
 use App\Models\Payment;
 use App\Models\Group;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
@@ -27,8 +26,17 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function show(ShowPaymentRequest $request)
+    /**
+     * Show payments for a specific group and date range
+     */
+    public function show(Request $request)
     {
+        $request->validate([
+            'group_id' => 'required|exists:groups,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+        ]);
+
         $user = Auth::user();
 
         $group = Group::where('user_id', $user->id)
@@ -36,36 +44,51 @@ class PaymentController extends Controller
             ->with(['assignedStudents'])
             ->firstOrFail();
 
-        // Get existing payments for this group, month, and year
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now()->endOfMonth();
+
+        // Get payments for the specified date range
         $payments = Payment::where('group_id', $request->group_id)
-            ->where('month', $request->month)
-            ->where('year', $request->year)
+            ->whereBetween('related_date', [$startDate, $endDate])
             ->with('student')
             ->get()
-            ->keyBy('student_id');
+            ->groupBy('student_id');
 
-        // Create payment data for all students in the group
-        $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $request, $group) {
-            $payment = $payments->get($student->id);
+        // Calculate summary statistics
+        $totalExpected = 0;
+        $totalPaid = 0;
+        $totalUnpaid = 0;
+
+        $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $group, $startDate, $endDate, &$totalExpected, &$totalPaid, &$totalUnpaid) {
+            $studentPaymentsList = $payments->get($student->id, collect());
             
+            $expectedAmount = 0;
+            $paidAmount = 0;
+            $unpaidAmount = 0;
+
+            if ($group->payment_type === 'monthly') {
+                // For monthly payments, calculate based on months in date range
+                $months = $startDate->diffInMonths($endDate) + 1;
+                $expectedAmount = $months * $group->student_price;
+                $paidAmount = $studentPaymentsList->where('is_paid', true)->sum('amount');
+                $unpaidAmount = $expectedAmount - $paidAmount;
+            } else {
+                // For per-session payments, sum up all payments
+                $expectedAmount = $studentPaymentsList->sum('amount');
+                $paidAmount = $studentPaymentsList->where('is_paid', true)->sum('amount');
+                $unpaidAmount = $studentPaymentsList->where('is_paid', false)->sum('amount');
+            }
+
+            $totalExpected += $expectedAmount;
+            $totalPaid += $paidAmount;
+            $totalUnpaid += $unpaidAmount;
+
             return [
                 'student' => $student,
-                'payment' => $payment ? [
-                    'id' => $payment->id,
-                    'is_paid' => $payment->is_paid,
-                    'amount' => $payment->amount,
-                    'paid_date' => $payment->paid_date?->format('Y-m-d'),
-                    'notes' => $payment->notes,
-                ] : [
-                    'id' => null,
-                    'is_paid' => false,
-                    'amount' => $group->student_price, // Set default amount to group's student price
-                    'paid_date' => null,
-                    'notes' => null,
-                ],
-                'group_id' => $request->group_id,
-                'month' => $request->month,
-                'year' => $request->year,
+                'payments' => $studentPaymentsList->values(),
+                'expected_amount' => $expectedAmount,
+                'paid_amount' => $paidAmount,
+                'unpaid_amount' => $unpaidAmount,
             ];
         });
 
@@ -76,89 +99,156 @@ class PaymentController extends Controller
                 'student_price' => $group->student_price,
                 'payment_type' => $group->payment_type,
             ],
-            'payments' => $studentPayments,
-            'month' => $request->month,
-            'year' => $request->year,
+            'student_payments' => $studentPayments,
+            'summary' => [
+                'total_expected' => $totalExpected,
+                'total_paid' => $totalPaid,
+                'total_unpaid' => $totalUnpaid,
+                'payment_percentage' => $totalExpected > 0 ? ($totalPaid / $totalExpected) * 100 : 0,
+            ],
+            'date_range' => [
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+            ],
         ]);
     }
 
-    public function store(StorePaymentRequest $request)
+    /**
+     * Generate monthly payments for a group
+     */
+    public function generateMonthlyPayments(Request $request)
     {
+        $request->validate([
+            'group_id' => 'required|exists:groups,id',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2020',
+        ]);
+
         $user = Auth::user();
 
-        // Verify that the group belongs to the authenticated user
         $group = Group::where('user_id', $user->id)
             ->where('id', $request->group_id)
+            ->with('assignedStudents')
             ->firstOrFail();
 
-        // Verify that the student belongs to the group
-        $student = $group->assignedStudents()->where('students.id', $request->student_id)->firstOrFail();
+        if ($group->payment_type !== 'monthly') {
+            return response()->json(['error' => 'هذه المجموعة لا تستخدم نظام الدفع الشهري'], 400);
+        }
 
-        // Create or update payment record
-        $payment = Payment::updateOrCreate(
-            [
-                'student_id' => $request->student_id,
-                'group_id' => $request->group_id,
-                'month' => $request->month,
-                'year' => $request->year,
-            ],
-            [
-                'is_paid' => $request->boolean('is_paid'),
-                'amount' => $request->amount,
-                'paid_date' => $request->is_paid && $request->paid_date ? $request->paid_date : null,
-                'notes' => $request->notes,
-            ]
-        );
+        $relatedDate = Carbon::createFromDate($request->year, $request->month, 1);
+        $paymentsCreated = 0;
+
+        DB::transaction(function () use ($group, $relatedDate, &$paymentsCreated) {
+            foreach ($group->assignedStudents as $student) {
+                $payment = Payment::firstOrCreate(
+                    [
+                        'group_id' => $group->id,
+                        'student_id' => $student->id,
+                        'related_date' => $relatedDate,
+                    ],
+                    [
+                        'payment_type' => 'monthly',
+                        'amount' => $group->student_price,
+                        'is_paid' => false,
+                    ]
+                );
+
+                if ($payment->wasRecentlyCreated) {
+                    $paymentsCreated++;
+                }
+            }
+        });
 
         return response()->json([
-            'message' => 'تم حفظ حالة الدفع بنجاح',
+            'message' => "تم إنشاء {$paymentsCreated} دفعة جديدة",
+            'payments_created' => $paymentsCreated,
+        ]);
+    }
+
+    /**
+     * Update payment status
+     */
+    public function updatePayment(Request $request, Payment $payment)
+    {
+        $request->validate([
+            'is_paid' => 'required|boolean',
+            'paid_at' => 'nullable|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+
+        // Verify that the payment belongs to a group owned by the authenticated user
+        $group = Group::where('user_id', $user->id)
+            ->where('id', $payment->group_id)
+            ->firstOrFail();
+
+        $payment->update([
+            'is_paid' => $request->is_paid,
+            'paid_at' => $request->is_paid && $request->paid_at ? $request->paid_at : null,
+            'notes' => $request->notes,
+        ]);
+
+        return response()->json([
+            'message' => 'تم تحديث حالة الدفع بنجاح',
             'payment' => $payment,
         ]);
     }
 
-    public function bulkUpdate(BulkUpdatePaymentRequest $request)
+    /**
+     * Bulk update payments
+     */
+    public function bulkUpdate(Request $request)
     {
+        $request->validate([
+            'payments' => 'required|array',
+            'payments.*.id' => 'required|exists:payments,id',
+            'payments.*.is_paid' => 'required|boolean',
+            'payments.*.paid_at' => 'nullable|date',
+            'payments.*.notes' => 'nullable|string',
+        ]);
+
         $user = Auth::user();
+        $paymentIds = collect($request->payments)->pluck('id');
 
-        $paymentsData = $request->payments;
-        $groupIds = collect($paymentsData)->pluck('group_id')->unique();
+        // Verify that all payments belong to groups owned by the authenticated user
+        $payments = Payment::whereIn('id', $paymentIds)
+            ->whereHas('group', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get();
 
-        // Verify that all groups belong to the authenticated user
-        $userGroups = Group::where('user_id', $user->id)
-            ->whereIn('id', $groupIds)
-            ->pluck('id');
-
-        if ($userGroups->count() !== $groupIds->count()) {
-            return response()->json(['error' => 'غير مسموح بالوصول لبعض المجموعات'], 403);
+        if ($payments->count() !== count($paymentIds)) {
+            return response()->json(['error' => 'غير مسموح بالوصول لبعض الدفعات'], 403);
         }
 
         $updatedPayments = [];
 
-        foreach ($paymentsData as $paymentData) {
-            $payment = Payment::updateOrCreate(
-                [
-                    'student_id' => $paymentData['student_id'],
-                    'group_id' => $paymentData['group_id'],
-                    'month' => $paymentData['month'],
-                    'year' => $paymentData['year'],
-                ],
-                [
-                    'is_paid' => $paymentData['is_paid'] ?? false,
-                    'amount' => $paymentData['amount'],
-                    'paid_date' => $paymentData['is_paid'] && $paymentData['paid_date'] ? $paymentData['paid_date'] : null,
-                    'notes' => $paymentData['notes'],
-                ]
-            );
-
-            $updatedPayments[] = $payment;
-        }
+        DB::transaction(function () use ($request, $payments, &$updatedPayments) {
+            foreach ($request->payments as $paymentData) {
+                $payment = $payments->firstWhere('id', $paymentData['id']);
+                
+                if ($payment) {
+                    $payment->update([
+                        'is_paid' => $paymentData['is_paid'],
+                        'paid_at' => $paymentData['is_paid'] && $paymentData['paid_at'] ? $paymentData['paid_at'] : null,
+                        'notes' => $paymentData['notes'],
+                    ]);
+                    
+                    $updatedPayments[] = $payment;
+                }
+            }
+        });
 
         return response()->json([
-            'message' => 'تم حفظ حالات الدفع بنجاح',
+            'message' => 'تم تحديث حالات الدفع بنجاح',
             'payments' => $updatedPayments,
         ]);
     }
 
+    /**
+     * Delete a payment record
+     */
     public function destroy(Payment $payment)
     {
         $user = Auth::user();

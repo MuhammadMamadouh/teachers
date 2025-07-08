@@ -164,11 +164,11 @@ class PerformanceTestSeeder extends Seeder
                 $paymentData[] = [
                     'student_id' => $studentId,
                     'group_id' => $groupId,
-                    'month' => $paymentMonth->month,
-                    'year' => $paymentMonth->year,
+                    'payment_type' => 'monthly',
+                    'related_date' => $paymentMonth->startOfMonth()->toDateString(),
                     'is_paid' => fake()->boolean(85), // 85% paid
                     'amount' => fake()->randomElement([300, 350, 400, 450, 500]),
-                    'paid_date' => fake()->boolean(85) ? $paymentMonth->toDateString() : null,
+                    'paid_at' => fake()->boolean(85) ? $paymentMonth->toDateString() : null,
                     'notes' => fake()->boolean(10) ? 'ملاحظة' : null,
                     'created_at' => now(),
                     'updated_at' => now(),

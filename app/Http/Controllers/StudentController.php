@@ -153,21 +153,19 @@ class StudentController extends Controller
         // Get recent payments (last 6 months)
         $recentPayments = $student->payments()
             ->with('group')
-            ->where('year', '>=', now()->subMonths(6)->year)
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
+            ->where('related_date', '>=', now()->subMonths(6)->startOfMonth())
+            ->orderBy('related_date', 'desc')
             ->take(6)
             ->get()
             ->map(function ($payment) {
                 return [
                     'id' => $payment->id,
-                    'month' => $payment->month,
-                    'year' => $payment->year,
-                    'month_name' => $payment->month_name,
-                    'formatted_date' => $payment->formatted_date,
+                    'payment_type' => $payment->payment_type,
+                    'related_date' => $payment->related_date->format('Y-m-d'),
+                    'formatted_date' => $payment->related_date->format('F Y'),
                     'is_paid' => $payment->is_paid,
                     'amount' => $payment->amount,
-                    'paid_date' => $payment->paid_date?->format('Y-m-d'),
+                    'paid_date' => $payment->paid_at?->format('Y-m-d'),
                     'group' => $payment->group ? [
                         'id' => $payment->group->id,
                         'name' => $payment->group->name,

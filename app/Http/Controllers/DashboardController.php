@@ -436,8 +436,9 @@ class DashboardController extends Controller
         $paidStudentsThisMonth = DB::table('payments')
             ->join('students', 'payments.student_id', '=', 'students.id')
             ->where('students.user_id', $user->id)
-            ->where('payments.month', $currentMonth)
-            ->where('payments.year', $currentYear)
+            ->where('payments.payment_type', 'monthly')
+            ->whereYear('payments.related_date', $currentYear)
+            ->whereMonth('payments.related_date', $currentMonth)
             ->where('payments.is_paid', true)
             ->count();
 
@@ -457,12 +458,12 @@ class DashboardController extends Controller
             ->join('groups', 'payments.group_id', '=', 'groups.id')
             ->where('students.user_id', $user->id)
             ->where('payments.is_paid', true)
-            ->orderBy('payments.paid_date', 'desc')
+            ->orderBy('payments.paid_at', 'desc')
             ->select(
                 'students.name as student_name',
                 'groups.name as group_name',
                 'payments.amount',
-                'payments.paid_date'
+                'payments.paid_at'
             )
             ->limit(10)
             ->get()
@@ -471,7 +472,7 @@ class DashboardController extends Controller
                     'student_name' => $payment->student_name,
                     'group_name' => $payment->group_name,
                     'amount' => $payment->amount,
-                    'paid_date' => \Carbon\Carbon::parse($payment->paid_date)->format('Y-m-d'),
+                    'paid_date' => \Carbon\Carbon::parse($payment->paid_at)->format('Y-m-d'),
                 ];
             });
 
@@ -670,12 +671,12 @@ class DashboardController extends Controller
             ->join('students', 'payments.student_id', '=', 'students.id')
             ->join('users', 'students.user_id', '=', 'users.id')
             ->where('payments.is_paid', true)
-            ->orderBy('payments.paid_date', 'desc')
+            ->orderBy('payments.paid_at', 'desc')
             ->select(
                 'students.name as student_name',
                 'users.name as teacher_name',
                 'payments.amount',
-                'payments.paid_date'
+                'payments.paid_at'
             )
             ->limit(10)
             ->get()
@@ -684,7 +685,7 @@ class DashboardController extends Controller
                     'student_name' => $payment->student_name,
                     'teacher_name' => $payment->teacher_name,
                     'amount' => $payment->amount,
-                    'paid_date' => \Carbon\Carbon::parse($payment->paid_date)->format('Y-m-d'),
+                    'paid_date' => \Carbon\Carbon::parse($payment->paid_at)->format('Y-m-d'),
                 ];
             });
 

@@ -18,7 +18,7 @@ class AdminUserSeeder extends Seeder
             'password' => bcrypt('123456'),
             'phone' => '555-0000',
             'subject' => 'Administrator',
-            'city' => 'Admin City',
+           
             'is_admin' => true,
             'is_approved' => true,
             'approved_at' => now(),

@@ -35,25 +35,23 @@ class UserFactory extends Factory
             'اللغة الإنجليزية', 'التاريخ', 'الجغرافيا', 'التربية الإسلامية', 'الحاسوب'
         ];
 
-        $cities = [
-            'الرياض', 'جدة', 'مكة المكرمة', 'المدينة المنورة', 'الدمام', 'الخبر', 
-            'تبوك', 'بريدة', 'خميس مشيط', 'حائل', 'جازان', 'نجران', 'الباحة', 'عرعر'
-        ];
-
         return [
             'name' => $this->faker->randomElement($arabicNames),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' =>  Hash::make('123456'),
+            'password' => Hash::make('123456'),
             'remember_token' => Str::random(10),
             'phone' => '05' . $this->faker->numerify('########'),
             'subject' => $this->faker->randomElement($subjects),
-            'city' => $this->faker->randomElement($cities),
             'notes' => $this->faker->boolean(20) ? $this->faker->sentence() : null,
             'is_approved' => true,
             'is_admin' => false,
             'approved_at' => now(),
             'type' => 'teacher',
+            'teacher_id' => null, // Will be set for assistants
+            'governorate_id' => null, // Will be set by seeder if governorates exist
+            'onboarding_completed' => $this->faker->boolean(80),
+            'onboarding_completed_at' => $this->faker->boolean(80) ? now() : null,
         ];
     }
 

@@ -164,7 +164,7 @@ class AdminTeacherController extends Controller
             'students',
             'groups.assignedStudents',
             'groups.payments' => function ($query) {
-                $query->where('is_paid', true)->orderBy('paid_date', 'desc')->limit(10);
+                $query->where('is_paid', true)->orderBy('paid_at', 'desc')->limit(10);
             }
         ]);
 
@@ -184,10 +184,19 @@ class AdminTeacherController extends Controller
             ->join('groups', 'payments.group_id', '=', 'groups.id')
             ->where('students.user_id', $teacher->id)
             ->where('payments.is_paid', true)
-            ->orderBy('payments.paid_date', 'desc')
+            ->orderBy('payments.paid_at', 'desc')
             ->limit(10)
-            ->select('students.name as student_name', 'groups.name as group_name', 'payments.amount', 'payments.paid_date')
-            ->get();
+            ->select('students.name as student_name', 'groups.name as group_name', 'payments.amount', 'payments.paid_at', 'payments.related_date')
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'student_name' => $payment->student_name,
+                    'group_name' => $payment->group_name,
+                    'amount' => $payment->amount,
+                    'paid_at' => $payment->paid_at,
+                    'month_year' => \Carbon\Carbon::parse($payment->related_date)->format('F Y'),
+                ];
+            });
 
         return Inertia::render('Admin/Teachers/Show', [
             'teacher' => $teacher,

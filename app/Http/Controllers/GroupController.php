@@ -108,18 +108,21 @@ class GroupController extends Controller
         $paymentSummary = [
             'total_students' => $group->assignedStudents->count(),
             'paid_students' => $group->payments()
-                ->where('month', $currentMonth)
-                ->where('year', $currentYear)
+                ->where('payment_type', 'monthly')
+                ->whereYear('related_date', $currentYear)
+                ->whereMonth('related_date', $currentMonth)
                 ->where('is_paid', true)
                 ->count(),
             'unpaid_students' => $group->assignedStudents->count() - $group->payments()
-                ->where('month', $currentMonth)
-                ->where('year', $currentYear)
+                ->where('payment_type', 'monthly')
+                ->whereYear('related_date', $currentYear)
+                ->whereMonth('related_date', $currentMonth)
                 ->where('is_paid', true)
                 ->count(),
             'total_amount' => $group->payments()
-                ->where('month', $currentMonth)
-                ->where('year', $currentYear)
+                ->where('payment_type', 'monthly')
+                ->whereYear('related_date', $currentYear)
+                ->whereMonth('related_date', $currentMonth)
                 ->where('is_paid', true)
                 ->sum('amount'),
             'current_month' => now()->format('F Y'),

@@ -19,13 +19,13 @@ class SubscriptionController extends Controller
         $user = Auth::user();
         $plans = Plan::where('is_trial', false)->orderBy('price')->get();
         $currentSubscription = $user ? $user->activeSubscription()->first() : null;
-        $currentSubscription->load('plan'); // Ensure plan details are loaded
+       
 
         // if the user's plan is not expired, redirect to status page
         if ($currentSubscription && $currentSubscription->is_active && $currentSubscription->end_date && $currentSubscription->end_date > now()) {
             return redirect()->route('subscription.status');
         }
-
+//  $currentSubscription->load('plan'); // Ensure plan details are loaded
         return Inertia::render('Subscription/Expired', [
             'plans' => $plans,
             'currentSubscription' => $currentSubscription,

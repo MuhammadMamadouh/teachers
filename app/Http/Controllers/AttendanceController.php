@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Group;
 use App\Models\Student;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class AttendanceController extends Controller
@@ -67,28 +69,48 @@ class AttendanceController extends Controller
             abort(403);
         }
 
-        foreach ($request->attendances as $attendanceData) {
-            // Verify student belongs to the authenticated user
-            $student = Student::where('user_id', Auth::id())
-                ->where('id', $attendanceData['student_id'])
-                ->first();
+        DB::transaction(function () use ($request, $group) {
+            foreach ($request->attendances as $attendanceData) {
+                // Verify student belongs to the authenticated user
+                $student = Student::where('user_id', Auth::id())
+                    ->where('id', $attendanceData['student_id'])
+                    ->first();
 
-            if (!$student) {
-                continue;
+                if (!$student) {
+                    continue;
+                }
+
+                $attendance = Attendance::updateOrCreate(
+                    [
+                        'student_id' => $attendanceData['student_id'],
+                        'group_id' => $request->group_id,
+                        'date' => $request->date,
+                    ],
+                    [
+                        'is_present' => $attendanceData['is_present'],
+                        'notes' => $attendanceData['notes'] ?? null,
+                    ]
+                );
+
+                // Generate payment for per-session groups when student is present
+                if ($group->payment_type === 'per_session' && $attendanceData['is_present']) {
+                    Payment::updateOrCreate(
+                        [
+                            'group_id' => $group->id,
+                            'student_id' => $student->id,
+                            'related_date' => $request->date,
+                        ],
+                        [
+                            'payment_type' => 'per_session',
+                            'amount' => $group->student_price,
+                            'is_paid' => false, // Payment created but not paid yet
+                            'paid_at' => null,  // Will be set when marking as paid
+                            'notes' => $attendanceData['notes'] ?? null,
+                        ]
+                    );
+                }
             }
-
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $attendanceData['student_id'],
-                    'group_id' => $request->group_id,
-                    'date' => $request->date,
-                ],
-                [
-                    'is_present' => $attendanceData['is_present'],
-                    'notes' => $attendanceData['notes'] ?? null,
-                ]
-            );
-        }
+        });
 
         return back()->with('success', 'تم حفظ سجل الحضور بنجاح');
     }
@@ -113,13 +135,128 @@ class AttendanceController extends Controller
             ->get()
             ->groupBy('date');
 
-        $group->load('students');
+        $group->load('assignedStudents');
 
         return Inertia::render('Attendance/Summary', [
             'group' => $group,
             'attendances' => $attendances,
             'startDate' => $startDate,
             'endDate' => $endDate
+        ]);
+    }
+
+    /**
+     * Show last month's attendance report
+     */
+    public function lastMonthReport()
+    {
+        $startDate = now()->subMonth()->startOfMonth()->format('Y-m-d');
+        $endDate = now()->subMonth()->endOfMonth()->format('Y-m-d');
+        
+        $groups = Group::where('user_id', Auth::id())
+            ->with(['assignedStudents', 'attendances' => function($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate])
+                      ->with('student')
+                      ->orderBy('date', 'desc');
+            }])
+            ->get();
+
+        // Calculate summary statistics for each group
+        $groupsWithStats = $groups->map(function($group) use ($startDate, $endDate) {
+            $attendances = $group->attendances;
+            $totalStudents = $group->assignedStudents->count();
+            $uniqueDates = $attendances->pluck('date')->unique()->count();
+            
+            $totalPresent = $attendances->where('is_present', true)->count();
+            $totalAbsent = $attendances->where('is_present', false)->count();
+            $totalSessions = $totalPresent + $totalAbsent;
+            
+            $attendanceRate = $totalSessions > 0 ? round(($totalPresent / $totalSessions) * 100, 1) : 0;
+            
+            return [
+                'id' => $group->id,
+                'name' => $group->name,
+                'payment_type' => $group->payment_type,
+                'total_students' => $totalStudents,
+                'total_sessions' => $uniqueDates,
+                'total_present' => $totalPresent,
+                'total_absent' => $totalAbsent,
+                'attendance_rate' => $attendanceRate,
+                'attendances_by_date' => $attendances->groupBy('date')
+            ];
+        });
+
+        return Inertia::render('Attendance/LastMonthReport', [
+            'groups' => $groupsWithStats,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'monthName' => now()->subMonth()->format('F Y')
+        ]);
+    }
+
+    /**
+     * Show attendance report for a specific month
+     */
+    public function monthlyReport(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2020',
+        ]);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $month = $request->month;
+        $year = $request->year;
+        
+        $groups = Group::where('user_id', Auth::id())
+            ->with(['assignedStudents', 'attendances' => function($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate])
+                      ->with('student')
+                      ->orderBy('date', 'desc');
+            }])
+            ->get();
+
+        // Calculate summary statistics for each group
+        $groupsWithStats = $groups->map(function($group) use ($startDate, $endDate) {
+            $attendances = $group->attendances;
+            $totalStudents = $group->assignedStudents->count();
+            $uniqueDates = $attendances->pluck('date')->unique()->count();
+            
+            $totalPresent = $attendances->where('is_present', true)->count();
+            $totalAbsent = $attendances->where('is_present', false)->count();
+            $totalSessions = $totalPresent + $totalAbsent;
+            
+            $attendanceRate = $totalSessions > 0 ? round(($totalPresent / $totalSessions) * 100, 1) : 0;
+            
+            return [
+                'id' => $group->id,
+                'name' => $group->name,
+                'payment_type' => $group->payment_type,
+                'total_students' => $totalStudents,
+                'total_sessions' => $uniqueDates,
+                'total_present' => $totalPresent,
+                'total_absent' => $totalAbsent,
+                'attendance_rate' => $attendanceRate,
+                'attendances_by_date' => $attendances->groupBy('date')
+            ];
+        });
+
+        $monthNames = [
+            1 => 'يناير', 2 => 'فبراير', 3 => 'مارس', 4 => 'أبريل',
+            5 => 'مايو', 6 => 'يونيو', 7 => 'يوليو', 8 => 'أغسطس',
+            9 => 'سبتمبر', 10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر'
+        ];
+
+        return Inertia::render('Attendance/MonthlyReport', [
+            'groups' => $groupsWithStats,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'month' => $month,
+            'year' => $year,
+            'monthName' => $monthNames[$month] . ' ' . $year
         ]);
     }
 }

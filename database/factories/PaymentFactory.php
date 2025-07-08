@@ -25,7 +25,7 @@ class PaymentFactory extends Factory
         return [
             'is_paid' => $isPaid,
             'amount' => $this->faker->randomElement($amounts),
-            'paid_date' => $isPaid ? $this->faker->dateTimeThisYear() : null,
+            'paid_at' => $isPaid ? $this->faker->dateTimeThisYear() : null,
             'notes' => $isPaid ? null : ($this->faker->boolean(30) ? 'متأخر في الدفع' : null),
         ];
     }
@@ -37,7 +37,7 @@ class PaymentFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_paid' => true,
-            'paid_date' => $this->faker->dateTimeThisYear(),
+            'paid_at' => $this->faker->dateTimeThisYear(),
             'notes' => null,
         ]);
     }
@@ -49,7 +49,7 @@ class PaymentFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_paid' => false,
-            'paid_date' => null,
+            'paid_at' => null,
             'notes' => $this->faker->randomElement(['متأخر في الدفع', 'لم يدفع بعد', null]),
         ]);
     }

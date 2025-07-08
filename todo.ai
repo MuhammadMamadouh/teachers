@@ -1,71 +1,110 @@
-✅ COMPLETED: Academic Year Feature Implementation
-
-🎯 Feature: Add academic year information to students and groups in the Laravel-based SaaS system. Use Egyptian school grade names as options (e.g., الصف الأول الابتدائي, الصف الثاني الثانوي, etc). Ensure students can only be assigned to groups that match their academic year.
-
-Also:
-- Remove the "guardian_name" field from the students table and forms. ✅
-- Seed all academic years used in Egypt. ✅
+🎯 Goal: Implement a complete attendance and payment system for a Laravel + Inertia React SaaS app for teachers. Each group has a payment type: 'per_session' or 'monthly'. Each student in a group has a defined `student_price`. Students can only be added to groups with the same academic year.
 
 ---
 
-✅ IMPLEMENTATION COMPLETED:
+🟩 Step 1: Attendance System
 
-1. ✅ Created `academic_years` table with:
-   - id (bigint, primary key)
-   - name_ar (string, Arabic names)
-   - code (string, machine-friendly codes)
-   - created_at, updated_at (timestamps)
+📦 Create `attendances` table:
 
-2. ✅ Created AcademicYear model with relationships to students and groups
+| Column      | Type     | Notes |
+|-------------|----------|-------|
+| id          | bigint   | Primary Key |
+| group_id    | foreign key → groups.id |
+| student_id  | foreign key → students.id |
+| date        | date     | Attendance date |
+| is_present  | boolean  | true if present |
+| created_at  | timestamp |
 
-3. ✅ Seeded academic years with all Egyptian school levels:
-   - Primary School (الابتدائي): 6 grades
-   - Preparatory School (الإعدادي): 3 grades  
-   - Secondary School (الثانوي): 3 grades
-   - Total: 12 academic years
+✅ Add unique constraint on (`group_id`, `student_id`, `date`) to prevent duplicate attendance entries for the same day.
 
-4. ✅ Modified students table:
-   - Removed guardian_name field (was already not present)
-   - Added academic_year_id foreign key (nullable to handle existing data)
-   - Updated Student model with academicYear relationship
+➕ When marking attendance:
+- Filter students by group’s academic year
+- Display list of students
+- Allow marking present/absent for today’s session
 
-5. ✅ Modified groups table:
-   - Added academic_year_id foreign key (nullable to handle existing data)
-   - Updated Group model with academicYear relationship
-
-6. ✅ Updated StudentController:
-   - Added academic year validation in store/update methods
-   - Added academic year filtering in index method
-   - Added academic year dropdown in create/edit forms
-   - Enforced academic year matching when assigning students to groups
-
-7. ✅ Updated GroupController:
-   - Added academic year validation in store/update methods
-   - Added academic year dropdown in create/edit forms
-   - Enforced academic year matching when assigning students to groups
-
-8. ✅ Updated Form Requests:
-   - StoreGroupRequest: Added academic_year_id validation
-   - UpdateGroupRequest: Added academic_year_id validation
-   - Added Arabic validation messages
-
-9. ✅ Business Logic Implementation:
-   - Students can only be assigned to groups with matching academic years
-   - Validation prevents academic year mismatches
-   - Proper error messages in Arabic
+If the group’s `payment_type = per_session`, trigger a related payment (see Step 2).
 
 ---
 
-📋 Summary:
+🟨 Step 2: Payments System
 
-✅ Academic years stored in a dedicated table with official Egyptian names
-✅ Students and groups linked to academic years via foreign keys
-✅ Only compatible students can be added to groups (same academic year)
-✅ Guardian name removed from schema (was already not present)
-✅ Seeder includes all Egyptian school years (ابتدائي، إعدادي، ثانوي)
-✅ Controllers updated with validation and filtering
-✅ Form requests updated with academic year validation
-✅ Models include proper relationships
-✅ Business logic enforces academic year consistency
+📦 Create `payments` table:
 
-The feature is fully implemented and ready for use!
+| Column        | Type       | Notes |
+|---------------|------------|-------|
+| id            | bigint     | Primary |
+| group_id      | foreign key |
+| student_id    | foreign key |
+| payment_type  | enum('monthly', 'per_session') |
+| related_date  | date       | For per_session → attendance date, for monthly → month start |
+| amount        | decimal(8,2) |
+| is_paid       | boolean    | default false |
+| paid_at       | datetime (nullable) |
+| notes         | text (nullable) |
+| created_at    | timestamp |
+
+✅ Add unique constraint on (`group_id`, `student_id`, `related_date`) to prevent duplicate payments.
+
+---
+
+🟦 Step 3: Payment Logic by Group Type
+
+### If `per_session`:
+- After saving attendance (`is_present = true`)
+- Automatically create a payment record with:
+  - `payment_type = per_session`
+  - `related_date = attendance.date`
+  - `amount = group.student_price`
+
+### If `monthly`:
+- On the 1st day of each month (or when student is added to group), generate:
+  - `payment_type = monthly`
+  - `related_date = first day of month`
+  - `amount = group.student_price`
+  - `is_paid = false`
+
+✅ Teacher can manually update `is_paid = true` and `paid_at` when payment is received (cash only for now).
+
+---
+
+🟫 Step 4: Frontend Views (Inertia React)
+
+### For Teacher:
+
+📆 Attendance Page:
+- Show list of today’s sessions (based on group schedule)
+- For each session:
+  - List of students (filtered by academic year)
+  - Checkbox for presence
+  - After submission → save attendances
+  - If `per_session`, trigger payment generation
+
+💰 Payments Page:
+- Monthly View:
+  - List of students with due/unpaid payments (for current month or current day)
+  - Status: Paid / Unpaid
+  - Date of payment
+  - Total expected income
+  - Total paid so far
+  - Remaining due
+
+📊 Group Summary:
+- Show:
+  - Number of students
+  - Group `payment_type`
+  - `student_price`
+  - Total collected this month
+  - Total pending
+  - Number of unpaid students
+
+---
+
+🛡️ Step 5: Validations & Guards
+
+- Only allow attendance marking and payment view for authorized teachers/assistants
+- Validate that students assigned to a group belong to the same `academic_year_id`
+- Prevent duplicate payments or attendance records for the same day/student/group
+
+---
+🟩 Step 6: Additional Features
+- Weekly/monthly revenue summaries per group

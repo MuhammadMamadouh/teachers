@@ -12,18 +12,19 @@ class Payment extends Model
     protected $fillable = [
         'student_id',
         'group_id',
-        'month',
-        'year',
-        'is_paid',
+        'payment_type',
+        'related_date',
         'amount',
-        'paid_date',
+        'is_paid',
+        'paid_at',
         'notes',
     ];
 
     protected $casts = [
         'is_paid' => 'boolean',
         'amount' => 'decimal:2',
-        'paid_date' => 'date',
+        'related_date' => 'date',
+        'paid_at' => 'datetime',
     ];
 
     public function student(): BelongsTo
@@ -36,28 +37,51 @@ class Payment extends Model
         return $this->belongsTo(Group::class);
     }
 
-    public function getMonthNameAttribute(): string
+    /**
+     * Get the attendance record for per-session payments
+     */
+    public function attendance(): BelongsTo
     {
-        $months = [
-            1 => 'يناير',
-            2 => 'فبراير',
-            3 => 'مارس',
-            4 => 'أبريل',
-            5 => 'مايو',
-            6 => 'يونيو',
-            7 => 'يوليو',
-            8 => 'أغسطس',
-            9 => 'سبتمبر',
-            10 => 'أكتوبر',
-            11 => 'نوفمبر',
-            12 => 'ديسمبر',
-        ];
-
-        return $months[$this->month] ?? '';
+        return $this->belongsTo(Attendance::class, 'related_date', 'date')
+            ->where('student_id', $this->student_id)
+            ->where('group_id', $this->group_id);
     }
 
+    /**
+     * Get formatted date based on payment type
+     */
     public function getFormattedDateAttribute(): string
     {
-        return $this->month_name . ' ' . $this->year;
+        if ($this->payment_type === 'monthly') {
+            return $this->related_date->format('F Y');
+        } else {
+            return $this->related_date->format('d/m/Y');
+        }
+    }
+
+    /**
+     * Get payment type label in Arabic
+     */
+    public function getPaymentTypeLabel(): string
+    {
+        return $this->payment_type === 'monthly' ? 'شهري' : 'بالجلسة';
+    }
+
+    /**
+     * Check if payment is overdue
+     */
+    public function isOverdue(): bool
+    {
+        if ($this->is_paid) {
+            return false;
+        }
+
+        if ($this->payment_type === 'monthly') {
+            // Monthly payments are overdue if it's past the end of the month
+            return $this->related_date->endOfMonth()->isPast();
+        } else {
+            // Per-session payments are overdue if it's been more than 7 days
+            return $this->related_date->addDays(7)->isPast();
+        }
     }
 }

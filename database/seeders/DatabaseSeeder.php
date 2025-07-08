@@ -20,8 +20,14 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             AcademicYearSeeder::class,
             // DefaultSubscriptionSeeder::class,
-            // GroupSeeder::class,
+            GroupSeeder::class,
         ]);
+
+         $teachers = User::factory()
+            ->teacher()
+            ->create([
+                'email' => 'saadia@gmail.com',
+                ]);
         
         // Uncomment one of the following for performance testing:
         // $this->call(SmallTestSeeder::class);        // For quick testing (10 teachers)

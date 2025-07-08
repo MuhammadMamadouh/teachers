@@ -138,11 +138,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
         Route::get('/attendance/summary/{group}', [AttendanceController::class, 'summary'])->name('attendance.summary');
+        Route::get('/attendance/last-month-report', [AttendanceController::class, 'lastMonthReport'])->name('attendance.last-month-report');
+        Route::get('/attendance/monthly-report', [AttendanceController::class, 'monthlyReport'])->name('attendance.monthly-report');
         
         // Payment routes
         Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/show', [\App\Http\Controllers\PaymentController::class, 'show'])->name('payments.show');
-        Route::post('/payments', [\App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
+        Route::post('/payments/generate-monthly', [\App\Http\Controllers\PaymentController::class, 'generateMonthlyPayments'])->name('payments.generate-monthly');
+        Route::patch('/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'updatePayment'])->name('payments.update');
         Route::post('/payments/bulk-update', [\App\Http\Controllers\PaymentController::class, 'bulkUpdate'])->name('payments.bulk-update');
         Route::delete('/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'destroy'])->name('payments.destroy');
         

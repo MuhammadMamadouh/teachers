@@ -121,7 +121,17 @@ class User extends Authenticatable
      */
     public function getSubscriptionLimits(): array
     {
-        $subscription = $this->activeSubscription()->with('plan')->first();
+        // For assistants, use the teacher's subscription
+        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        
+        if (!$userToCheck) {
+            return [
+                'max_students' => 0,
+                'has_active_subscription' => false,
+            ];
+        }
+        
+        $subscription = $userToCheck->activeSubscription()->with('plan')->first();
         
         if (!$subscription || !$subscription->isCurrentlyActive()) {
             return [
@@ -150,14 +160,21 @@ class User extends Authenticatable
      */
     public function canAddStudents(int $count = 1): bool
     {
-        $limits = $this->getSubscriptionLimits();
+        // For assistants, use the teacher's limits
+        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        
+        if (!$userToCheck) {
+            return false;
+        }
+        
+        $limits = $userToCheck->getSubscriptionLimits();
         
         if (!$limits['has_active_subscription']) {
             return false;
         }
 
-        // Get current student count
-        $currentStudentCount = $this->students()->count();
+        // Get current student count from the teacher (not the assistant)
+        $currentStudentCount = $userToCheck->students()->count();
         
         return ($currentStudentCount + $count) <= $limits['max_students'];
     }
@@ -167,7 +184,14 @@ class User extends Authenticatable
      */
     public function getStudentCount(): int
     {
-        return $this->students()->count();
+        // For assistants, get the teacher's student count
+        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        
+        if (!$userToCheck) {
+            return 0;
+        }
+        
+        return $userToCheck->students()->count();
     }
 
     /**
@@ -302,7 +326,14 @@ class User extends Authenticatable
      */
     public function hasActiveSubscription(): bool
     {
-        $subscription = $this->activeSubscription()->first();
+        // For assistants, check the teacher's subscription
+        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        
+        if (!$userToCheck) {
+            return false;
+        }
+        
+        $subscription = $userToCheck->activeSubscription()->first();
         return $subscription && $subscription->isCurrentlyActive();
     }
 }

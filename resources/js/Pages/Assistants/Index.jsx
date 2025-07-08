@@ -23,8 +23,6 @@ const Index = ({ auth, assistants, assistantCount, maxAssistants, canAddMore }) 
         email: '',
         password: '',
         password_confirmation: '',
-        subject: '',
-        city: '',
         notes: '',
     });
     
@@ -209,11 +207,12 @@ const Index = ({ auth, assistants, assistantCount, maxAssistants, canAddMore }) 
                             <TextInput
                                 id="email"
                                 type="email"
-                                label="البريد الإلكتروني (اختياري)"
+                                label="البريد الإلكتروني"
                                 value={data.email}
                                 onChange={e => setData('email', e.target.value)}
                                 error={errors.email}
                                 placeholder="أدخل البريد الإلكتروني للمساعد"
+                                required
                             />
                         </div>
 
@@ -243,27 +242,7 @@ const Index = ({ auth, assistants, assistantCount, maxAssistants, canAddMore }) 
                             />
                         </div>
 
-                        <div className="mb-4">
-                            <TextInput
-                                id="subject"
-                                label="المادة التعليمية (اختياري)"
-                                value={data.subject}
-                                onChange={e => setData('subject', e.target.value)}
-                                error={errors.subject}
-                                placeholder="مثال: الرياضيات، اللغة الإنجليزية"
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <TextInput
-                                id="city"
-                                label="المدينة (اختياري)"
-                                value={data.city}
-                                onChange={e => setData('city', e.target.value)}
-                                error={errors.city}
-                                placeholder="أدخل المدينة"
-                            />
-                        </div>
+                       
 
                         <div className="mb-4">
                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1 text-right">

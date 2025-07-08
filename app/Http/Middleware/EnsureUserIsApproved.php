@@ -16,7 +16,30 @@ class EnsureUserIsApproved
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && !Auth::user()->is_approved && !Auth::user()->is_admin) {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return $next($request);
+        }
+        
+        // Admin users always pass
+        if ($user->is_admin) {
+            return $next($request);
+        }
+        
+        // For assistants, check if their teacher is approved
+        if ($user->type === 'assistant') {
+            $teacher = $user->teacher;
+            
+            if (!$teacher || !$teacher->is_approved) {
+                return redirect()->route('pending-approval');
+            }
+            
+            return $next($request);
+        }
+        
+        // For teachers and other users, check their own approval status
+        if (!$user->is_approved) {
             return redirect()->route('pending-approval');
         }
 

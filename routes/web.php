@@ -109,13 +109,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Assistant management routes (only for teachers)
-    Route::middleware(['auth', 'onboarding', 'approved', 'not-admin', 'teacher-or-admin', 'subscription'])->group(function () {
+    Route::middleware(['manage-assistants'])->group(function () {
         Route::get('/assistants', [App\Http\Controllers\AssistantController::class, 'index'])->name('assistants.index');
-        Route::post('/assistants', [App\Http\Controllers\AssistantController::class, 'store'])->name('assistants.store');
-        Route::get('/assistants/{assistant}/edit', [App\Http\Controllers\AssistantController::class, 'edit'])->name('assistants.edit');
-        Route::put('/assistants/{assistant}', [App\Http\Controllers\AssistantController::class, 'update'])->name('assistants.update');
-        Route::delete('/assistants/{assistant}', [App\Http\Controllers\AssistantController::class, 'destroy'])->name('assistants.destroy');
-        Route::post('/assistants/{assistant}/resend-invitation', [App\Http\Controllers\AssistantController::class, 'resendInvitation'])->name('assistants.resend-invitation');
+        Route::post('/assistants', [App\Http\Controllers\AssistantController::class, 'store'])
+            ->middleware('assistant-limit')
+            ->name('assistants.store');
+        
+        Route::middleware('assistant-ownership')->group(function () {
+            Route::get('/assistants/{assistant}/edit', [App\Http\Controllers\AssistantController::class, 'edit'])->name('assistants.edit');
+            Route::put('/assistants/{assistant}', [App\Http\Controllers\AssistantController::class, 'update'])->name('assistants.update');
+            Route::delete('/assistants/{assistant}', [App\Http\Controllers\AssistantController::class, 'destroy'])->name('assistants.destroy');
+            Route::post('/assistants/{assistant}/resend-invitation', [App\Http\Controllers\AssistantController::class, 'resendInvitation'])->name('assistants.resend-invitation');
+        });
     });
     
     // Student management routes (only for approved non-admin users)

@@ -22,7 +22,32 @@ class EnsureSubscriptionIsActive
             return $next($request);
         }
 
-        // Check if user has an active subscription
+        // For assistants, check their teacher's subscription
+        if ($user && $user->type === 'assistant') {
+            $teacher = $user->teacher;
+            
+            if (!$teacher) {
+                // Assistant has no teacher - this shouldn't happen, but handle gracefully
+                return redirect()->route('subscription.expired');
+            }
+            
+            // Check if the teacher has an active subscription
+            if (!$teacher->hasActiveSubscription()) {
+                $subscription = $teacher->activeSubscription()->first();
+                
+                // Mark subscription as expired if it exists but is past end date
+                if ($subscription && $subscription->isExpired()) {
+                    $subscription->markAsExpired();
+                }
+
+                // Redirect to subscription expired page
+                return redirect()->route('subscription.expired');
+            }
+            
+            return $next($request);
+        }
+
+        // For teachers and other users, check their own subscription
         if (!$user || !$user->hasActiveSubscription()) {
             $subscription = $user ? $user->activeSubscription()->first() : null;
             

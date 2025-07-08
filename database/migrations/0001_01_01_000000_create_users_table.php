@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('phone');
-            $table->string('subject'); // Example: "Math - Grade 9"
+            $table->string('subject')->nullable(); // Example: "Math - Grade 9"
             $table->text('notes')->nullable();
             $table->boolean('is_approved')->default(false);
             $table->boolean('is_admin')->default(false);

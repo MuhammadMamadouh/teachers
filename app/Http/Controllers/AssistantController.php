@@ -20,11 +20,6 @@ class AssistantController extends Controller
     {
         $user = $request->user();
         
-        // Only teachers can access this page
-        if ($user->type !== 'teacher') {
-            abort(403, 'يمكن للمعلمين فقط إدارة المساعدين');
-        }
-        
         $assistants = $user->assistants()
             ->select(['id', 'name', 'phone', 'created_at'])
             ->orderBy('name')
@@ -48,24 +43,11 @@ class AssistantController extends Controller
     {
         $user = $request->user();
         
-        // Validate the teacher can add assistants
-        if ($user->type !== 'teacher') {
-            abort(403, 'يمكن للمعلمين فقط إضافة مساعدين');
-        }
-        
-        if (!$user->canAddAssistants()) {
-            return back()->withErrors([
-                'limit' => 'لقد وصلت إلى الحد الأقصى لعدد المساعدين. يرجى ترقية خطتك لإضافة المزيد من المساعدين.'
-            ]);
-        }
-        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:users,phone',
             'email' => 'nullable|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'subject' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
         
@@ -74,8 +56,6 @@ class AssistantController extends Controller
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
             'password' => Hash::make($validated['password']),
-            'subject' => $validated['subject'] ?? null,
-            'city' => $validated['city'] ?? null,
             'notes' => $validated['notes'] ?? null,
             'type' => 'assistant',
             'teacher_id' => $user->id,
@@ -85,12 +65,12 @@ class AssistantController extends Controller
         $assistant->save();
         
         // Send invitation SMS with password (to be implemented)
-        // For now, we'll still use email if available
-        if ($assistant->email) {
-            Mail::to($assistant->email)->send(new AssistantInvitation($user, $assistant, $validated['password']));
-        }
+       
+        // if ($assistant->email) {
+        //     Mail::to($assistant->email)->send(new AssistantInvitation($user, $assistant, $validated['password']));
+        // }
         
-        return redirect()->route('assistants.index')->with('success', 'تم إضافة المساعد بنجاح');
+        return redirect()->route('assistants.index')->with('success', 'تم إضافة المساعد بنجاح يمكنه الآن تسجيل الدخول باستخدام بياناته');
     }
 
     /**
@@ -98,13 +78,6 @@ class AssistantController extends Controller
      */
     public function destroy(Request $request, User $assistant)
     {
-        $user = $request->user();
-        
-        // Verify this is an assistant belonging to the current teacher
-        if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'يمكنك فقط إزالة مساعديك الخاصين');
-        }
-        
         $assistant->delete();
         
         return redirect()->route('assistants.index')->with('success', 'تم إزالة المساعد بنجاح');
@@ -116,11 +89,6 @@ class AssistantController extends Controller
     public function resendInvitation(Request $request, User $assistant)
     {
         $user = $request->user();
-        
-        // Verify this is an assistant belonging to the current teacher
-        if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'يمكنك فقط إدارة مساعديك الخاصين');
-        }
         
         // Generate a new temporary password
         $password = Str::random(10);
@@ -141,13 +109,6 @@ class AssistantController extends Controller
      */
     public function edit(Request $request, User $assistant)
     {
-        $user = $request->user();
-        
-        // Verify this is an assistant belonging to the current teacher
-        if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'يمكنك فقط تعديل مساعديك الخاصين');
-        }
-        
         return Inertia::render('Assistants/Edit', [
             'assistant' => $assistant->only(['id', 'name', 'phone', 'email', 'subject', 'city', 'notes']),
         ]);
@@ -158,19 +119,10 @@ class AssistantController extends Controller
      */
     public function update(Request $request, User $assistant)
     {
-        $user = $request->user();
-        
-        // Verify this is an assistant belonging to the current teacher
-        if ($assistant->type !== 'assistant' || $assistant->teacher_id !== $user->id) {
-            abort(403, 'يمكنك فقط تعديل مساعديك الخاصين');
-        }
-        
         $rules = [
             'name' => 'required|string|max:255',
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($assistant->id)],
-            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($assistant->id)],
-            'subject' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($assistant->id)],
             'notes' => 'nullable|string',
         ];
         
@@ -185,8 +137,6 @@ class AssistantController extends Controller
         $assistant->name = $validated['name'];
         $assistant->phone = $validated['phone'];
         $assistant->email = $validated['email'] ?? null;
-        $assistant->subject = $validated['subject'] ?? null;
-        $assistant->city = $validated['city'] ?? null;
         $assistant->notes = $validated['notes'] ?? null;
         
         // Update password if provided

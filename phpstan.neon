@@ -1,0 +1,25 @@
+parameters:
+  level: 6
+  paths:
+    - app
+    - config
+    - database/factories
+    - database/seeders
+    - routes
+  excludePaths:
+    - app/Http/Middleware/Authenticate.php
+    - app/Http/Middleware/EncryptCookies.php
+    - app/Http/Middleware/PreventRequestsDuringMaintenance.php
+    - app/Http/Middleware/RedirectIfAuthenticated.php
+    - app/Http/Middleware/TrimStrings.php
+    - app/Http/Middleware/TrustHosts.php
+    - app/Http/Middleware/TrustProxies.php
+    - app/Http/Middleware/ValidateSignature.php
+    - app/Http/Middleware/VerifyCsrfToken.php
+  ignoreErrors:
+    - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
+    - '#Call to an undefined method Illuminate\\Database\\Query\\Builder#'
+    - '#Unsafe usage of new static#'
+  bootstrap: bootstrap/app.php
+  checkMissingIterableValueType: false
+  checkGenericClassInNonGenericObjectType: false

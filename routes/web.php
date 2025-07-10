@@ -18,6 +18,38 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Health check endpoint for monitoring and Docker
+Route::get('/health', function () {
+    $checks = [
+        'status' => 'ok',
+        'timestamp' => now()->toISOString(),
+        'version' => config('app.version', '1.0.0'),
+    ];
+
+    try {
+        // Database connectivity check
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $checks['database'] = 'connected';
+    } catch (\Exception $e) {
+        $checks['database'] = 'disconnected';
+        $checks['status'] = 'error';
+    }
+
+    try {
+        // Redis connectivity check (if configured)
+        if (config('database.redis.default.host')) {
+            \Illuminate\Support\Facades\Redis::ping();
+            $checks['redis'] = 'connected';
+        }
+    } catch (\Exception $e) {
+        $checks['redis'] = 'disconnected';
+    }
+
+    $httpStatus = $checks['status'] === 'ok' ? 200 : 503;
+    
+    return response()->json($checks, $httpStatus);
+});
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),

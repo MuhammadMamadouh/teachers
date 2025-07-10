@@ -6,7 +6,6 @@ import { usePrevious } from '@/hooks/usePrevious';
 import { 
     MagnifyingGlassIcon, 
     XMarkIcon,
-    UserGroupIcon,
     UsersIcon
 } from '@heroicons/react/24/outline';
 
@@ -236,11 +235,11 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 <span>
                                     {isLoading ? 'جاري البحث...' : `تم العثور على ${students.length} طالب`}
                                     {searchTerm && (
-                                        <span className="font-medium"> للبحث "{searchTerm}"</span>
+                                        <span className="font-medium"> للبحث &quot;{searchTerm}&quot;</span>
                                     )}
                                     {selectedGroup && selectedGroup !== 'unassigned' && groups && (
                                         <span className="font-medium">
-                                            {' '}في مجموعة "{groups.find(g => g.id.toString() === selectedGroup)?.name}"
+                                            {' '}في مجموعة &quot;{groups.find(g => g.id.toString() === selectedGroup)?.name}&quot;
                                         </span>
                                     )}
                                     {selectedGroup === 'unassigned' && (

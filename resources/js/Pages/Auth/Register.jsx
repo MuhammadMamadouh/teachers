@@ -4,7 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { CheckCircle, Users, Star, Crown, Gift, Zap, Shield } from 'lucide-react';
+import { CheckCircle, Users, Star, Crown, Gift, Shield } from 'lucide-react';
 
 export default function Register({ governorates = [], plans = [], selectedPlan = null }) {
     const { data, setData, post, processing, errors, reset } = useForm({

@@ -6,7 +6,6 @@ import { TrendingUp, DollarSign, Users, BarChart3, PieChart, Activity, Clock, Ta
 export default function AdminDashboard({ 
     systemStats, 
     planStats, 
-    recentUsers, 
     usageStats,
     adminReports 
 }) {

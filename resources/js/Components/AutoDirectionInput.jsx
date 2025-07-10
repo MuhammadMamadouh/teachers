@@ -1,13 +1,14 @@
 import { forwardRef, useEffect, useRef } from 'react';
 
 export default forwardRef(function AutoDirectionInput({ className = '', isFocused = false, ...props }, ref) {
-    const input = ref ? ref : useRef();
+    const input = useRef();
+    const finalRef = ref || input;
 
     useEffect(() => {
         if (isFocused) {
-            input.current.focus();
+            finalRef.current.focus();
         }
-    }, []);
+    }, [isFocused, finalRef]);
 
     // Function to detect if text contains Arabic characters
     const containsArabic = (text) => {
@@ -52,7 +53,7 @@ export default forwardRef(function AutoDirectionInput({ className = '', isFocuse
                 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ' +
                 className
             }
-            ref={input}
+            ref={finalRef}
             onChange={handleInput}
             style={{ 
                 direction: 'rtl', 

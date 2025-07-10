@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import { ArrowLeft, Save, User, Mail, Lock, CreditCard, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Save, User, Lock, CreditCard, CheckCircle } from 'lucide-react';
 
 export default function TeachersCreate({ plans }) {
     const { data, setData, post, processing, errors, reset } = useForm({

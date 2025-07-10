@@ -164,11 +164,11 @@ export default function Index({ groups, academicYears, filters }) {
                                 <span>
                                     {isLoading ? 'جاري البحث...' : `تم العثور على ${groups.length} مجموعة`}
                                     {searchTerm && (
-                                        <span className="font-medium"> للبحث "{searchTerm}"</span>
+                                        <span className="font-medium"> للبحث &quot;{searchTerm}&quot;</span>
                                     )}
                                     {selectedAcademicYear && academicYears && (
                                         <span className="font-medium">
-                                            {' '}في الصف الدراسي "{academicYears.find(y => y.id.toString() === selectedAcademicYear)?.name_ar}"
+                                            {' '}في الصف الدراسي &quot;{academicYears.find(y => y.id.toString() === selectedAcademicYear)?.name_ar}&quot;
                                         </span>
                                     )}
                                 </span>
@@ -298,7 +298,7 @@ export default function Index({ groups, academicYears, filters }) {
                     <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">تأكيد الحذف</h3>
                         <p className="text-sm text-gray-500 mb-6">
-                            هل أنت متأكد من أنك تريد حذف المجموعة "{groupToDelete?.name}"؟ لا يمكن التراجع عن هذا الإجراء.
+                            هل أنت متأكد من أنك تريد حذف المجموعة &quot;{groupToDelete?.name}&quot;؟ لا يمكن التراجع عن هذا الإجراء.
                         </p>
                         <div className="flex justify-end space-x-4">
                             <button

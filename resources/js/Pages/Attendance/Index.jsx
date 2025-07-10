@@ -7,7 +7,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
     const [localSelectedGroup, setLocalSelectedGroup] = useState(selectedGroup?.id || '');
     const [localSelectedDate, setLocalSelectedDate] = useState(selectedDate);
     
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing } = useForm({
         group_id: selectedGroup?.id || '',
         date: selectedDate,
         attendances: []

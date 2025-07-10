@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { confirmDialog } from '@/utils/sweetAlert';
 
 export default function ShowPlanUpgradeRequest({ request }) {

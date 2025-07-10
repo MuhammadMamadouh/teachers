@@ -1,7 +1,7 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function Expired({ plans, currentSubscription, hasHadTrial }) {
+export default function Expired({ plans, currentSubscription, _hasHadTrial }) {
     return (
         <AuthenticatedLayout
             header={

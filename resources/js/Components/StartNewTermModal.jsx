@@ -37,7 +37,7 @@ export default function StartNewTermModal({ isOpen, onClose }) {
                 setError(response.data.message);
             }
         } catch (error) {
-            console.error('Error resetting term:', error);
+            // console.error('Error resetting term:', error);
             if (error.response && error.response.data && error.response.data.message) {
                 setError(error.response.data.message);
             } else {

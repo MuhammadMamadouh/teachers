@@ -1,13 +1,14 @@
 import { forwardRef, useEffect, useRef } from 'react';
 
 export default forwardRef(function AutoDirectionTextarea({ className = '', isFocused = false, ...props }, ref) {
-    const textarea = ref ? ref : useRef();
+    const textarea = useRef();
+    const finalRef = ref || textarea;
 
     useEffect(() => {
         if (isFocused) {
-            textarea.current.focus();
+            finalRef.current.focus();
         }
-    }, []);
+    }, [isFocused, finalRef]);
 
     // Function to detect if text contains Arabic characters
     const containsArabic = (text) => {
@@ -52,7 +53,7 @@ export default forwardRef(function AutoDirectionTextarea({ className = '', isFoc
                 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ' +
                 className
             }
-            ref={textarea}
+            ref={finalRef}
             onChange={handleInput}
             style={{ 
                 direction: 'rtl', 

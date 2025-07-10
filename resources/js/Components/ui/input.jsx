@@ -1,5 +1,5 @@
 import * as React from "react"
-import { getTextDirection, applyAutoDirection } from "@/utils/textDirection"
+import { applyAutoDirection } from "@/utils/textDirection"
 
 const Input = React.forwardRef(({ className = "", type = "text", autoDirection = true, ...props }, ref) => {
   const inputRef = React.useRef(null);

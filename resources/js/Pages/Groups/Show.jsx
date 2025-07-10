@@ -38,10 +38,6 @@ export default function Show({ group, availableStudents, paymentSummary }) {
         }
     };
 
-    const handleRemoveStudent = (studentId) => {
-        router.delete(route('groups.remove-student', [group.id, studentId]));
-    };
-
     const confirmRemoveStudent = (student) => {
         setStudentToRemove(student);
         setShowRemoveStudentModal(true);
@@ -351,7 +347,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                     <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">تأكيد الحذف</h3>
                         <p className="text-sm text-gray-500 mb-6">
-                            هل أنت متأكد من أنك تريد حذف المجموعة "{group.name}"؟ لا يمكن التراجع عن هذا الإجراء.
+                            هل أنت متأكد من أنك تريد حذف المجموعة &quot;{group.name}&quot;؟ لا يمكن التراجع عن هذا الإجراء.
                         </p>
                         <div className="flex justify-end space-x-4">
                             <button
@@ -498,7 +494,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                     <div className="relative bg-white rounded-lg shadow-lg max-w-md mx-auto p-6">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">تأكيد إزالة الطالب</h3>
                         <p className="text-sm text-gray-500 mb-6">
-                            هل أنت متأكد من أنك تريد إزالة الطالب "<span className="font-medium">{studentToRemove.name}</span>" من المجموعة "{group.name}"؟
+                            هل أنت متأكد من أنك تريد إزالة الطالب &quot;<span className="font-medium">{studentToRemove.name}</span>&quot; من المجموعة &quot;{group.name}&quot;؟
                         </p>
                         <div className="flex justify-end space-x-4">
                             <button

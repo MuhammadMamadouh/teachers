@@ -8,11 +8,11 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import DangerButton from '@/Components/DangerButton';
-import { PlusIcon, TrashIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
-const Index = ({ auth, assistants, assistantCount, maxAssistants, canAddMore }) => {
+const Index = ({ _auth, assistants, assistantCount, maxAssistants, canAddMore }) => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedAssistant, setSelectedAssistant] = useState(null);
@@ -62,10 +62,6 @@ const Index = ({ auth, assistants, assistantCount, maxAssistants, canAddMore }) 
                 },
             });
         }
-    };
-    
-    const resendInvitation = (assistantId) => {
-        router.post(route('assistants.resend-invitation', assistantId));
     };
     
     return (

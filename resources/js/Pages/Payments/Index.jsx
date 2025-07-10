@@ -475,7 +475,7 @@ export default function Index() {
                                                         <p className="text-sm mb-3">لا توجد مدفوعات لهذا الطالب في الفترة المحددة</p>
                                                         {paymentsData.group.payment_type === 'monthly' && (
                                                             <p className="text-xs text-gray-400 mb-3">
-                                                                يمكنك إنشاء مدفوعات شهرية للطلاب باستخدام الزر "إنشاء مدفوعات شهرية" أعلاه
+                                                                يمكنك إنشاء مدفوعات شهرية للطلاب باستخدام الزر &quot;إنشاء مدفوعات شهرية&quot; أعلاه
                                                             </p>
                                                         )}
                                                         {paymentsData.group.payment_type === 'per_session' && (
@@ -526,7 +526,7 @@ export default function Index() {
                                             المدفوعات ستظهر تلقائياً عند تسجيل حضور الطلاب في الجلسات
                                         </p>
                                         <p className="text-xs text-yellow-500">
-                                            تأكد من تسجيل الحضور أولاً في صفحة "تسجيل الحضور"
+                                            تأكد من تسجيل الحضور أولاً في صفحة &quot;تسجيل الحضور&quot;
                                         </p>
                                     </div>
                                 )}

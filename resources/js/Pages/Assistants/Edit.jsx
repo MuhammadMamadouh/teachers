@@ -6,7 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { Link } from '@inertiajs/react';
 
-const Edit = ({ auth, assistant }) => {
+const Edit = ({ _auth, assistant }) => {
     const { data, setData, put, processing, errors } = useForm({
         name: assistant.name || '',
         phone: assistant.phone || '',

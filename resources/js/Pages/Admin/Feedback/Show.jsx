@@ -35,7 +35,7 @@ export default function Show() {
         status: feedback.status,
     });
 
-    const { data: replyData, setData: setReplyData, patch: patchReply, processing: replyProcessing, errors, reset } = useForm({
+    const { data: replyData, setData: setReplyData, patch: patchReply, processing: replyProcessing, errors } = useForm({
         reply: feedback.reply || '',
     });
 

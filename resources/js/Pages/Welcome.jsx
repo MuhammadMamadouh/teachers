@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Users, BookOpen, Calendar, DollarSign, Shield, Star, CheckCircle, ArrowLeft, UserPlus, BarChart3, Clock, CreditCard } from 'lucide-react';
+import { Users, BookOpen, Calendar, DollarSign, Shield, Star, CheckCircle, ArrowLeft, UserPlus, BarChart3, CreditCard } from 'lucide-react';
 
 export default function Welcome({ auth, plans = [] }) {
     const features = [
@@ -312,7 +312,7 @@ export default function Welcome({ auth, plans = [] }) {
                                         <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                                     ))}
                                 </div>
-                                <p className="text-gray-600 mb-4 leading-relaxed">"{testimonial.content}"</p>
+                                <p className="text-gray-600 mb-4 leading-relaxed">&quot;{testimonial.content}&quot;</p>
                                 <div>
                                     <div className="font-semibold text-gray-900">{testimonial.name}</div>
                                     <div className="text-sm text-gray-500">{testimonial.role}</div>
@@ -337,7 +337,7 @@ export default function Welcome({ auth, plans = [] }) {
                     
                     {plans.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                            {plans.map((plan, index) => {
+                            {plans.map((plan, _index) => {
                                 // Determine if this is a popular plan (basic monthly or trial)
                                 const isPopular = plan.is_default || plan.name.includes('أساسية');
                                 const isHighlighted = plan.is_trial;

@@ -7,13 +7,14 @@ const TextInput = forwardRef(({
     error = null,
     ...props
 }, ref) => {
-    const input = ref || useRef();
+    const input = useRef();
+    const finalRef = ref || input;
 
     useEffect(() => {
         if (error) {
-            input.current.focus();
+            finalRef.current.focus();
         }
-    }, [error]);
+    }, [error, finalRef]);
 
     return (
         <div className="w-full">
@@ -25,12 +26,14 @@ const TextInput = forwardRef(({
             <input
                 type={type}
                 className={`rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 w-full ${error ? 'border-red-500' : ''} ${className}`}
-                ref={input}
+                ref={finalRef}
                 {...props}
             />
             {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
         </div>
     );
 });
+
+TextInput.displayName = 'TextInput';
 
 export default TextInput;

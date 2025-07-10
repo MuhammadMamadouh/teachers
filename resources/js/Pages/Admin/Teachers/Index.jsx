@@ -6,22 +6,16 @@ import {
     Users, 
     UserPlus, 
     Search, 
-    Filter, 
-    MoreVertical, 
     Edit, 
     Trash2, 
     Eye, 
     CheckCircle, 
-    XCircle,
-    RotateCcw,
     UserCheck,
     UserX
 } from 'lucide-react';
 
 export default function TeachersIndex({ teachers, filters, stats }) {
-    const [loading, setLoading] = useState(false);
     const [selectedTeachers, setSelectedTeachers] = useState([]);
-    const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
     const [sortBy, setSortBy] = useState(filters.sort_by || 'created_at');
@@ -49,8 +43,6 @@ export default function TeachersIndex({ teachers, filters, stats }) {
             if (result.isConfirmed) {
                 router.delete(route('admin.teachers.destroy', teacher.id), {
                     preserveScroll: true,
-                    onStart: () => setLoading(true),
-                    onFinish: () => setLoading(false),
                 });
             }
         });
@@ -66,8 +58,6 @@ export default function TeachersIndex({ teachers, filters, stats }) {
             if (result.isConfirmed) {
                 router.post(route('admin.teachers.activate', teacher.id), {}, {
                     preserveScroll: true,
-                    onStart: () => setLoading(true),
-                    onFinish: () => setLoading(false),
                     onSuccess: () => {
                         successAlert({
                             title: 'تم التفعيل بنجاح',
@@ -89,8 +79,6 @@ export default function TeachersIndex({ teachers, filters, stats }) {
             if (result.isConfirmed) {
                 router.post(route('admin.teachers.deactivate', teacher.id), {}, {
                     preserveScroll: true,
-                    onStart: () => setLoading(true),
-                    onFinish: () => setLoading(false),
                     onSuccess: () => {
                         successAlert({
                             title: 'تم إلغاء التفعيل بنجاح',
@@ -142,9 +130,7 @@ export default function TeachersIndex({ teachers, filters, stats }) {
                     teacher_ids: selectedTeachers,
                 }, {
                     preserveScroll: true,
-                    onStart: () => setLoading(true),
                     onFinish: () => {
-                        setLoading(false);
                         setSelectedTeachers([]);
                     }
                 });

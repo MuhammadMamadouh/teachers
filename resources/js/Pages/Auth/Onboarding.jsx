@@ -1,20 +1,17 @@
 import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { 
     BookOpen, 
     Users, 
     Calendar, 
     DollarSign, 
     Shield, 
-    Star, 
     CheckCircle, 
     ArrowRight, 
     ArrowLeft,
     UserPlus,
     BarChart3,
-    Clock,
     ChevronRight,
-    ChevronLeft,
     Gift,
     Crown,
     Zap

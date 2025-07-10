@@ -5,10 +5,8 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { 
-    CalendarDays, 
     Users, 
     CheckCircle, 
-    XCircle,
     TrendingUp,
     FileText,
     ArrowLeft,
@@ -18,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function MonthlyReport() {
-    const { groups, startDate, endDate, monthName, month, year } = usePage().props;
+    const { groups, startDate, endDate, monthName } = usePage().props;
 
     // Calculate overall statistics
     const overallStats = React.useMemo(() => {

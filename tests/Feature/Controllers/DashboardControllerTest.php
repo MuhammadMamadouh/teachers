@@ -2,12 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Student;
-use App\Models\Plan;
-use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class DashboardControllerTest extends TestCase
 {
@@ -25,7 +23,8 @@ class DashboardControllerTest extends TestCase
         $response = $this->actingAs($admin)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Admin/Dashboard')
             ->has('systemStats')
             ->has('planStats')
@@ -47,7 +46,8 @@ class DashboardControllerTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Dashboard')
             ->has('subscriptionLimits')
             ->where('currentStudentCount', 3)
@@ -69,7 +69,8 @@ class DashboardControllerTest extends TestCase
         $response = $this->actingAs($assistant)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Dashboard')
             ->has('subscriptionLimits')
             ->where('currentStudentCount', 5)
@@ -101,7 +102,8 @@ class DashboardControllerTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('dashboard.calendar'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Dashboard/Calendar')
             ->has('groups')
         );
@@ -116,7 +118,8 @@ class DashboardControllerTest extends TestCase
         $response = $this->actingAs($assistant)->get(route('dashboard.calendar'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Dashboard/Calendar')
             ->has('groups')
         );
@@ -140,13 +143,14 @@ class DashboardControllerTest extends TestCase
         $response = $this->actingAs($admin)->get(route('dashboard'));
 
         // Just verify the structure and that values are reasonable numbers
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->has('systemStats')
             ->has('systemStats.total_users')
-            ->has('systemStats.approved_users') 
+            ->has('systemStats.approved_users')
             ->has('systemStats.pending_users')
             ->has('systemStats.total_students')
-            ->where('systemStats.total_students', fn($count) => $count >= 10) // At least our 10 students
+            ->where('systemStats.total_students', fn ($count) => $count >= 10) // At least our 10 students
         );
     }
 
@@ -169,9 +173,10 @@ class DashboardControllerTest extends TestCase
 
         // Just verify planStats exists and has reasonable structure
         // Since seeders create multiple plans, we can't predict exact count
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->has('planStats')
-            ->where('planStats', fn($stats) => count($stats) >= 2) // At least our 2 plans
+            ->where('planStats', fn ($stats) => count($stats) >= 2) // At least our 2 plans
         );
     }
 }

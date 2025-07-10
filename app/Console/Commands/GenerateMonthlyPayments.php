@@ -4,9 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Group;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class GenerateMonthlyPayments extends Command
 {

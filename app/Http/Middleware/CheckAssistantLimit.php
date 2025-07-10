@@ -16,10 +16,10 @@ class CheckAssistantLimit
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        
+
         // Only check limit for POST requests (creating assistants)
         if ($request->isMethod('POST') && $request->route()->getName() === 'assistants.store') {
-            
+
             // Check if user is authenticated
             if (!$user) {
                 if ($request->expectsJson()) {
@@ -27,27 +27,27 @@ class CheckAssistantLimit
                         'message' => 'غير مصرح لك بالوصول',
                     ], 401);
                 }
-                
+
                 return redirect()->route('login');
             }
-            
+
             // Check if user can add more assistants
             if (!$user->canAddAssistants()) {
                 if ($request->expectsJson()) {
                     return response()->json([
                         'message' => 'لقد وصلت إلى الحد الأقصى لعدد المساعدين',
                         'errors' => [
-                            'limit' => 'لقد وصلت إلى الحد الأقصى لعدد المساعدين. يرجى ترقية خطتك لإضافة المزيد من المساعدين.'
-                        ]
+                            'limit' => 'لقد وصلت إلى الحد الأقصى لعدد المساعدين. يرجى ترقية خطتك لإضافة المزيد من المساعدين.',
+                        ],
                     ], 422);
                 }
-                
+
                 return back()->withErrors([
-                    'limit' => 'لقد وصلت إلى الحد الأقصى لعدد المساعدين. يرجى ترقية خطتك لإضافة المزيد من المساعدين.'
+                    'limit' => 'لقد وصلت إلى الحد الأقصى لعدد المساعدين. يرجى ترقية خطتك لإضافة المزيد من المساعدين.',
                 ])->withInput();
             }
         }
-        
+
         return $next($request);
     }
 }

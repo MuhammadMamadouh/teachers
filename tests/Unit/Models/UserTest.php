@@ -2,12 +2,11 @@
 
 namespace Tests\Unit\Models;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Subscription;
-use App\Models\Plan;
 use App\Models\Student;
+use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class UserTest extends TestCase
 {
@@ -92,11 +91,11 @@ class UserTest extends TestCase
     public function test_has_active_subscription_for_teacher()
     {
         $teacher = $this->createTeacher();
-        
+
         $this->assertFalse($teacher->hasActiveSubscription());
-        
+
         $this->createActiveSubscription($teacher);
-        
+
         $this->assertTrue($teacher->hasActiveSubscription());
     }
 
@@ -104,11 +103,11 @@ class UserTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $assistant = $this->createAssistant($teacher);
-        
+
         $this->assertFalse($assistant->hasActiveSubscription());
-        
+
         $this->createActiveSubscription($teacher);
-        
+
         $this->assertTrue($assistant->hasActiveSubscription());
     }
 
@@ -192,11 +191,11 @@ class UserTest extends TestCase
     public function test_get_student_count_for_teacher()
     {
         $teacher = $this->createTeacher();
-        
+
         $this->assertEquals(0, $teacher->getStudentCount());
-        
+
         Student::factory()->count(3)->create(['user_id' => $teacher->id]);
-        
+
         $this->assertEquals(3, $teacher->getStudentCount());
     }
 
@@ -204,27 +203,27 @@ class UserTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $assistant = $this->createAssistant($teacher);
-        
+
         $this->assertEquals(0, $assistant->getStudentCount());
-        
+
         Student::factory()->count(2)->create(['user_id' => $teacher->id]);
-        
+
         $this->assertEquals(2, $assistant->getStudentCount());
     }
 
     public function test_has_pending_plan_upgrade()
     {
         $teacher = $this->createTeacher();
-        
+
         $this->assertFalse($teacher->hasPendingPlanUpgrade());
-        
+
         $teacher->planUpgradeRequests()->create([
             'current_plan_id' => 1,
             'requested_plan_id' => 2,
             'status' => 'pending',
-            'notes' => 'Test upgrade'
+            'notes' => 'Test upgrade',
         ]);
-        
+
         $this->assertTrue($teacher->hasPendingPlanUpgrade());
     }
 }

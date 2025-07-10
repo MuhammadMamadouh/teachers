@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,7 +12,7 @@ return new class extends Migration
     {
         // Drop the table and recreate it with the new structure
         Schema::dropIfExists('payments');
-        
+
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
@@ -25,7 +24,7 @@ return new class extends Migration
             $table->datetime('paid_at')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             // Ensure no duplicate payment record for same student, group, and related_date
             $table->unique(['group_id', 'student_id', 'related_date']);
         });
@@ -38,7 +37,7 @@ return new class extends Migration
     {
         // Drop the new table and recreate the old one
         Schema::dropIfExists('payments');
-        
+
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
@@ -50,7 +49,7 @@ return new class extends Migration
             $table->date('paid_date')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['student_id', 'group_id', 'month', 'year']);
         });
     }

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -21,7 +20,7 @@ return new class extends Migration
             $table->timestamp('responded_at')->nullable()->comment('When admin responded');
             $table->boolean('is_read_by_admin')->default(false)->comment('Whether admin has read this feedback');
             $table->timestamps();
-            
+
             $table->index(['user_id', 'status']);
             $table->index(['type', 'status']);
             $table->index('created_at');

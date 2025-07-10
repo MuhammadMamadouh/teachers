@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Models\Plan;
 use Illuminate\Database\Seeder;
 
 class DefaultSubscriptionSeeder extends Seeder
@@ -16,9 +16,10 @@ class DefaultSubscriptionSeeder extends Seeder
     {
         // Get the default plan
         $defaultPlan = Plan::where('is_default', true)->first();
-        
+
         if (!$defaultPlan) {
             $this->command->warn('No default plan found. Skipping subscription creation.');
+
             return;
         }
 

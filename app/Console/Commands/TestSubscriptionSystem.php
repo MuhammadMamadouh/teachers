@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Console\Command;
 
 class TestSubscriptionSystem extends Command
 {
@@ -29,7 +29,7 @@ class TestSubscriptionSystem extends Command
     public function handle()
     {
         $this->info('Testing Subscription System...');
-        
+
         // Test 1: Check if trial plan exists
         $trialPlan = Plan::getDefaultTrial();
         if ($trialPlan) {
@@ -39,6 +39,7 @@ class TestSubscriptionSystem extends Command
             $this->info("  - Price: {$trialPlan->formatted_price}");
         } else {
             $this->error("✗ Trial plan not found!");
+
             return 1;
         }
 
@@ -68,18 +69,18 @@ class TestSubscriptionSystem extends Command
 
         if ($testUser) {
             $this->info("\nTesting with user: {$testUser->name}");
-            
+
             $hasHadTrial = $testUser->hasHadTrial();
             $this->info("Has had trial: " . ($hasHadTrial ? 'Yes' : 'No'));
-            
+
             $hasActiveSubscription = $testUser->hasActiveSubscription();
             $this->info("Has active subscription: " . ($hasActiveSubscription ? 'Yes' : 'No'));
-            
+
             // Test assistant limits
             if ($hasActiveSubscription) {
                 $canAddAssistants = $testUser->canAddAssistants();
                 $this->info("Can add assistants: " . ($canAddAssistants ? 'Yes' : 'No'));
-                
+
                 $subscription = $testUser->activeSubscription()->with('plan')->first();
                 if ($subscription && $subscription->plan) {
                     $this->info("Plan allows: {$subscription->plan->max_assistants} assistants");
@@ -87,7 +88,7 @@ class TestSubscriptionSystem extends Command
                     $this->info("Current assistants: {$currentAssistants}");
                 }
             }
-            
+
             if (!$hasHadTrial) {
                 $this->info("Creating trial subscription...");
                 $subscription = $testUser->createTrialSubscription();
@@ -101,7 +102,7 @@ class TestSubscriptionSystem extends Command
                     $this->error("✗ Failed to create trial subscription");
                 }
             }
-            
+
             // Re-check subscription status
             $hasActiveSubscription = $testUser->hasActiveSubscription();
             $this->info("Has active subscription (after trial): " . ($hasActiveSubscription ? 'Yes' : 'No'));
@@ -114,7 +115,7 @@ class TestSubscriptionSystem extends Command
         $this->info("✓ Daily expired subscription cleanup at midnight");
 
         $this->info("\n🎉 Subscription system test completed!");
-        
+
         return 0;
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class AuthenticationTest extends TestCase
             'onboarding_completed' => true,
             'email_verified_at' => now(),
         ]);
-        
+
         // Create an active subscription for the user
         $plan = Plan::factory()->create();
         Subscription::factory()->active()->create([
@@ -46,6 +46,7 @@ class AuthenticationTest extends TestCase
             $this->actingAs($user);
             $dashboardResponse = $this->get(route('dashboard'));
             $dashboardResponse->assertStatus(200);
+
             return;
         }
 

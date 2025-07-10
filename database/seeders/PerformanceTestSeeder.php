@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Group;
-use App\Models\Student;
-use App\Models\Payment;
 use App\Models\Attendance;
+use App\Models\Group;
+use App\Models\Payment;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PerformanceTestSeeder extends Seeder
 {
@@ -39,7 +39,7 @@ class PerformanceTestSeeder extends Seeder
 
         // Disable foreign key checks for faster inserts
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
+
         // Truncate existing data
         // $this->truncateTables();
 
@@ -47,7 +47,7 @@ class PerformanceTestSeeder extends Seeder
         for ($batch = 0; $batch < self::TEACHERS_COUNT / self::BATCH_SIZE; $batch++) {
             $this->command->info("Processing batch " . ($batch + 1) . "/" . ceil(self::TEACHERS_COUNT / self::BATCH_SIZE));
             $this->seedBatch($batch * self::BATCH_SIZE, min(self::BATCH_SIZE, self::TEACHERS_COUNT - $batch * self::BATCH_SIZE));
-            
+
             // Force garbage collection to free memory
             gc_collect_cycles();
         }
@@ -61,13 +61,13 @@ class PerformanceTestSeeder extends Seeder
     private function truncateTables(): void
     {
         $this->command->info('Truncating existing data...');
-        
+
         $tables = [
             'attendances',
-            'payments', 
+            'payments',
             'students',
             'groups',
-            'users'
+            'users',
         ];
 
         foreach ($tables as $table) {
@@ -78,7 +78,7 @@ class PerformanceTestSeeder extends Seeder
     private function seedBatch(int $startIndex, int $batchSize): void
     {
         $teacherIds = [];
-        
+
         // Create teachers in batch
         $this->command->info("Creating {$batchSize} teachers...");
         $teachers = User::factory()
@@ -105,7 +105,7 @@ class PerformanceTestSeeder extends Seeder
                     ->toArray();
             }
         }
-        
+
         // Insert assistants in chunks
         collect($assistantsData)->chunk(1000)->each(function ($chunk) {
             DB::table('users')->insert($chunk->toArray());
@@ -132,14 +132,14 @@ class PerformanceTestSeeder extends Seeder
         // Assign students to groups (50 students per group)
         $studentIds = $students->pluck('id')->toArray();
         $groupIds = $groups->pluck('id')->toArray();
-        
+
         $studentIndex = 0;
         foreach ($groupIds as $groupId) {
             $groupStudents = array_slice($studentIds, $studentIndex, self::STUDENTS_PER_GROUP);
-            
+
             // Update students to belong to this group
             Student::whereIn('id', $groupStudents)->update(['group_id' => $groupId]);
-            
+
             $studentIndex += self::STUDENTS_PER_GROUP;
         }
 
@@ -154,13 +154,13 @@ class PerformanceTestSeeder extends Seeder
     {
         $paymentData = [];
         $currentDate = Carbon::now();
-        
+
         foreach ($studentIds as $studentId) {
             $groupId = $groupIds[array_rand($groupIds)]; // Random group for payment
-            
+
             for ($month = 0; $month < self::PAYMENT_MONTHS; $month++) {
                 $paymentMonth = $currentDate->copy()->subMonths($month);
-                
+
                 $paymentData[] = [
                     'student_id' => $studentId,
                     'group_id' => $groupId,
@@ -186,16 +186,16 @@ class PerformanceTestSeeder extends Seeder
     {
         $attendanceData = [];
         $currentDate = Carbon::now();
-        
+
         foreach ($studentIds as $studentId) {
             $groupId = $groupIds[array_rand($groupIds)]; // Random group for attendance
-            
+
             for ($month = 0; $month < self::ATTENDANCE_MONTHS; $month++) {
                 $monthStart = $currentDate->copy()->subMonths($month)->startOfMonth();
-                
+
                 for ($session = 0; $session < self::SESSIONS_PER_MONTH; $session++) {
                     $sessionDate = $monthStart->copy()->addDays($session * 3); // Sessions every 3 days
-                    
+
                     if ($sessionDate->lte($currentDate)) {
                         $attendanceData[] = [
                             'student_id' => $studentId,

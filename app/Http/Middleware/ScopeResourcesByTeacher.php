@@ -18,7 +18,7 @@ class ScopeResourcesByTeacher
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        
+
         if (!$user) {
             return $next($request);
         }
@@ -26,7 +26,7 @@ class ScopeResourcesByTeacher
         // Attach the main teacher ID to the request for controllers to use
         $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
         $request->attributes->add(['teacher_id' => $teacherId]);
-        
+
         // Make the main teacher available to the request
         $mainTeacher = $user->type === 'assistant' ? $user->teacher : $user;
         $request->attributes->add(['main_teacher' => $mainTeacher]);

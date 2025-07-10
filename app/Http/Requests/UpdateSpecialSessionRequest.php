@@ -39,14 +39,14 @@ class UpdateSpecialSessionRequest extends FormRequest
         return [
             'date.required' => 'تاريخ الجلسة الخاصة مطلوب.',
             'date.date' => 'تاريخ الجلسة الخاصة يجب أن يكون تاريخ صحيح.',
-            
+
             'start_time.required' => 'وقت بداية الجلسة الخاصة مطلوب.',
             'start_time.date_format' => 'وقت بداية الجلسة الخاصة يجب أن يكون بتنسيق HH:MM.',
-            
+
             'end_time.required' => 'وقت نهاية الجلسة الخاصة مطلوب.',
             'end_time.date_format' => 'وقت نهاية الجلسة الخاصة يجب أن يكون بتنسيق HH:MM.',
             'end_time.after' => 'وقت نهاية الجلسة يجب أن يكون بعد وقت البداية.',
-            
+
             'description.string' => 'وصف الجلسة الخاصة يجب أن يكون نص.',
             'description.max' => 'وصف الجلسة الخاصة يجب ألا يتجاوز 255 حرف.',
         ];

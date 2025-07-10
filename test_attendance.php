@@ -26,7 +26,7 @@ echo "\nTesting attendance creation for {$testStudent->name} on {$testDate}...\n
 $existingAttendance = \App\Models\Attendance::where([
     'student_id' => $testStudent->id,
     'group_id' => $perSessionGroup->id,
-    'date' => $testDate
+    'date' => $testDate,
 ])->first();
 
 if ($existingAttendance) {
@@ -39,7 +39,7 @@ if ($existingAttendance) {
 $existingPayment = \App\Models\Payment::where([
     'student_id' => $testStudent->id,
     'group_id' => $perSessionGroup->id,
-    'related_date' => $testDate
+    'related_date' => $testDate,
 ])->first();
 
 if ($existingPayment) {

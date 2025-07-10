@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Group;
-use App\Models\Student;
 use App\Models\Payment;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,13 +23,13 @@ class AttendanceController extends Controller
         $selectedGroup = null;
         $selectedDate = $request->get('date', now()->format('Y-m-d'));
         $attendances = collect();
-        
+
         if ($request->has('group_id')) {
             $selectedGroup = Group::where('user_id', Auth::id())
                 ->where('id', $request->group_id)
                 ->with('assignedStudents')
                 ->first();
-                
+
             if ($selectedGroup) {
                 $attendances = Attendance::where('group_id', $selectedGroup->id)
                     ->where('date', $selectedDate)
@@ -38,12 +38,12 @@ class AttendanceController extends Controller
                     ->keyBy('student_id');
             }
         }
-        
+
         return Inertia::render('Attendance/Index', [
             'groups' => $groups,
             'selectedGroup' => $selectedGroup,
             'selectedDate' => $selectedDate,
-            'attendances' => $attendances
+            'attendances' => $attendances,
         ]);
     }
 
@@ -141,7 +141,7 @@ class AttendanceController extends Controller
             'group' => $group,
             'attendances' => $attendances,
             'startDate' => $startDate,
-            'endDate' => $endDate
+            'endDate' => $endDate,
         ]);
     }
 
@@ -152,9 +152,9 @@ class AttendanceController extends Controller
     {
         $startDate = now()->subMonth()->startOfMonth()->format('Y-m-d');
         $endDate = now()->subMonth()->endOfMonth()->format('Y-m-d');
-        
+
         $groups = Group::where('user_id', Auth::id())
-            ->with(['assignedStudents', 'attendances' => function($query) use ($startDate, $endDate) {
+            ->with(['assignedStudents', 'attendances' => function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate, $endDate])
                       ->with('student')
                       ->orderBy('date', 'desc');
@@ -162,17 +162,17 @@ class AttendanceController extends Controller
             ->get();
 
         // Calculate summary statistics for each group
-        $groupsWithStats = $groups->map(function($group) use ($startDate, $endDate) {
+        $groupsWithStats = $groups->map(function ($group) use ($startDate, $endDate) {
             $attendances = $group->attendances;
             $totalStudents = $group->assignedStudents->count();
             $uniqueDates = $attendances->pluck('date')->unique()->count();
-            
+
             $totalPresent = $attendances->where('is_present', true)->count();
             $totalAbsent = $attendances->where('is_present', false)->count();
             $totalSessions = $totalPresent + $totalAbsent;
-            
+
             $attendanceRate = $totalSessions > 0 ? round(($totalPresent / $totalSessions) * 100, 1) : 0;
-            
+
             return [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -182,7 +182,7 @@ class AttendanceController extends Controller
                 'total_present' => $totalPresent,
                 'total_absent' => $totalAbsent,
                 'attendance_rate' => $attendanceRate,
-                'attendances_by_date' => $attendances->groupBy('date')
+                'attendances_by_date' => $attendances->groupBy('date'),
             ];
         });
 
@@ -190,7 +190,7 @@ class AttendanceController extends Controller
             'groups' => $groupsWithStats,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'monthName' => now()->subMonth()->format('F Y')
+            'monthName' => now()->subMonth()->format('F Y'),
         ]);
     }
 
@@ -210,9 +210,9 @@ class AttendanceController extends Controller
         $endDate = $request->end_date;
         $month = $request->month;
         $year = $request->year;
-        
+
         $groups = Group::where('user_id', Auth::id())
-            ->with(['assignedStudents', 'attendances' => function($query) use ($startDate, $endDate) {
+            ->with(['assignedStudents', 'attendances' => function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate, $endDate])
                       ->with('student')
                       ->orderBy('date', 'desc');
@@ -220,17 +220,17 @@ class AttendanceController extends Controller
             ->get();
 
         // Calculate summary statistics for each group
-        $groupsWithStats = $groups->map(function($group) use ($startDate, $endDate) {
+        $groupsWithStats = $groups->map(function ($group) use ($startDate, $endDate) {
             $attendances = $group->attendances;
             $totalStudents = $group->assignedStudents->count();
             $uniqueDates = $attendances->pluck('date')->unique()->count();
-            
+
             $totalPresent = $attendances->where('is_present', true)->count();
             $totalAbsent = $attendances->where('is_present', false)->count();
             $totalSessions = $totalPresent + $totalAbsent;
-            
+
             $attendanceRate = $totalSessions > 0 ? round(($totalPresent / $totalSessions) * 100, 1) : 0;
-            
+
             return [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -240,14 +240,14 @@ class AttendanceController extends Controller
                 'total_present' => $totalPresent,
                 'total_absent' => $totalAbsent,
                 'attendance_rate' => $attendanceRate,
-                'attendances_by_date' => $attendances->groupBy('date')
+                'attendances_by_date' => $attendances->groupBy('date'),
             ];
         });
 
         $monthNames = [
             1 => 'يناير', 2 => 'فبراير', 3 => 'مارس', 4 => 'أبريل',
             5 => 'مايو', 6 => 'يونيو', 7 => 'يوليو', 8 => 'أغسطس',
-            9 => 'سبتمبر', 10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر'
+            9 => 'سبتمبر', 10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر',
         ];
 
         return Inertia::render('Attendance/MonthlyReport', [
@@ -256,7 +256,7 @@ class AttendanceController extends Controller
             'endDate' => $endDate,
             'month' => $month,
             'year' => $year,
-            'monthName' => $monthNames[$month] . ' ' . $year
+            'monthName' => $monthNames[$month] . ' ' . $year,
         ]);
     }
 }

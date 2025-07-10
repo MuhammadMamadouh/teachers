@@ -2,13 +2,11 @@
 
 namespace Tests\Unit\Models;
 
-use Tests\TestCase;
-use App\Models\Group;
-use App\Models\User;
-use App\Models\Student;
 use App\Models\AcademicYear;
-use App\Models\GroupSchedule;
-use App\Models\GroupSpecialSession;
+use App\Models\Group;
+use App\Models\Student;
+use App\Models\User;
+use Tests\TestCase;
 
 class GroupTest extends TestCase
 {
@@ -16,7 +14,7 @@ class GroupTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $academicYear = AcademicYear::factory()->create();
-        
+
         $group = Group::factory()->create([
             'user_id' => $teacher->id,
             'name' => 'المجموعة الأولى',
@@ -56,12 +54,12 @@ class GroupTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $group = Group::factory()->create(['user_id' => $teacher->id]);
-        
+
         $student1 = Student::factory()->create([
             'user_id' => $teacher->id,
             'group_id' => $group->id,
         ]);
-        
+
         $student2 = Student::factory()->create([
             'user_id' => $teacher->id,
             'group_id' => $group->id,
@@ -107,19 +105,19 @@ class GroupTest extends TestCase
     public function test_group_is_active_scope()
     {
         $teacher = $this->createTeacher();
-        
+
         $activeGroup = Group::factory()->create([
             'user_id' => $teacher->id,
             'is_active' => true,
         ]);
-        
+
         $inactiveGroup = Group::factory()->create([
             'user_id' => $teacher->id,
             'is_active' => false,
         ]);
 
         $activeGroups = Group::isActive()->get();
-        
+
         $this->assertTrue($activeGroups->contains($activeGroup));
         $this->assertFalse($activeGroups->contains($inactiveGroup));
     }
@@ -127,12 +125,12 @@ class GroupTest extends TestCase
     public function test_group_payment_type_enum()
     {
         $teacher = $this->createTeacher();
-        
+
         $monthlyGroup = Group::factory()->create([
             'user_id' => $teacher->id,
             'payment_type' => 'monthly',
         ]);
-        
+
         $perSessionGroup = Group::factory()->create([
             'user_id' => $teacher->id,
             'payment_type' => 'per_session',
@@ -146,7 +144,7 @@ class GroupTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $academicYear = AcademicYear::factory()->create();
-        
+
         $group = Group::create([
             'user_id' => $teacher->id,
             'name' => 'مجموعة الرياضيات',

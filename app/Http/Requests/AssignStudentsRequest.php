@@ -23,8 +23,8 @@ class AssignStudentsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_ids' => ['required', 'array', new StudentNotInGroup],
-            'student_ids.*' => 'exists:students,id'
+            'student_ids' => ['required', 'array', new StudentNotInGroup()],
+            'student_ids.*' => 'exists:students,id',
         ];
     }
 

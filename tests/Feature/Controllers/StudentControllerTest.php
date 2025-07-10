@@ -2,11 +2,9 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Group;
 use App\Models\AcademicYear;
+use App\Models\Student;
+use Tests\TestCase;
 
 class StudentControllerTest extends TestCase
 {
@@ -22,7 +20,8 @@ class StudentControllerTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('students.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Students/Index')
             ->has('students', 3)
             ->where('canAddStudents', true)
@@ -42,7 +41,8 @@ class StudentControllerTest extends TestCase
         $response = $this->actingAs($assistant)->get(route('students.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Students/Index')
             ->has('students', 3)
         );
@@ -53,7 +53,7 @@ class StudentControllerTest extends TestCase
         $teacher = $this->createTeacher();
         $plan = $this->createPlan(['max_students' => 10]);
         $this->createActiveSubscription($teacher, $plan);
-        
+
         $academicYear = AcademicYear::factory()->create();
 
         $studentData = [
@@ -82,7 +82,7 @@ class StudentControllerTest extends TestCase
         $teacher = $this->createTeacher();
         $plan = $this->createPlan(['max_students' => 2]);
         $this->createActiveSubscription($teacher, $plan);
-        
+
         $academicYear = AcademicYear::factory()->create();
 
         // Create students up to limit
@@ -110,7 +110,7 @@ class StudentControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $academicYear = AcademicYear::factory()->create();
         $student = Student::factory()->create([
             'user_id' => $teacher->id,
@@ -139,7 +139,7 @@ class StudentControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $student = Student::factory()->create(['user_id' => $teacher->id]);
 
         $response = $this->actingAs($teacher)
@@ -186,7 +186,7 @@ class StudentControllerTest extends TestCase
         $this->createActiveSubscription($teacher);
 
         $academicYear = AcademicYear::factory()->create();
-        
+
         // Test empty name
         $response = $this->actingAs($teacher)
             ->post(route('students.store'), [

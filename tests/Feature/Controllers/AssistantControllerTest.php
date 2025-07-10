@@ -3,10 +3,6 @@
 namespace Tests\Feature\Controllers;
 
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Group;
-use App\Models\AcademicYear;
 
 class AssistantControllerTest extends TestCase
 {
@@ -23,7 +19,8 @@ class AssistantControllerTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('assistants.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Assistants/Index')
             ->has('assistants', 2)
             ->where('canAddMore', true)
@@ -100,7 +97,7 @@ class AssistantControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $assistant = $this->createAssistant($teacher);
 
         $updateData = [
@@ -126,7 +123,7 @@ class AssistantControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $assistant = $this->createAssistant($teacher);
 
         $response = $this->actingAs($teacher)
@@ -158,7 +155,7 @@ class AssistantControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $assistant = $this->createAssistant($teacher, [
             'email_verified_at' => null,
         ]);

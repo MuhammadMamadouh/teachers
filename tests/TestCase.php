@@ -2,13 +2,11 @@
 
 namespace Tests;
 
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
 use App\Models\Plan;
 use App\Models\Subscription;
-use App\Models\AcademicYear;
-use App\Models\Governorate;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -36,7 +34,7 @@ abstract class TestCase extends BaseTestCase
         if (!$teacher) {
             $teacher = $this->createTeacher();
         }
-        
+
         return User::factory()->assistant()->create(array_merge([
             'teacher_id' => $teacher->id,
         ], $attributes));

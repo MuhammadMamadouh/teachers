@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Governorate;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -39,7 +38,7 @@ class ReportsController extends Controller
                 'total_teachers' => $totalTeachers,
                 'approved_teachers' => $approvedTeachers,
                 'pending_teachers' => $pendingTeachers,
-            ]
+            ],
         ]);
     }
 }

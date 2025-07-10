@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Plan extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'name',
         'max_students',
@@ -58,7 +58,7 @@ class Plan extends Model
     public function getFormattedDurationAttribute(): string
     {
         $days = $this->duration_days;
-        
+
         if ($days == 30) {
             return 'شهر واحد';
         } elseif ($days == 90) {

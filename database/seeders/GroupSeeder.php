@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\AcademicYear;
 use App\Models\Group;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\AcademicYear;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class GroupSeeder extends Seeder
@@ -19,14 +18,14 @@ class GroupSeeder extends Seeder
     {
         // Get the first non-admin user
         $user = User::where('is_admin', false)->first();
-        
+
         if (!$user) {
             return;
         }
 
         // Get the current academic year
         $academicYear = AcademicYear::first();
-        
+
         if (!$academicYear) {
             // Create a default academic year if none exists
             $academicYear = AcademicYear::create([
@@ -49,7 +48,7 @@ class GroupSeeder extends Seeder
                     ['day_of_week' => 0, 'start_time' => '08:00', 'end_time' => '10:00'], // Sunday
                     ['day_of_week' => 2, 'start_time' => '08:00', 'end_time' => '10:00'], // Tuesday
                     ['day_of_week' => 4, 'start_time' => '08:00', 'end_time' => '10:00'], // Thursday
-                ]
+                ],
             ],
             [
                 'name' => 'مجموعة المساء - بالجلسة',
@@ -62,7 +61,7 @@ class GroupSeeder extends Seeder
                 'schedules' => [
                     ['day_of_week' => 1, 'start_time' => '16:00', 'end_time' => '18:00'], // Monday
                     ['day_of_week' => 3, 'start_time' => '16:00', 'end_time' => '18:00'], // Wednesday
-                ]
+                ],
             ],
             [
                 'name' => 'مجموعة نهاية الأسبوع - شهري',
@@ -75,16 +74,16 @@ class GroupSeeder extends Seeder
                 'schedules' => [
                     ['day_of_week' => 5, 'start_time' => '10:00', 'end_time' => '12:00'], // Friday
                     ['day_of_week' => 6, 'start_time' => '10:00', 'end_time' => '12:00'], // Saturday
-                ]
+                ],
             ],
         ];
 
         foreach ($groups as $groupData) {
             $schedules = $groupData['schedules'];
             unset($groupData['schedules']);
-            
+
             $group = Group::create(array_merge($groupData, ['user_id' => $user->id]));
-            
+
             foreach ($schedules as $schedule) {
                 $group->schedules()->create($schedule);
             }
@@ -92,7 +91,7 @@ class GroupSeeder extends Seeder
 
         // Create some sample students and assign them to groups
         $createdGroups = Group::where('user_id', $user->id)->get();
-        
+
         // Create sample students
         $sampleStudents = [
             ['name' => 'أحمد علي', 'phone' => '0501234567', 'guardian_phone' => '0509876543'],
@@ -107,21 +106,21 @@ class GroupSeeder extends Seeder
                 'user_id' => $user->id,
                 'academic_year_id' => $academicYear->id,
             ]));
-            
+
             // Assign each student to a random group
             if ($createdGroups->isNotEmpty()) {
                 $randomGroup = $createdGroups->random();
-                
+
                 // Update student to belong to this group
                 $student->update(['group_id' => $randomGroup->id]);
-                
+
                 // Create sample payment records based on payment type
                 if ($randomGroup->payment_type === 'monthly') {
                     // Create monthly payments for the last 3 months
                     for ($monthsBack = 0; $monthsBack < 3; $monthsBack++) {
                         $date = now()->subMonths($monthsBack)->startOfMonth();
                         $isPaid = $monthsBack < 2; // Make recent payments paid
-                        
+
                         Payment::create([
                             'student_id' => $student->id,
                             'group_id' => $randomGroup->id,
@@ -138,7 +137,7 @@ class GroupSeeder extends Seeder
                     for ($daysBack = 1; $daysBack <= 10; $daysBack += 2) {
                         $date = now()->subDays($daysBack);
                         $isPaid = $daysBack <= 6; // Make recent sessions paid
-                        
+
                         Payment::create([
                             'student_id' => $student->id,
                             'group_id' => $randomGroup->id,

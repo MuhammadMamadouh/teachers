@@ -21,23 +21,23 @@ class StudentController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        
+
         // For assistants, use the teacher's students
         $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
-        
+
         // Build the query with search filters
         $query = Student::where('user_id', $teacherId)->with(['group', 'academicYear']);
-        
+
         // Search by name
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('guardian_phone', 'like', "%{$search}%");
             });
         }
-        
+
         // Filter by group
         if ($request->filled('group_id')) {
             if ($request->input('group_id') === 'unassigned') {
@@ -51,11 +51,11 @@ class StudentController extends Controller
         if ($request->filled('academic_year_id')) {
             $query->where('academic_year_id', $request->input('academic_year_id'));
         }
-        
+
         $students = $query->orderBy('name')->get();
         $groups = Group::where('user_id', $teacherId)->select('id', 'name')->get();
         $academicYears = \App\Models\AcademicYear::all();
-        
+
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
 
@@ -81,12 +81,12 @@ class StudentController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        
+
         // Check subscription limits and pass to view
         $canAdd = $user->canAddStudents();
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
-        
+
         $groups = Group::where('user_id', $user->id)->where('is_active', true)->with('academicYear')->get();
         $academicYears = \App\Models\AcademicYear::all();
 
@@ -106,7 +106,7 @@ class StudentController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        
+
         // Check subscription limit before creating
         if (!$user->canAddStudents()) {
             throw ValidationException::withMessages([
@@ -149,7 +149,7 @@ class StudentController extends Controller
         $user = Auth::user();
 
         // Ensure the student belongs to the authenticated user or their teacher
-        if ($student->user_id !== $user->id && 
+        if ($student->user_id !== $user->id &&
             ($user->type !== 'assistant' || $student->user_id !== $user->teacher_id)) {
             abort(403);
         }
@@ -178,7 +178,8 @@ class StudentController extends Controller
                     ] : null,
                 ];
             });
-// dd($student->toArray());
+
+        // dd($student->toArray());
         return Inertia::render('Students/Show', [
             'student' => $student,
             'recentPayments' => $recentPayments,

@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Models;
 
-use Tests\TestCase;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Models\Plan;
+use Tests\TestCase;
 
 class SubscriptionTest extends TestCase
 {
@@ -13,7 +13,7 @@ class SubscriptionTest extends TestCase
     {
         $user = $this->createTeacher();
         $plan = $this->createPlan();
-        
+
         $subscription = Subscription::factory()->create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,

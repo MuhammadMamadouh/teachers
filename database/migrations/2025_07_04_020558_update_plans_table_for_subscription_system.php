@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->integer('duration_days')->default(30);
             $table->integer('price')->default(0);
             $table->boolean('is_trial')->default(false);
-            
+
             // Drop the old price_per_month column
             $table->dropColumn('price_per_month');
         });

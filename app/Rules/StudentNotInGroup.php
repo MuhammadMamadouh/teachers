@@ -2,9 +2,9 @@
 
 namespace App\Rules;
 
+use App\Models\Student;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use App\Models\Student;
 
 class StudentNotInGroup implements ValidationRule
 {
@@ -18,12 +18,12 @@ class StudentNotInGroup implements ValidationRule
             ->whereNotNull('group_id')
             ->with('group')
             ->get();
-            
+
         if ($studentsInGroups->count() > 0) {
-            $studentNames = $studentsInGroups->map(function($student) {
+            $studentNames = $studentsInGroups->map(function ($student) {
                 return $student->name . ' (في المجموعة: ' . $student->group->name . ')';
             })->join('، ');
-            
+
             $fail("الطلاب التالية مُعينين بالفعل في مجموعات: {$studentNames}");
         }
     }

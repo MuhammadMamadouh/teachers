@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Models;
 
-use Tests\TestCase;
 use App\Models\Plan;
 use App\Models\Subscription;
+use Tests\TestCase;
 
 class PlanTest extends TestCase
 {

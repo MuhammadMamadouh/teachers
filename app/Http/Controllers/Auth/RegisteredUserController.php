@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Governorate;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Models\Governorate;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,21 +26,21 @@ class RegisteredUserController extends Controller
         $governorates = Governorate::where('is_active', true)
             ->orderBy('name_ar')
             ->get(['id', 'name_ar', 'name_en']);
-            
+
         // Get all available plans for selection
         $plans = Plan::orderBy('max_students')->get();
-        
+
         // Get the pre-selected plan if provided
         $selectedPlanId = $request->get('plan');
         $selectedPlan = null;
         if ($selectedPlanId) {
             $selectedPlan = Plan::find($selectedPlanId);
         }
-            
+
         return Inertia::render('Auth/Register', [
             'governorates' => $governorates,
             'plans' => $plans,
-            'selectedPlan' => $selectedPlan
+            'selectedPlan' => $selectedPlan,
         ]);
     }
 
@@ -60,7 +60,7 @@ class RegisteredUserController extends Controller
             'subject' => 'required|string|max:255',
             'governorate_id' => 'required|exists:governorates,id',
             'plan_id' => 'nullable|exists:plans,id',
-            
+
         ]);
 
         $user = User::create([
@@ -78,12 +78,12 @@ class RegisteredUserController extends Controller
         if ($request->plan_id) {
             $selectedPlan = Plan::find($request->plan_id);
         }
-        
+
         // Fallback to default plan if no plan selected or plan not found
         if (!$selectedPlan) {
             $selectedPlan = Plan::where('is_default', true)->first();
         }
-        
+
         Subscription::create([
             'user_id' => $user->id,
             'plan_id' => $selectedPlan ? $selectedPlan->id : null,

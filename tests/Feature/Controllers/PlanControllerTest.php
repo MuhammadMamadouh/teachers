@@ -2,10 +2,9 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Plan;
 use App\Models\PlanUpgradeRequest;
+use App\Models\User;
+use Tests\TestCase;
 
 class PlanControllerTest extends TestCase
 {
@@ -18,7 +17,8 @@ class PlanControllerTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('plans.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Plans/Index')
             ->has('currentPlan')
             ->has('availablePlans')
@@ -37,7 +37,8 @@ class PlanControllerTest extends TestCase
         $response = $this->actingAs($assistant)->get(route('plans.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Plans/Index')
             ->has('currentPlan')
             ->has('availablePlans')

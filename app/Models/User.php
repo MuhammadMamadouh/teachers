@@ -4,16 +4,17 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -66,7 +67,7 @@ class User extends Authenticatable
         ];
     }
 
-   
+
 
     /**
      * Get all subscriptions for the user.
@@ -131,16 +132,16 @@ class User extends Authenticatable
     {
         // For assistants, use the teacher's subscription
         $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-        
+
         if (!$userToCheck) {
             return [
                 'max_students' => 0,
                 'has_active_subscription' => false,
             ];
         }
-        
+
         $subscription = $userToCheck->activeSubscription()->with('plan')->first();
-        
+
         if (!$subscription || !$subscription->isCurrentlyActive()) {
             return [
                 'max_students' => 0,
@@ -170,20 +171,20 @@ class User extends Authenticatable
     {
         // For assistants, use the teacher's limits
         $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-        
+
         if (!$userToCheck) {
             return false;
         }
-        
+
         $limits = $userToCheck->getSubscriptionLimits();
-        
+
         if (!$limits['has_active_subscription']) {
             return false;
         }
 
         // Get current student count from the teacher (not the assistant)
         $currentStudentCount = $userToCheck->students()->count();
-        
+
         return ($currentStudentCount + $count) <= $limits['max_students'];
     }
 
@@ -194,11 +195,11 @@ class User extends Authenticatable
     {
         // For assistants, get the teacher's student count
         $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-        
+
         if (!$userToCheck) {
             return 0;
         }
-        
+
         return $userToCheck->students()->count();
     }
 
@@ -284,7 +285,7 @@ class User extends Authenticatable
         }
 
         $limits = $this->getSubscriptionLimits();
-        
+
         if (!$limits['has_active_subscription'] || !$limits['plan']) {
             return false;
         }
@@ -292,7 +293,7 @@ class User extends Authenticatable
         // Get max assistants allowed by plan (assuming we'll add this to plans)
         $maxAssistants = $limits['plan']->max_assistants ?? 0;
         $currentAssistants = $this->assistants()->count();
-        
+
         return ($currentAssistants + $count) <= $maxAssistants;
     }
 
@@ -344,12 +345,13 @@ class User extends Authenticatable
     {
         // For assistants, check the teacher's subscription
         $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-        
+
         if (!$userToCheck) {
             return false;
         }
-        
+
         $subscription = $userToCheck->activeSubscription()->first();
+
         return $subscription && $subscription->isCurrentlyActive();
     }
 
@@ -360,12 +362,13 @@ class User extends Authenticatable
     {
         // For assistants, get the teacher's plan
         $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-        
+
         if (!$userToCheck) {
             return null;
         }
-        
+
         $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+
         return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
     }
 }

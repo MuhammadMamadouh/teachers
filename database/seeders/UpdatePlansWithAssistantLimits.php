@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +17,7 @@ class UpdatePlansWithAssistantLimits extends Seeder
         DB::table('plans')->where('max_students', '>', 10)->where('max_students', '<=', 25)->update(['max_assistants' => 2]);
         DB::table('plans')->where('max_students', '>', 25)->where('max_students', '<=', 50)->update(['max_assistants' => 3]);
         DB::table('plans')->where('max_students', '>', 50)->update(['max_assistants' => 5]);
-        
+
         $this->command->info('Plans updated with assistant limits');
     }
 }

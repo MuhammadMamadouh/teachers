@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Subscription;
-use App\Models\Plan;
 use App\Models\Governorate;
-use Illuminate\Http\Request;
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
 
 class AdminTeacherController extends Controller
 {
@@ -60,6 +60,7 @@ class AdminTeacherController extends Controller
             $teacher->groups_count = $teacher->groups->count();
             $teacher->subscription_status = $teacher->activeSubscription ? 'active' : 'inactive';
             $teacher->plan_name = $teacher->activeSubscription?->plan?->name ?? 'No Plan';
+
             return $teacher;
         });
 
@@ -71,7 +72,7 @@ class AdminTeacherController extends Controller
                 'approved' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->count(),
                 'pending' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', false)->count(),
                 'active' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->whereHas('activeSubscription')->count(),
-            ]
+            ],
         ]);
     }
 
@@ -87,7 +88,7 @@ class AdminTeacherController extends Controller
 
         return Inertia::render('Admin/Teachers/Create', [
             'plans' => $plans,
-            'governorates' => $governorates
+            'governorates' => $governorates,
         ]);
     }
 
@@ -165,7 +166,7 @@ class AdminTeacherController extends Controller
             'groups.assignedStudents',
             'groups.payments' => function ($query) {
                 $query->where('is_paid', true)->orderBy('paid_at', 'desc')->limit(10);
-            }
+            },
         ]);
 
         // Calculate statistics
@@ -219,7 +220,7 @@ class AdminTeacherController extends Controller
         return Inertia::render('Admin/Teachers/Edit', [
             'teacher' => $teacher,
             'plans' => $plans,
-            'governorates' => $governorates
+            'governorates' => $governorates,
         ]);
     }
 
@@ -266,10 +267,10 @@ class AdminTeacherController extends Controller
             // Update subscription if plan is changed
             if ($request->plan_id) {
                 $plan = Plan::findOrFail($request->plan_id);
-                
+
                 // Deactivate current subscription
                 $teacher->subscriptions()->update(['is_active' => false]);
-                
+
                 // Create new subscription
                 Subscription::create([
                     'user_id' => $teacher->id,
@@ -293,7 +294,7 @@ class AdminTeacherController extends Controller
         DB::transaction(function () use ($teacher) {
             // Deactivate all subscriptions
             $teacher->subscriptions()->update(['is_active' => false]);
-            
+
             // Soft delete the teacher
             $teacher->delete();
         });
@@ -374,19 +375,22 @@ class AdminTeacherController extends Controller
                                 'end_date' => null,
                             ]);
                         }
+
                         break;
-                    
+
                     case 'deactivate':
                         $teacher->update([
                             'is_approved' => false,
                             'approved_at' => null,
                         ]);
                         $teacher->subscriptions()->update(['is_active' => false]);
+
                         break;
-                    
+
                     case 'delete':
                         $teacher->subscriptions()->update(['is_active' => false]);
                         $teacher->delete();
+
                         break;
                 }
             }
@@ -395,7 +399,7 @@ class AdminTeacherController extends Controller
         $actionNames = [
             'activate' => 'تفعيل',
             'deactivate' => 'إلغاء تفعيل',
-            'delete' => 'حذف'
+            'delete' => 'حذف',
         ];
 
         return redirect()->back()->with('success', 'تم ' . $actionNames[$request->action] . ' المعلمين المحددين بنجاح!');

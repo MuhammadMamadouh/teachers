@@ -44,26 +44,26 @@ class BulkUpdatePaymentRequest extends FormRequest
         return [
             'payments.required' => 'قائمة المدفوعات مطلوبة.',
             'payments.array' => 'قائمة المدفوعات يجب أن تكون مصفوفة.',
-            
+
             'payments.*.student_id.required' => 'معرف الطالب مطلوب لكل دفعة.',
             'payments.*.student_id.exists' => 'الطالب المحدد غير موجود.',
-            
+
             'payments.*.group_id.required' => 'معرف المجموعة مطلوب لكل دفعة.',
             'payments.*.group_id.exists' => 'المجموعة المحددة غير موجودة.',
-            
+
             'payments.*.payment_type.required' => 'نوع الدفع مطلوب لكل دفعة.',
             'payments.*.payment_type.in' => 'نوع الدفع يجب أن يكون شهري أو لكل حصة.',
-            
+
             'payments.*.related_date.required' => 'تاريخ الدفع مطلوب لكل دفعة.',
             'payments.*.related_date.date' => 'تاريخ الدفع يجب أن يكون تاريخ صحيح.',
-            
+
             'payments.*.is_paid.boolean' => 'حالة الدفع يجب أن تكون صحيحة أو خاطئة.',
-            
+
             'payments.*.amount.numeric' => 'مبلغ الدفع يجب أن يكون رقم.',
             'payments.*.amount.min' => 'مبلغ الدفع يجب أن يكون 0 أو أكثر.',
-            
+
             'payments.*.paid_at.date' => 'تاريخ الدفع يجب أن يكون تاريخ صحيح.',
-            
+
             'payments.*.notes.string' => 'الملاحظات يجب أن تكون نص.',
             'payments.*.notes.max' => 'الملاحظات يجب ألا تتجاوز 1000 حرف.',
         ];

@@ -2,14 +2,14 @@
 
 namespace Tests\Integration;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Plan;
-use App\Models\Subscription;
-use App\Models\Student;
-use App\Models\Group;
 use App\Models\AcademicYear;
+use App\Models\Group;
+use App\Models\Plan;
+use App\Models\Student;
+use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class UserWorkflowTest extends TestCase
 {
@@ -102,7 +102,7 @@ class UserWorkflowTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHasNoErrors();
-        
+
         $this->assertDatabaseHas('users', [
             'email' => 'assistant@example.com',
             'type' => 'assistant',
@@ -116,12 +116,12 @@ class UserWorkflowTest extends TestCase
         // Assistant can view teacher's students and groups
         $response = $this->actingAs($assistant)
             ->get(route('students.index'));
-        
+
         $response->assertOk();
 
         $response = $this->actingAs($assistant)
             ->get(route('groups.index'));
-        
+
         $response->assertOk();
 
         // Verify assistant inherits teacher's subscription
@@ -139,7 +139,7 @@ class UserWorkflowTest extends TestCase
         ]);
 
         $plan = Plan::factory()->create();
-        
+
         // Create expired subscription
         $subscription = Subscription::factory()->create([
             'user_id' => $teacher->id,
@@ -159,13 +159,13 @@ class UserWorkflowTest extends TestCase
         // Teacher should not have access to protected routes
         $response = $this->actingAs($teacher)
             ->get(route('students.index'));
-        
+
         $response->assertRedirect();
 
         // Assistant should also not have access
         $response = $this->actingAs($assistant)
             ->get(route('students.index'));
-        
+
         $response->assertRedirect();
 
         // Activate subscription
@@ -177,12 +177,12 @@ class UserWorkflowTest extends TestCase
         // Both should now have access
         $response = $this->actingAs($teacher)
             ->get(route('students.index'));
-        
+
         $response->assertOk();
 
         $response = $this->actingAs($assistant)
             ->get(route('students.index'));
-        
+
         $response->assertOk();
     }
 

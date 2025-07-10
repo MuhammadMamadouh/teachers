@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Group;
-use App\Models\User;
 use App\Models\AcademicYear;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,15 +19,15 @@ class GroupFactory extends Factory
     public function definition(): array
     {
         $subjects = [
-            'الرياضيات', 'الفيزياء', 'الكيمياء', 'الأحياء', 'اللغة العربية', 
+            'الرياضيات', 'الفيزياء', 'الكيمياء', 'الأحياء', 'اللغة العربية',
             'اللغة الإنجليزية', 'التاريخ', 'الجغرافيا', 'التربية الإسلامية',
-            'الحاسوب', 'العلوم', 'الرياضيات المتقدمة'
+            'الحاسوب', 'العلوم', 'الرياضيات المتقدمة',
         ];
 
         $levels = [
             'الصف الأول', 'الصف الثاني', 'الصف الثالث', 'الصف الرابع', 'الصف الخامس',
             'الصف السادس', 'الصف السابع', 'الصف الثامن', 'الصف التاسع', 'الصف العاشر',
-            'الصف الحادي عشر', 'الصف الثاني عشر'
+            'الصف الحادي عشر', 'الصف الثاني عشر',
         ];
 
         $subject = $this->faker->randomElement($subjects);

@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Governorate;
+use Illuminate\Database\Seeder;
 
 class GovernorateSeeder extends Seeder
 {
@@ -22,7 +21,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.2357,
                 'population' => 10230350,
                 'area' => 3085.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الجيزة',
@@ -32,7 +31,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.2089,
                 'population' => 9200000,
                 'area' => 13720.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الإسكندرية',
@@ -42,7 +41,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 29.9187,
                 'population' => 5200000,
                 'area' => 2679.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الدقهلية',
@@ -52,7 +51,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.4913,
                 'population' => 6679000,
                 'area' => 3459.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'البحر الأحمر',
@@ -62,7 +61,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 34.2067,
                 'population' => 359000,
                 'area' => 203685.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'البحيرة',
@@ -72,7 +71,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 30.3435,
                 'population' => 6177000,
                 'area' => 9826.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الفيوم',
@@ -82,7 +81,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 30.8418,
                 'population' => 3747000,
                 'area' => 6068.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الغربية',
@@ -92,7 +91,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.0335,
                 'population' => 5106000,
                 'area' => 1942.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الإسماعيلية',
@@ -102,7 +101,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 32.2715,
                 'population' => 1304000,
                 'area' => 5067.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'المنوفية',
@@ -112,7 +111,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.0118,
                 'population' => 4237000,
                 'area' => 2499.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'المنيا',
@@ -122,7 +121,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 30.7618,
                 'population' => 5497000,
                 'area' => 32279.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'القليوبية',
@@ -132,7 +131,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.2421,
                 'population' => 5627000,
                 'area' => 1001.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الوادي الجديد',
@@ -142,7 +141,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 30.5532,
                 'population' => 247000,
                 'area' => 376505.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الشرقية',
@@ -152,7 +151,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.5041,
                 'population' => 7163000,
                 'area' => 4180.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'سوهاج',
@@ -162,7 +161,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.6948,
                 'population' => 5127000,
                 'area' => 11022.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'جنوب سيناء',
@@ -172,7 +171,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 33.8116,
                 'population' => 103000,
                 'area' => 31272.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'شمال سيناء',
@@ -182,7 +181,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 33.6176,
                 'population' => 455000,
                 'area' => 27574.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'كفر الشيخ',
@@ -192,7 +191,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 30.9388,
                 'population' => 3172000,
                 'area' => 3437.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'قنا',
@@ -202,7 +201,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 32.7160,
                 'population' => 3164000,
                 'area' => 8980.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'أسوان',
@@ -212,7 +211,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 32.8998,
                 'population' => 1568000,
                 'area' => 679.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'أسيوط',
@@ -222,7 +221,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.1837,
                 'population' => 4380000,
                 'area' => 13720.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'بني سويف',
@@ -232,7 +231,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.0994,
                 'population' => 3154000,
                 'area' => 10954.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'بورسعيد',
@@ -242,7 +241,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 32.3019,
                 'population' => 749000,
                 'area' => 1345.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'دمياط',
@@ -252,7 +251,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 31.7669,
                 'population' => 1496000,
                 'area' => 910.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'السويس',
@@ -262,7 +261,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 32.5498,
                 'population' => 728000,
                 'area' => 25400.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'الأقصر',
@@ -272,7 +271,7 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 32.6396,
                 'population' => 1250000,
                 'area' => 416.00,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
                 'name_ar' => 'مطروح',
@@ -282,8 +281,8 @@ class GovernorateSeeder extends Seeder
                 'longitude' => 27.2373,
                 'population' => 425000,
                 'area' => 166563.00,
-                'is_active' => true
-            ]
+                'is_active' => true,
+            ],
         ];
 
         foreach ($governorates as $governorate) {

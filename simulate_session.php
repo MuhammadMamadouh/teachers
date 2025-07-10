@@ -49,7 +49,7 @@ if ($perSessionGroup->payment_type === 'per_session' && $attendance->is_present)
             'is_paid' => false,
         ]
     );
-    
+
     echo "✅ Payment created automatically:\n";
     echo "   - Type: {$payment->payment_type}\n";
     echo "   - Amount: {$payment->amount} SAR\n";
@@ -70,18 +70,18 @@ $payment->update([
 echo "✅ Payment marked as PAID at " . $payment->paid_at . "\n";
 
 echo "\nFinal verification:\n";
-echo "Total payments for this student in this group: " . 
+echo "Total payments for this student in this group: " .
     \App\Models\Payment::where('student_id', $testStudent->id)
         ->where('group_id', $perSessionGroup->id)
         ->count() . "\n";
 
-echo "Total unpaid sessions: " . 
+echo "Total unpaid sessions: " .
     \App\Models\Payment::where('student_id', $testStudent->id)
         ->where('group_id', $perSessionGroup->id)
         ->where('is_paid', false)
         ->count() . "\n";
 
-echo "Total revenue from this student: " . 
+echo "Total revenue from this student: " .
     \App\Models\Payment::where('student_id', $testStudent->id)
         ->where('group_id', $perSessionGroup->id)
         ->where('is_paid', true)

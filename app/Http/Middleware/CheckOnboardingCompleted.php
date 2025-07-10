@@ -22,10 +22,10 @@ class CheckOnboardingCompleted
         }
 
         $user = Auth::user();
-        
+
         // For assistants, check the teacher's onboarding status
         $userToCheck = $user->is_assistant ? $user->teacher : $user;
-        
+
         // If no teacher for assistant or user hasn't completed onboarding, redirect to onboarding page
         if (!$userToCheck || !$userToCheck->onboarding_completed) {
             // Don't redirect if already on onboarding routes

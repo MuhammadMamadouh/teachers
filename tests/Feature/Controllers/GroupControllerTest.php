@@ -2,11 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Group;
 use App\Models\AcademicYear;
+use App\Models\Group;
+use App\Models\Student;
+use Tests\TestCase;
 
 class GroupControllerTest extends TestCase
 {
@@ -21,7 +20,8 @@ class GroupControllerTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('groups.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Groups/Index')
             ->has('groups', 3)
         );
@@ -43,7 +43,8 @@ class GroupControllerTest extends TestCase
         $response = $this->actingAs($assistant)->get(route('groups.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Groups/Index')
             ->has('groups') // Just check that groups exist, don't check exact count
         );
@@ -68,7 +69,7 @@ class GroupControllerTest extends TestCase
                     'day_of_week' => 0, // Sunday
                     'start_time' => '10:00',
                     'end_time' => '11:30',
-                ]
+                ],
             ],
         ];
 
@@ -89,7 +90,7 @@ class GroupControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $group = Group::factory()->create(['user_id' => $teacher->id]);
 
         $updateData = [
@@ -105,7 +106,7 @@ class GroupControllerTest extends TestCase
                     'day_of_week' => 1, // Monday
                     'start_time' => '14:00',
                     'end_time' => '15:30',
-                ]
+                ],
             ],
         ];
 
@@ -124,7 +125,7 @@ class GroupControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $group = Group::factory()->create(['user_id' => $teacher->id]);
 
         $response = $this->actingAs($teacher)
@@ -140,15 +141,15 @@ class GroupControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $academicYear = AcademicYear::factory()->create();
-        
+
         $group = Group::factory()->create([
             'user_id' => $teacher->id,
             'max_students' => 10,
             'academic_year_id' => $academicYear->id,
         ]);
-        
+
         $student1 = Student::factory()->create([
             'user_id' => $teacher->id,
             'group_id' => null, // Ensure students are not pre-assigned to any group
@@ -170,7 +171,7 @@ class GroupControllerTest extends TestCase
 
         $student1->refresh();
         $student2->refresh();
-        
+
         $this->assertEquals($group->id, $student1->group_id);
         $this->assertEquals($group->id, $student2->group_id);
     }
@@ -179,22 +180,22 @@ class GroupControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $academicYear = AcademicYear::factory()->create();
-        
+
         $group = Group::factory()->create([
             'user_id' => $teacher->id,
             'max_students' => 2,
             'academic_year_id' => $academicYear->id,
         ]);
-        
+
         // Already assign 2 students to reach capacity
         Student::factory()->count(2)->create([
             'user_id' => $teacher->id,
             'group_id' => $group->id,
             'academic_year_id' => $academicYear->id,
         ]);
-        
+
         $newStudent = Student::factory()->create([
             'user_id' => $teacher->id,
             'group_id' => null, // Ensure not pre-assigned to any group
@@ -214,7 +215,7 @@ class GroupControllerTest extends TestCase
     {
         $teacher = $this->createTeacher();
         $this->createActiveSubscription($teacher);
-        
+
         $group = Group::factory()->create(['user_id' => $teacher->id]);
         $student = Student::factory()->create([
             'user_id' => $teacher->id,

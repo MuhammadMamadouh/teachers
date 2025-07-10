@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Group;
-use App\Models\Student;
+use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-        
+
         $groups = Group::where('user_id', $user->id)
             ->with(['assignedStudents', 'payments.student'])
             ->get();
@@ -61,7 +60,7 @@ class PaymentController extends Controller
 
         $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $group, $startDate, $endDate, &$totalExpected, &$totalPaid, &$totalUnpaid) {
             $studentPaymentsList = $payments->get($student->id, collect());
-            
+
             $expectedAmount = 0;
             $paidAmount = 0;
             $unpaidAmount = 0;
@@ -227,14 +226,14 @@ class PaymentController extends Controller
         DB::transaction(function () use ($request, $payments, &$updatedPayments) {
             foreach ($request->payments as $paymentData) {
                 $payment = $payments->firstWhere('id', $paymentData['id']);
-                
+
                 if ($payment) {
                     $payment->update([
                         'is_paid' => $paymentData['is_paid'],
                         'paid_at' => $paymentData['is_paid'] && $paymentData['paid_at'] ? $paymentData['paid_at'] : null,
                         'notes' => $paymentData['notes'],
                     ]);
-                    
+
                     $updatedPayments[] = $payment;
                 }
             }

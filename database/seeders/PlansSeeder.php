@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Plan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Plan;
 
 class PlansSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class PlansSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Plan::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        
+
         // Create the subscription plans with the new structure
         $plans = [
             [
@@ -28,7 +27,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 0,
                 'is_trial' => true,
-                'is_default' => true
+                'is_default' => true,
             ],
             [
                 'name' => 'شهرية أساسية',
@@ -37,7 +36,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 100, // 100 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
             [
                 'name' => 'شهرية متقدمة',
@@ -46,7 +45,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 200, // 200 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
             [
                 'name' => 'شهرية موسعة',
@@ -55,9 +54,9 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 500, // 500 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
-            
+
             [
                 'name' => 'ربع سنوية أساسية',
                 'max_students' => 100,
@@ -65,7 +64,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 250, // 250 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
              [
                 'name' => 'ربع سنوية متقدمة',
@@ -74,7 +73,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 500, // 500 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
             [
                 'name' => 'ربع سنوية موسعة',
@@ -83,7 +82,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 30,
                 'price' => 1200, // 1200 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
             [
                 'name' => 'سنوية',
@@ -92,7 +91,7 @@ class PlansSeeder extends Seeder
                 'duration_days' => 365,
                 'price' => 2000, // 2000 ج.م
                 'is_trial' => false,
-                'is_default' => false
+                'is_default' => false,
             ],
         ];
 

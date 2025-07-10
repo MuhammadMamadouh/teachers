@@ -40,7 +40,7 @@ class RunTestSuite extends Command
         if ($result->successful()) {
             $this->info('✅ All tests passed!');
             $this->line($result->output());
-            
+
             if ($coverage) {
                 $this->info('📊 Coverage report generated in tests/coverage/');
             }
@@ -60,12 +60,15 @@ class RunTestSuite extends Command
         switch ($type) {
             case 'unit':
                 $command .= ' tests/Unit';
+
                 break;
             case 'feature':
                 $command .= ' tests/Feature';
+
                 break;
             case 'integration':
                 $command .= ' tests/Integration';
+
                 break;
             case 'all':
             default:

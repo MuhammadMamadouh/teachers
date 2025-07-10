@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,7 +17,7 @@ class OnboardingController extends Controller
     public function show(): Response
     {
         return Inertia::render('Auth/Onboarding', [
-            'user' => Auth::user()
+            'user' => Auth::user(),
         ]);
     }
 
@@ -27,7 +27,7 @@ class OnboardingController extends Controller
     public function complete(Request $request): RedirectResponse
     {
         $user = Auth::user();
-        
+
         // Update user to mark onboarding as completed
         $user->onboarding_completed = true;
         $user->onboarding_completed_at = now();

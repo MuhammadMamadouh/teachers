@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,7 +23,7 @@ class AdminController extends Controller
             ->get();
 
         return Inertia::render('Admin/UserApproval', [
-            'unapprovedUsers' => $unapprovedUsers
+            'unapprovedUsers' => $unapprovedUsers,
         ]);
     }
 

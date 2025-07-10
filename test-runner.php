@@ -3,7 +3,7 @@
 
 /**
  * Test Coverage Report Generator for Teachers SaaS Application
- * 
+ *
  * This script runs comprehensive tests and generates coverage reports
  * to ensure 100% test coverage across the application.
  */
@@ -23,11 +23,13 @@ $colors = [
     'red' => "\033[31m",
     'yellow' => "\033[33m",
     'blue' => "\033[34m",
-    'reset' => "\033[0m"
+    'reset' => "\033[0m",
 ];
 
-function colorOutput($text, $color = 'reset') {
+function colorOutput($text, $color = 'reset')
+{
     global $colors;
+
     return $colors[$color] . $text . $colors['reset'];
 }
 
@@ -38,16 +40,16 @@ echo colorOutput("=====================================\n", 'blue');
 $testSuites = [
     'Unit Tests' => [
         'path' => 'tests/Unit',
-        'description' => 'Testing individual components in isolation'
+        'description' => 'Testing individual components in isolation',
     ],
     'Feature Tests' => [
         'path' => 'tests/Feature',
-        'description' => 'Testing complete user workflows and API endpoints'
+        'description' => 'Testing complete user workflows and API endpoints',
     ],
     'Integration Tests' => [
         'path' => 'tests/Integration',
-        'description' => 'Testing component interactions and data flow'
-    ]
+        'description' => 'Testing component interactions and data flow',
+    ],
 ];
 
 $totalTests = 0;
@@ -58,14 +60,14 @@ foreach ($testSuites as $suiteName => $suite) {
     echo colorOutput("\n📋 Running {$suiteName}\n", 'yellow');
     echo colorOutput("Description: {$suite['description']}\n", 'yellow');
     echo colorOutput(str_repeat('-', 50) . "\n", 'yellow');
-    
+
     if (is_dir($suite['path'])) {
         $command = "php artisan test {$suite['path']} --stop-on-failure";
         $output = [];
         $returnCode = 0;
-        
+
         exec($command, $output, $returnCode);
-        
+
         if ($returnCode === 0) {
             echo colorOutput("✅ {$suiteName} PASSED\n", 'green');
             $passedTests++;
@@ -77,7 +79,7 @@ foreach ($testSuites as $suiteName => $suite) {
     } else {
         echo colorOutput("⚠️  Directory {$suite['path']} not found, skipping...\n", 'yellow');
     }
-    
+
     $totalTests++;
 }
 

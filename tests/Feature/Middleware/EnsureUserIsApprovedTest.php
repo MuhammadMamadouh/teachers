@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Middleware;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class EnsureUserIsApprovedTest extends TestCase
 {
@@ -24,7 +24,7 @@ class EnsureUserIsApprovedTest extends TestCase
     {
         $teacher = $this->createTeacher([
             'is_approved' => true,
-            'onboarding_completed' => true
+            'onboarding_completed' => true,
         ]);
         $this->createActiveSubscription($teacher);
         $this->actingAs($teacher);
@@ -48,11 +48,11 @@ class EnsureUserIsApprovedTest extends TestCase
     {
         $teacher = $this->createTeacher([
             'is_approved' => true,
-            'onboarding_completed' => true
+            'onboarding_completed' => true,
         ]);
         $this->createActiveSubscription($teacher);
         $assistant = $this->createAssistant($teacher, [
-            'onboarding_completed' => true
+            'onboarding_completed' => true,
         ]);
         $this->actingAs($assistant);
 
@@ -76,7 +76,7 @@ class EnsureUserIsApprovedTest extends TestCase
     {
         $assistant = User::factory()->assistant()->create([
             'teacher_id' => null,
-            'onboarding_completed' => true
+            'onboarding_completed' => true,
         ]);
         $this->actingAs($assistant);
 

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Group extends Model
@@ -47,8 +46,8 @@ class Group extends Model
     {
         return $this->assignedStudents();
     }
-    
-   
+
+
 
     public function attendances(): HasMany
     {
@@ -85,9 +84,10 @@ class Group extends Model
     {
         if ($this->payment_type === 'monthly') {
             $studentCount = $this->assignedStudents()->count();
+
             return $studentCount * $this->student_price;
         }
-        
+
         return 0;
     }
 
@@ -98,9 +98,10 @@ class Group extends Model
     {
         if ($this->payment_type === 'per_session') {
             $studentCount = $this->assignedStudents()->count();
+
             return $studentCount * $this->student_price;
         }
-        
+
         return 0;
     }
 
@@ -114,10 +115,10 @@ class Group extends Model
                 ->where('id', $attendanceId)
                 ->where('is_present', true)
                 ->count();
-            
+
             return $presentStudents * $this->student_price;
         }
-        
+
         return 0;
     }
 

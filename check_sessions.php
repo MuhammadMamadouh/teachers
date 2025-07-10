@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\GroupSpecialSession;
 use App\Models\Group;
+use App\Models\GroupSpecialSession;
 
 echo "=== Special Sessions Check ===\n";
 
@@ -15,7 +15,7 @@ $sessions = GroupSpecialSession::with('group')->get();
 if ($sessions->count() > 0) {
     echo "Special Sessions Details:\n";
     echo str_repeat("-", 50) . "\n";
-    
+
     foreach ($sessions as $session) {
         echo "ID: {$session->id}\n";
         echo "Group: {$session->group->name}\n";

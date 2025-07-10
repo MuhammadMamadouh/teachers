@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class AdminUserSeeder extends Seeder
@@ -18,7 +17,7 @@ class AdminUserSeeder extends Seeder
             'password' => bcrypt('123456'),
             'phone' => '555-0000',
             'subject' => 'Administrator',
-           
+
             'is_admin' => true,
             'is_approved' => true,
             'approved_at' => now(),

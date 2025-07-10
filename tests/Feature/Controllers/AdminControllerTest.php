@@ -3,9 +3,6 @@
 namespace Tests\Feature\Controllers;
 
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Plan;
-use App\Models\Subscription;
 
 class AdminControllerTest extends TestCase
 {
@@ -18,7 +15,8 @@ class AdminControllerTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.users'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
+        $response->assertInertia(
+            fn ($page) => $page
             ->component('Admin/UserApproval')
             ->has('unapprovedUsers', 1)
             ->where('unapprovedUsers.0.id', $unapprovedUser->id)

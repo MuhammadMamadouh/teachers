@@ -2,11 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
 use App\Models\Plan;
 use App\Models\PlanUpgradeRequest;
-use App\Http\Controllers\PlanController;
-use App\Http\Controllers\Admin\PlanUpgradeRequestController;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -81,40 +79,47 @@ class TestPlanUpgradeAccess extends Command
     private function testUserAccess($user, $userType)
     {
         Auth::login($user);
-        
+
         try {
             // Test accessing the plan index
             $subscription = $user->activeSubscription()->first();
             $currentPlan = $subscription ? $subscription->plan : null;
-            
+
             if (!$currentPlan) {
                 $this->warn("  ⚠️  {$userType} has no active subscription - cannot test upgrade access");
+
                 return;
             }
 
             // Check if user can see upgrade plans (simulating business logic)
             $upgradePlans = Plan::where('max_students', '>', $currentPlan->max_students)->get();
-            
+
             // Check middleware restrictions
             $isAdmin = $user->is_admin;
             $isTeacher = $user->type === 'teacher';
             $isApproved = $user->is_approved;
-            
+
             $canAccess = !$isAdmin && $isTeacher && $isApproved;
-            
+
             if ($canAccess) {
                 $this->success("  ✅ {$userType} can access plan upgrades");
                 $this->info("    - Current Plan: {$currentPlan->name}");
                 $this->info("    - Available Upgrades: {$upgradePlans->count()}");
             } else {
                 $reasons = [];
-                if ($isAdmin) $reasons[] = 'is admin';
-                if (!$isTeacher) $reasons[] = 'not a teacher';
-                if (!$isApproved) $reasons[] = 'not approved';
-                
+                if ($isAdmin) {
+                    $reasons[] = 'is admin';
+                }
+                if (!$isTeacher) {
+                    $reasons[] = 'not a teacher';
+                }
+                if (!$isApproved) {
+                    $reasons[] = 'not approved';
+                }
+
                 $this->error("  ❌ {$userType} cannot access plan upgrades (" . implode(', ', $reasons) . ")");
             }
-            
+
         } catch (\Exception $e) {
             $this->error("  ❌ {$userType} access test failed: " . $e->getMessage());
         } finally {
@@ -125,18 +130,18 @@ class TestPlanUpgradeAccess extends Command
     private function testAdminUpgradeManagement($admin)
     {
         Auth::login($admin);
-        
+
         try {
             // Test if admin can see upgrade requests
             $requests = PlanUpgradeRequest::with(['user', 'requestedPlan', 'currentPlan'])->get();
-            
+
             $this->success("  ✅ Admin can access upgrade request management");
             $this->info("    - Total Requests: {$requests->count()}");
-            
+
             foreach ($requests as $request) {
                 $this->info("    - {$request->user->name} → {$request->requestedPlan->name} ({$request->status})");
             }
-            
+
         } catch (\Exception $e) {
             $this->error("  ❌ Admin management test failed: " . $e->getMessage());
         } finally {
@@ -147,20 +152,21 @@ class TestPlanUpgradeAccess extends Command
     private function testUpgradeRequestCreation($teacher)
     {
         Auth::login($teacher);
-        
+
         try {
             $subscription = $teacher->activeSubscription()->first();
             $currentPlan = $subscription->plan;
             $upgradePlan = Plan::where('max_students', '>', $currentPlan->max_students)->first();
-            
+
             if (!$upgradePlan) {
                 $this->warn("  ⚠️  No upgrade plan available for testing");
+
                 return;
             }
 
             // Check if teacher already has a pending request
             $existingRequest = $teacher->pendingPlanUpgradeRequests()->first();
-            
+
             if ($existingRequest) {
                 $this->info("  ℹ️  Teacher already has pending request - testing duplicate prevention");
                 $hasPending = $teacher->hasPendingPlanUpgrade();
@@ -173,7 +179,7 @@ class TestPlanUpgradeAccess extends Command
                 $this->info("  ℹ️  No pending request - could create new request");
                 $this->success("  ✅ Request creation would be allowed");
             }
-            
+
         } catch (\Exception $e) {
             $this->error("  ❌ Request creation test failed: " . $e->getMessage());
         } finally {
@@ -184,20 +190,21 @@ class TestPlanUpgradeAccess extends Command
     private function testApprovalProcess($admin)
     {
         $pendingRequest = PlanUpgradeRequest::where('status', 'pending')->first();
-        
+
         if (!$pendingRequest) {
             $this->warn("  ⚠️  No pending requests found for approval testing");
+
             return;
         }
 
         Auth::login($admin);
-        
+
         try {
             // Test approval logic (without actually approving)
             $user = $pendingRequest->user;
             $newPlan = $pendingRequest->requestedPlan;
             $currentSubscription = $user->activeSubscription()->first();
-            
+
             if ($currentSubscription) {
                 $this->success("  ✅ Admin can approve requests");
                 $this->info("    - Request ID: {$pendingRequest->id}");
@@ -207,7 +214,7 @@ class TestPlanUpgradeAccess extends Command
             } else {
                 $this->error("  ❌ User has no active subscription to update");
             }
-            
+
         } catch (\Exception $e) {
             $this->error("  ❌ Approval process test failed: " . $e->getMessage());
         } finally {

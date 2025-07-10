@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
+use App\Models\GroupSpecialSession;
 use App\Models\Plan;
 use App\Models\Student;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Models\Group;
-use App\Models\GroupSpecialSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,10 +17,9 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public const TEACHER = 'teacher';
+    public const ASSISTANT = 'assistant';
 
-    const TEACHER = 'teacher';
-    const ASSISTANT = 'assistant';
-    
 
 
 
@@ -30,18 +29,18 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $user = Auth::user();
-        
+
         if ($user->is_admin) {
             return $this->adminDashboard();
         }
-        
+
         if ($user->type === 'assistant') {
             return $this->assistantDashboard($user);
         }
-        
+
         return $this->teacherDashboard($user);
     }
-    
+
     /**
      * Admin dashboard with system reports.
      */
@@ -53,31 +52,31 @@ class DashboardController extends Controller
         // System statistics
         $approvedTeachers = $totalTeachers->where('is_approved', true)->count();
         $pendingTeachers = $totalTeachers->where('is_approved', false)->count();
-       
-        
+
+
         $totalTeachers = User::where('is_admin', false)
         ->where('type', self::TEACHER)->count();
         $totalStudents = Student::count();
-        
+
         // Plan statistics
         $planStats = Plan::withCount('subscriptions')
             ->get()
             ->map(function ($plan) {
                 return [
-                    'name'          => $plan->name,
-                    'max_students'  => $plan->max_students,
-                    'price'        => $plan->formatted_price,
-                    'subscribers'  => $plan->subscriptions_count,
-                    'is_default'   => $plan->is_default,
+                    'name' => $plan->name,
+                    'max_students' => $plan->max_students,
+                    'price' => $plan->formatted_price,
+                    'subscribers' => $plan->subscriptions_count,
+                    'is_default' => $plan->is_default,
                 ];
             });
-        
+
         // Recent activity
         $recentUsers = User::where('is_admin', false)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get(['id', 'name', 'email', 'is_approved', 'created_at']);
-        
+
         // Usage statistics
         $usageStats = User::where('is_admin', false)
         // ->where('type', self::TEACHER) // Exclude assistants
@@ -87,6 +86,7 @@ class DashboardController extends Controller
             ->map(function ($user) {
                 $subscription = $user->activeSubscription;
                 $maxStudents = $subscription && $subscription->plan ? $subscription->plan->max_students : 0;
+
                 return [
                     'student_count' => $user->students->count(),
                     'max_students' => $maxStudents,
@@ -96,7 +96,7 @@ class DashboardController extends Controller
 
         // Get comprehensive admin reports
         $adminReports = $this->getAdminReports();
-        
+
         return Inertia::render('Admin/Dashboard', [
             'systemStats' => [
                 'total_users' => $totalTeachers,
@@ -110,7 +110,7 @@ class DashboardController extends Controller
             'adminReports' => $adminReports,
         ]);
     }
-    
+
     /**
      * Teacher dashboard with subscription info.
      */
@@ -121,7 +121,7 @@ class DashboardController extends Controller
         $availablePlans = Plan::where('max_students', '>', $subscriptionLimits['max_students'])
             ->orderBy('max_students')
             ->get();
-        
+
         return Inertia::render('Dashboard', [
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
@@ -129,7 +129,7 @@ class DashboardController extends Controller
             'availablePlans' => $availablePlans,
         ]);
     }
-    
+
     /**
      * Assistant dashboard with limited information.
      */
@@ -137,16 +137,16 @@ class DashboardController extends Controller
     {
         // Get the main teacher
         $teacher = $user->teacher;
-        
+
         if (!$teacher) {
             return Inertia::render('Dashboard', [
                 'error' => 'No teacher found for this assistant',
             ]);
         }
-        
+
         $subscriptionLimits = $teacher->getSubscriptionLimits();
         $currentStudentCount = $teacher->getStudentCount();
-        
+
         return Inertia::render('Dashboard', [
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
@@ -163,12 +163,12 @@ class DashboardController extends Controller
     public function calendar(): Response
     {
         $user = Auth::user();
-        
+
         // Get all groups with schedules and special sessions
         $groups = Group::where('user_id', $user->id)
             ->with(['schedules', 'specialSessions'])
             ->get();
-        
+
         return Inertia::render('Dashboard/Calendar', [
             'groups' => $groups,
         ]);
@@ -193,10 +193,10 @@ class DashboardController extends Controller
             if ($start && $end) {
                 $startDate = new \DateTime($start);
                 $endDate = new \DateTime($end);
-                
+
                 while ($startDate <= $endDate) {
                     $dayOfWeek = (int) $startDate->format('w'); // 0 = Sunday, 6 = Saturday
-                    
+
                     foreach ($group->schedules as $schedule) {
                         if ($schedule->day_of_week == $dayOfWeek) {
                             $events[] = [
@@ -210,23 +210,23 @@ class DashboardController extends Controller
                                     'type' => 'recurring',
                                     'groupId' => $group->id,
                                     'groupName' => $group->name,
-                                    'sessionType' => 'جلسة منتظمة'
+                                    'sessionType' => 'جلسة منتظمة',
                                 ],
-                                'editable' => false
+                                'editable' => false,
                             ];
                         }
                     }
-                    
+
                     $startDate->modify('+1 day');
                 }
             }
 
             // Add special session events
             $specialSessions = $group->specialSessions()
-                ->when($start, function($query) use ($start) {
+                ->when($start, function ($query) use ($start) {
                     $query->where('date', '>=', $start);
                 })
-                ->when($end, function($query) use ($end) {
+                ->when($end, function ($query) use ($end) {
                     $query->where('date', '<=', $end);
                 })
                 ->get();
@@ -245,9 +245,9 @@ class DashboardController extends Controller
                         'groupId' => $group->id,
                         'groupName' => $group->name,
                         'sessionType' => 'جلسة خاصة',
-                        'sessionId' => $session->id
+                        'sessionId' => $session->id,
                     ],
-                    'editable' => false
+                    'editable' => false,
                 ];
             }
         }
@@ -279,7 +279,7 @@ class DashboardController extends Controller
                         'end_time' => $schedule->end_time,
                         'type' => 'recurring',
                         'description' => 'جلسة منتظمة',
-                        'group_id' => $group->id
+                        'group_id' => $group->id,
                     ];
                 }
             }
@@ -296,13 +296,13 @@ class DashboardController extends Controller
                     'end_time' => $session->end_time,
                     'type' => 'special',
                     'description' => $session->description ?: 'جلسة خاصة',
-                    'group_id' => $group->id
+                    'group_id' => $group->id,
                 ];
             }
         }
 
         // Sort sessions by start time
-        usort($sessions, function($a, $b) {
+        usort($sessions, function ($a, $b) {
             return strcmp($a['start_time'], $b['start_time']);
         });
 
@@ -315,7 +315,7 @@ class DashboardController extends Controller
     public function resetTerm(Request $request)
     {
         $request->validate([
-            'confirmation' => 'required|string|in:CONFIRM RESET'
+            'confirmation' => 'required|string|in:CONFIRM RESET',
         ]);
 
         $user = Auth::user();
@@ -324,7 +324,7 @@ class DashboardController extends Controller
         if ($user->is_admin) {
             return response()->json([
                 'success' => false,
-                'message' => 'المديرون لا يمكنهم إعادة تعيين البيانات.'
+                'message' => 'المديرون لا يمكنهم إعادة تعيين البيانات.',
             ], 403);
         }
 
@@ -332,7 +332,7 @@ class DashboardController extends Controller
             DB::transaction(function () use ($user) {
                 // Get all groups belonging to the user
                 $groupIds = Group::where('user_id', $user->id)->pluck('id')->toArray();
-                
+
                 if (empty($groupIds)) {
                     // No groups to delete, but still return success
                     return;
@@ -342,7 +342,7 @@ class DashboardController extends Controller
                 $studentIds = Student::where('user_id', $user->id)->pluck('id')->toArray();
 
                 // Delete in proper order to avoid foreign key constraints
-                
+
                 // 1. Delete group special sessions
                 if (!empty($groupIds)) {
                     GroupSpecialSession::whereIn('group_id', $groupIds)->delete();
@@ -353,7 +353,7 @@ class DashboardController extends Controller
                     DB::table('group_schedules')->whereIn('group_id', $groupIds)->delete();
                 }
 
-                // 3. Delete attendances 
+                // 3. Delete attendances
                 if (!empty($groupIds)) {
                     DB::table('attendances')->whereIn('group_id', $groupIds)->delete();
                 }
@@ -381,15 +381,15 @@ class DashboardController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم إعادة تعيين جميع البيانات بنجاح. يمكنك الآن البدء في فصل دراسي جديد!'
+                'message' => 'تم إعادة تعيين جميع البيانات بنجاح. يمكنك الآن البدء في فصل دراسي جديد!',
             ]);
 
         } catch (\Exception $e) {
             Log::error('Term reset failed for user ' . $user->id . ': ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء إعادة تعيين البيانات. يرجى المحاولة مرة أخرى.'
+                'message' => 'حدث خطأ أثناء إعادة تعيين البيانات. يرجى المحاولة مرة أخرى.',
             ], 500);
         }
     }
@@ -400,7 +400,7 @@ class DashboardController extends Controller
     public function getReports()
     {
         $user = Auth::user();
-        
+
         // If it's an assistant, get data for their teacher
         if ($user->type === 'assistant') {
             $teacher = $user->teacher;
@@ -443,7 +443,7 @@ class DashboardController extends Controller
             ->count();
 
         $totalStudentsCount = $students->count();
-        $pendingPayments = ($totalStudentsCount - $paidStudentsThisMonth) * 
+        $pendingPayments = ($totalStudentsCount - $paidStudentsThisMonth) *
             ($groups->where('payment_type', 'monthly')->avg('student_price') ?: 0);
 
         // Collection rate
@@ -505,10 +505,10 @@ class DashboardController extends Controller
             ->whereYear('attendances.date', $currentYear)
             ->count();
 
-        $overallAttendanceRate = $totalPossibleAttendances > 0 ? 
+        $overallAttendanceRate = $totalPossibleAttendances > 0 ?
             round(($totalAttendancesThisMonth / $totalPossibleAttendances) * 100, 1) : 0;
 
-        $averageAttendancePerSession = $totalSessionsThisMonth > 0 ? 
+        $averageAttendancePerSession = $totalSessionsThisMonth > 0 ?
             round($totalAttendancesThisMonth / $totalSessionsThisMonth, 1) : 0;
 
         // Top performing groups (by attendance rate and monthly income)
@@ -523,7 +523,7 @@ class DashboardController extends Controller
             $presentAttendances = $groupAttendances->where('is_present', true)->count();
             $attendanceRate = $totalAttendances > 0 ? round(($presentAttendances / $totalAttendances) * 100, 1) : 0;
 
-            $monthlyIncome = $group->payment_type === 'monthly' ? 
+            $monthlyIncome = $group->payment_type === 'monthly' ?
                 $group->assignedStudents->count() * $group->student_price : 0;
 
             return [
@@ -566,7 +566,7 @@ class DashboardController extends Controller
     {
         $currentMonth = now()->month;
         $currentYear = now()->year;
-        
+
         // Financial Overview
         $totalRevenue = DB::table('subscriptions')
             ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
@@ -595,7 +595,7 @@ class DashboardController extends Controller
             ->whereYear('created_at', $currentYear)
             ->count();
 
-        $teacherGrowthRate = $lastMonthTeachers > 0 ? 
+        $teacherGrowthRate = $lastMonthTeachers > 0 ?
             round((($thisMonthTeachers - $lastMonthTeachers) / $lastMonthTeachers) * 100, 1) : 0;
 
         // System Activity
@@ -621,7 +621,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($teacher) use ($currentMonth, $currentYear) {
                 $teacherGroups = $teacher->groups->pluck('id');
-                
+
                 $attendances = DB::table('attendances')
                     ->whereIn('group_id', $teacherGroups)
                     ->whereMonth('date', $currentMonth)
@@ -630,7 +630,7 @@ class DashboardController extends Controller
 
                 $totalSessions = $attendances->groupBy(['date', 'group_id'])->count();
                 $totalPresent = $attendances->where('is_present', true)->count();
-                $attendanceRate = $attendances->count() > 0 ? 
+                $attendanceRate = $attendances->count() > 0 ?
                     round(($totalPresent / $attendances->count()) * 100, 1) : 0;
 
                 return [
@@ -648,8 +648,8 @@ class DashboardController extends Controller
 
         // Plan distribution
         $planDistribution = Plan::withCount(['subscriptions' => function ($query) {
-                $query->where('is_active', true);
-            }])
+            $query->where('is_active', true);
+        }])
             ->get()
             ->map(function ($plan) {
                 return [
@@ -661,8 +661,9 @@ class DashboardController extends Controller
 
         $totalActiveSubscriptions = $planDistribution->sum('subscribers');
         $planDistribution = $planDistribution->map(function ($plan) use ($totalActiveSubscriptions) {
-            $plan['percentage'] = $totalActiveSubscriptions > 0 ? 
+            $plan['percentage'] = $totalActiveSubscriptions > 0 ?
                 round(($plan['subscribers'] / $totalActiveSubscriptions) * 100, 1) : 0;
+
             return $plan;
         });
 
@@ -696,7 +697,7 @@ class DashboardController extends Controller
             ->sum('plans.max_students');
 
         $usedCapacity = Student::count();
-        $utilizationRate = $systemCapacity > 0 ? 
+        $utilizationRate = $systemCapacity > 0 ?
             round(($usedCapacity / $systemCapacity) * 100, 1) : 0;
 
         // Registration trends (last 6 months)
@@ -708,7 +709,7 @@ class DashboardController extends Controller
                 ->whereMonth('created_at', $month->month)
                 ->whereYear('created_at', $month->year)
                 ->count();
-            
+
             $registrationTrends[] = [
                 'month' => $month->format('M Y'),
                 'count' => $count,

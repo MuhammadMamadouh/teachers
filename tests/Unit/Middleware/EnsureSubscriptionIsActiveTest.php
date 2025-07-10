@@ -2,11 +2,11 @@
 
 namespace Tests\Unit\Middleware;
 
-use Tests\TestCase;
 use App\Http\Middleware\EnsureSubscriptionIsActive;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\TestCase;
 
 class EnsureSubscriptionIsActiveTest extends TestCase
 {
@@ -23,7 +23,7 @@ class EnsureSubscriptionIsActiveTest extends TestCase
      */
     private function createRouteMock($routeName = 'dashboard')
     {
-        return new class($routeName) {
+        return new class ($routeName) {
             private $routeName;
 
             public function __construct($routeName)
@@ -43,6 +43,7 @@ class EnsureSubscriptionIsActiveTest extends TestCase
                         return true;
                     }
                 }
+
                 return false;
             }
         };
@@ -52,9 +53,9 @@ class EnsureSubscriptionIsActiveTest extends TestCase
     {
         $admin = $this->createAdmin();
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $admin);
+        $request->setUserResolver(fn () => $admin);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -65,9 +66,9 @@ class EnsureSubscriptionIsActiveTest extends TestCase
         $this->createActiveSubscription($teacher);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $teacher);
+        $request->setUserResolver(fn () => $teacher);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -77,10 +78,10 @@ class EnsureSubscriptionIsActiveTest extends TestCase
         $teacher = $this->createTeacher();
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $teacher);
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setUserResolver(fn () => $teacher);
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'subscription'));
@@ -93,9 +94,9 @@ class EnsureSubscriptionIsActiveTest extends TestCase
         $this->createActiveSubscription($teacher);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $assistant);
+        $request->setUserResolver(fn () => $assistant);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -106,10 +107,10 @@ class EnsureSubscriptionIsActiveTest extends TestCase
         $assistant = $this->createAssistant($teacher);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $assistant);
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setUserResolver(fn () => $assistant);
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'subscription'));
@@ -122,10 +123,10 @@ class EnsureSubscriptionIsActiveTest extends TestCase
         ]);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $assistant);
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setUserResolver(fn () => $assistant);
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'subscription'));
@@ -134,10 +135,10 @@ class EnsureSubscriptionIsActiveTest extends TestCase
     public function test_unauthenticated_user_redirects()
     {
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => null);
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setUserResolver(fn () => null);
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'subscription'));

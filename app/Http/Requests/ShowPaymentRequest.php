@@ -38,12 +38,12 @@ class ShowPaymentRequest extends FormRequest
         return [
             'group_id.required' => 'معرف المجموعة مطلوب.',
             'group_id.exists' => 'المجموعة المحددة غير موجودة.',
-            
+
             'month.required' => 'الشهر مطلوب.',
             'month.integer' => 'الشهر يجب أن يكون رقم صحيح.',
             'month.min' => 'الشهر يجب أن يكون بين 1 و 12.',
             'month.max' => 'الشهر يجب أن يكون بين 1 و 12.',
-            
+
             'year.required' => 'السنة مطلوبة.',
             'year.integer' => 'السنة يجب أن تكون رقم صحيح.',
             'year.min' => 'السنة يجب أن تكون من 2020 أو أحدث.',

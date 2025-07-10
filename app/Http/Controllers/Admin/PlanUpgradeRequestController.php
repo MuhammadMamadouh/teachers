@@ -31,6 +31,7 @@ class PlanUpgradeRequestController extends Controller
     public function show(PlanUpgradeRequest $planUpgradeRequest)
     {
         $planUpgradeRequest->load(['user', 'currentPlan', 'requestedPlan', 'approvedBy']);
+
         // dd($planUpgradeRequest->currentPlan);
         return Inertia::render('Admin/PlanUpgradeRequests/Show', [
             'request' => $planUpgradeRequest,
@@ -52,14 +53,14 @@ class PlanUpgradeRequestController extends Controller
 
         DB::transaction(function () use ($planUpgradeRequest, $request) {
             $admin = Auth::user();
-            
+
             // Approve the request
             $planUpgradeRequest->approve($admin, $request->admin_notes);
-            
+
             // Update the user's subscription
             $user = $planUpgradeRequest->user;
             $currentSubscription = $user->activeSubscription()->first();
-            
+
             if ($currentSubscription) {
                 $newPlan = $planUpgradeRequest->requestedPlan;
                 $currentSubscription->update([

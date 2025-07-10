@@ -25,7 +25,7 @@ class RegistrationTest extends TestCase
             'code' => 'RYD',
             'is_active' => true,
         ]);
-        
+
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -38,7 +38,7 @@ class RegistrationTest extends TestCase
 
         // After registration, the user should be authenticated
         $this->assertAuthenticated();
-        
+
         // Since new users need approval and subscription, they won't go to dashboard
         // Instead they'll be redirected to approval or subscription page
         $response->assertRedirect();

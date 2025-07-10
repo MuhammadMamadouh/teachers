@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Group;
-use App\Models\Student;
-use App\Models\Payment;
 use App\Models\Attendance;
+use App\Models\Group;
+use App\Models\Payment;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -39,19 +39,19 @@ class DataVerificationSeeder extends Seeder
 
         // Verify relationships
         $this->command->info("🔗 Relationship Verification:");
-        
+
         // Check if all students have groups
         $studentsWithoutGroups = Student::whereNull('group_id')->count();
         $this->command->info("   Students without groups: {$studentsWithoutGroups}");
-        
+
         // Check if all students have teachers
         $studentsWithoutTeachers = Student::whereNull('user_id')->count();
         $this->command->info("   Students without teachers: {$studentsWithoutTeachers}");
-        
+
         // Check group distribution
         $avgStudentsPerGroup = $studentCount > 0 && $groupCount > 0 ? round($studentCount / $groupCount, 2) : 0;
         $this->command->info("   Average students per group: {$avgStudentsPerGroup}");
-        
+
         // Check assistant assignment
         $assistantsWithTeachers = User::where('type', 'assistant')->whereNotNull('teacher_id')->count();
         $this->command->info("   Assistants assigned to teachers: {$assistantsWithTeachers}");
@@ -81,13 +81,13 @@ class DataVerificationSeeder extends Seeder
         $this->command->info("💾 Database Size Estimation:");
         $tables = ['users', 'groups', 'students', 'payments', 'attendances'];
         $totalRows = 0;
-        
+
         foreach ($tables as $table) {
             $count = DB::table($table)->count();
             $totalRows += $count;
             $this->command->info("   {$table}: {$count} rows");
         }
-        
+
         $this->command->info("   Total rows: {$totalRows}");
         $estimatedSizeMB = round($totalRows * 0.001, 2); // Very rough estimation
         $this->command->info("   Estimated size: ~{$estimatedSizeMB} MB");

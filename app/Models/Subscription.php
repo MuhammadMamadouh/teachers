@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Subscription extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'user_id',
         'plan_id',
@@ -53,7 +53,7 @@ class Subscription extends Model
         }
 
         $now = now();
-        
+
         // If no start date, assume it's active
         if (!$this->start_date) {
             return $this->end_date ? $now->lessThanOrEqualTo($this->end_date) : true;

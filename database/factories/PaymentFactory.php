@@ -3,8 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Payment;
-use App\Models\Student;
-use App\Models\Group;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

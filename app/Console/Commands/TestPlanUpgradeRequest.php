@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
 use App\Models\Plan;
 use App\Models\PlanUpgradeRequest;
+use App\Models\User;
 use Illuminate\Console\Command;
 
 class TestPlanUpgradeRequest extends Command
@@ -38,7 +38,7 @@ class TestPlanUpgradeRequest extends Command
             $adminStatus = $user->is_admin ? '👑 Admin' : '👤 User';
             $typeStatus = $user->type === 'assistant' ? '🤝 Assistant' : '🎓 Teacher';
             $approvedStatus = $user->is_approved ? '✅ Approved' : '⏳ Pending';
-            
+
             $this->info("  - {$user->name} ({$user->email}) - {$adminStatus} - {$typeStatus} - {$approvedStatus}");
         }
         $this->newLine();
@@ -71,12 +71,14 @@ class TestPlanUpgradeRequest extends Command
 
         if (!$teacher) {
             $this->warn('⚠️  No approved non-admin teacher found for testing');
+
             return;
         }
 
         $currentSubscription = $teacher->activeSubscription()->first();
         if (!$currentSubscription) {
             $this->warn("⚠️  Teacher {$teacher->name} has no active subscription");
+
             return;
         }
 
@@ -87,6 +89,7 @@ class TestPlanUpgradeRequest extends Command
 
         if (!$upgradePlan) {
             $this->warn("⚠️  No upgrade plan available for {$teacher->name}");
+
             return;
         }
 
@@ -94,6 +97,7 @@ class TestPlanUpgradeRequest extends Command
         $existingRequest = $teacher->pendingPlanUpgradeRequests()->first();
         if ($existingRequest) {
             $this->info("ℹ️  Teacher {$teacher->name} already has a pending upgrade request");
+
             return;
         }
 
@@ -118,7 +122,7 @@ class TestPlanUpgradeRequest extends Command
             $this->info("🔧 Testing admin approval (simulated):");
             $this->info("  - Admin: {$admin->name}");
             $this->info("  - Request ID: {$request->id}");
-            
+
             // Don't actually approve, just show what would happen
             $this->info("  - Would approve request and update subscription");
             $this->success("✅ Admin functionality ready");

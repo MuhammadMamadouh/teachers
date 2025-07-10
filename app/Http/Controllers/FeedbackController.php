@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feedback;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +16,7 @@ class FeedbackController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        
+
         // Get user's feedbacks with pagination
         $feedbacks = $user->feedbacks()
             ->orderBy('created_at', 'desc')
@@ -27,8 +27,8 @@ class FeedbackController extends Controller
             'feedbackTypes' => [
                 'suggestion' => 'اقتراح',
                 'bug' => 'مشكلة تقنية',
-                'question' => 'استفسار'
-            ]
+                'question' => 'استفسار',
+            ],
         ]);
     }
 
@@ -72,7 +72,7 @@ class FeedbackController extends Controller
         }
 
         return Inertia::render('Feedback/Show', [
-            'feedback' => $feedback->load('user')
+            'feedback' => $feedback->load('user'),
         ]);
     }
 }

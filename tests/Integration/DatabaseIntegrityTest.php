@@ -2,15 +2,14 @@
 
 namespace Tests\Integration;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Plan;
-use App\Models\Subscription;
-use App\Models\Student;
-use App\Models\Group;
 use App\Models\AcademicYear;
+use App\Models\Group;
+use App\Models\Plan;
+use App\Models\Student;
+use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 
 class DatabaseIntegrityTest extends TestCase
 {
@@ -35,7 +34,7 @@ class DatabaseIntegrityTest extends TestCase
     {
         $teacher = User::factory()->create(['type' => 'teacher']);
         $plan = Plan::factory()->create();
-        
+
         $subscription = Subscription::factory()->create([
             'user_id' => $teacher->id,
             'plan_id' => $plan->id,
@@ -51,7 +50,7 @@ class DatabaseIntegrityTest extends TestCase
     {
         $teacher = User::factory()->create(['type' => 'teacher']);
         $academicYear = AcademicYear::factory()->create();
-        
+
         $group = Group::factory()->create([
             'user_id' => $teacher->id,
             'academic_year_id' => $academicYear->id,
@@ -75,7 +74,7 @@ class DatabaseIntegrityTest extends TestCase
     {
         $teacher = User::factory()->create(['type' => 'teacher']);
         $academicYear = AcademicYear::factory()->create();
-        
+
         $group = Group::factory()->create([
             'user_id' => $teacher->id,
             'academic_year_id' => $academicYear->id,
@@ -95,8 +94,8 @@ class DatabaseIntegrityTest extends TestCase
 
         // Check what happens to related records
         $this->assertDatabaseMissing('users', ['id' => $teacherId]);
-        
-        // Note: Depending on your foreign key constraints, 
+
+        // Note: Depending on your foreign key constraints,
         // these might be cascade deleted or set to null
         // Adjust these assertions based on your actual schema
     }
@@ -112,7 +111,7 @@ class DatabaseIntegrityTest extends TestCase
 
         // Attempt to create second user with same phone should fail
         $this->expectException(\Illuminate\Database\QueryException::class);
-        
+
         User::factory()->create([
             'type' => 'teacher',
             'phone' => '0501234567', // Same phone
@@ -128,7 +127,7 @@ class DatabaseIntegrityTest extends TestCase
             'onboarding_completed' => true,
         ]);
         $plan = Plan::factory()->create(['max_students' => 5]);
-        
+
         $subscription = Subscription::factory()->create([
             'user_id' => $teacher->id,
             'plan_id' => $plan->id,
@@ -152,21 +151,21 @@ class DatabaseIntegrityTest extends TestCase
         // Verify counts match
         $this->assertEquals(3, $teacher->students()->count());
         $this->assertEquals(3, $group->students()->count());
-        
+
         // Debug: Check subscription and plan relationship
         $teacher->refresh();
         $subscription->refresh();
         $plan->refresh();
-        
+
         $this->assertNotNull($teacher->activeSubscription, 'Teacher should have an active subscription');
         $this->assertEquals($subscription->id, $teacher->activeSubscription->id);
         $this->assertNotNull($teacher->activeSubscription->plan, 'Subscription should have a plan');
         $this->assertEquals(5, $teacher->activeSubscription->plan->max_students);
-        
+
         $limits = $teacher->getSubscriptionLimits();
         $this->assertEquals(5, $limits['max_students']);
         $this->assertEquals(3, $limits['current_students']);
-        
+
         $this->assertTrue($teacher->canAddStudents());
     }
 }

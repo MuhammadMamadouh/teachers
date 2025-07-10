@@ -8,7 +8,6 @@ use App\Http\Requests\StoreSpecialSessionRequest;
 use App\Http\Requests\UpdateGroupRequest;
 use App\Http\Requests\UpdateSpecialSessionRequest;
 use App\Models\Group;
-use App\Models\GroupSchedule;
 use App\Models\GroupSpecialSession;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -23,32 +22,32 @@ class GroupController extends Controller
     public function index(Request $request)
     {
         $query = Group::where('user_id', Auth::id())->with(['schedules', 'assignedStudents', 'academicYear']);
-        
+
         // Apply search filter
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
-        
+
         // Apply academic year filter
         if ($request->filled('academic_year_id')) {
             $query->where('academic_year_id', $request->academic_year_id);
         }
-        
+
         $groups = $query->get();
-        
+
         // Transform the data to ensure consistency
         $transformedGroups = $groups->map(function ($group) {
             return array_merge($group->toArray(), [
-                'assigned_students' => $group->assignedStudents->toArray()
+                'assigned_students' => $group->assignedStudents->toArray(),
             ]);
         });
-        
+
         $academicYears = \App\Models\AcademicYear::all();
-        
+
         return Inertia::render('Groups/Index', [
             'groups' => $transformedGroups,
             'academicYears' => $academicYears,
-            'filters' => $request->only(['search', 'academic_year_id'])
+            'filters' => $request->only(['search', 'academic_year_id']),
         ]);
     }
 
@@ -58,7 +57,7 @@ class GroupController extends Controller
     public function create()
     {
         $academicYears = \App\Models\AcademicYear::all();
-        
+
         return Inertia::render('Groups/Create', [
             'academicYears' => $academicYears,
         ]);
@@ -89,24 +88,24 @@ class GroupController extends Controller
         $user = Auth::user();
 
         // Ensure the group belongs to the authenticated user or their teacher
-        if ($group->user_id !== $user->id && 
+        if ($group->user_id !== $user->id &&
             ($user->type !== 'assistant' || $group->user_id !== $user->teacher_id)) {
             abort(403);
         }
-        
+
         $group->load(['schedules', 'assignedStudents', 'specialSessions', 'academicYear']);
-        
+
         // Get only students that are not assigned to any group and have matching academic year
         $availableStudents = Student::where('user_id', Auth::id())
             ->whereNull('group_id')
             ->where('academic_year_id', $group->academic_year_id)
             ->get();
 
-            
+
         // Get payment summary for current month
         $currentMonth = now()->month;
         $currentYear = now()->year;
-        
+
         $paymentSummary = [
             'total_students' => $group->assignedStudents->count(),
             'paid_students' => $group->payments()
@@ -130,7 +129,7 @@ class GroupController extends Controller
             'current_month' => now()->format('F Y'),
             'current_month_arabic' => now()->locale('ar')->monthName . ' ' . now()->year,
         ];
-        
+
         return Inertia::render('Groups/Show', [
             'group' => array_merge($group->toArray(), [
                 'assigned_students' => $group->assignedStudents->toArray(),
@@ -152,10 +151,10 @@ class GroupController extends Controller
         if ($group->user_id !== Auth::id()) {
             abort(403);
         }
-        
+
         $group->load(['schedules', 'academicYear']);
         $academicYears = \App\Models\AcademicYear::all();
-        
+
         return Inertia::render('Groups/Edit', [
             'group' => $group,
             'academicYears' => $academicYears,
@@ -173,7 +172,7 @@ class GroupController extends Controller
         }
 
         $group->update($request->only([
-            'name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id'
+            'name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id',
         ]));
 
         // Delete existing schedules and create new ones
@@ -194,9 +193,9 @@ class GroupController extends Controller
         if ($group->user_id !== Auth::id()) {
             abort(403);
         }
-        
+
         $group->delete();
-        
+
         return redirect()->route('groups.index')->with('success', 'تم حذف المجموعة بنجاح');
     }
 
@@ -227,8 +226,9 @@ class GroupController extends Controller
 
             if ($mismatchedStudents->count() > 0) {
                 $studentNames = $mismatchedStudents->pluck('name')->join('، ');
+
                 return back()->withErrors([
-                    'assignment' => "لا يمكن إضافة الطلاب التالية لأنهم في صف دراسي مختلف: {$studentNames}"
+                    'assignment' => "لا يمكن إضافة الطلاب التالية لأنهم في صف دراسي مختلف: {$studentNames}",
                 ]);
             }
         }
@@ -237,18 +237,19 @@ class GroupController extends Controller
         $alreadyAssignedStudents = $students->whereNotNull('group_id');
         if ($alreadyAssignedStudents->count() > 0) {
             $studentNames = $alreadyAssignedStudents->pluck('name')->join('، ');
+
             return back()->withErrors([
-                'assignment' => "الطلاب التالية مُعينين بالفعل في مجموعات أخرى: {$studentNames}"
+                'assignment' => "الطلاب التالية مُعينين بالفعل في مجموعات أخرى: {$studentNames}",
             ]);
         }
 
         // Check if adding these students would exceed the group's maximum capacity
         $currentStudentCount = $group->assignedStudents()->count();
         $newStudentCount = count($request->student_ids);
-        
+
         if (($currentStudentCount + $newStudentCount) > $group->max_students) {
             return back()->withErrors([
-                'capacity' => "لا يمكن إضافة {$newStudentCount} طلاب. الحد الأقصى للمجموعة {$group->max_students} والعدد الحالي {$currentStudentCount}"
+                'capacity' => "لا يمكن إضافة {$newStudentCount} طلاب. الحد الأقصى للمجموعة {$group->max_students} والعدد الحالي {$currentStudentCount}",
             ]);
         }
 
@@ -291,7 +292,7 @@ class GroupController extends Controller
         $group->load(['schedules', 'specialSessions']);
 
         return Inertia::render('Groups/Calendar', [
-            'group' => $group
+            'group' => $group,
         ]);
     }
 
@@ -314,10 +315,10 @@ class GroupController extends Controller
         if ($start && $end) {
             $startDate = new \DateTime($start);
             $endDate = new \DateTime($end);
-            
+
             while ($startDate <= $endDate) {
                 $dayOfWeek = (int) $startDate->format('w'); // 0 = Sunday, 6 = Saturday
-                
+
                 foreach ($group->schedules as $schedule) {
                     if ($schedule->day_of_week == $dayOfWeek) {
                         $events[] = [
@@ -328,21 +329,21 @@ class GroupController extends Controller
                             'backgroundColor' => '#3b82f6',
                             'borderColor' => '#2563eb',
                             'type' => 'recurring',
-                            'editable' => false
+                            'editable' => false,
                         ];
                     }
                 }
-                
+
                 $startDate->modify('+1 day');
             }
         }
 
         // Add special session events
         $specialSessions = $group->specialSessions()
-            ->when($start, function($query) use ($start) {
+            ->when($start, function ($query) use ($start) {
                 $query->where('date', '>=', $start);
             })
-            ->when($end, function($query) use ($end) {
+            ->when($end, function ($query) use ($end) {
                 $query->where('date', '<=', $end);
             })
             ->get();
@@ -358,9 +359,9 @@ class GroupController extends Controller
                 'extendedProps' => [
                     'description' => $session->description,
                     'type' => 'special',
-                    'sessionId' => $session->id
+                    'sessionId' => $session->id,
                 ],
-                'editable' => true
+                'editable' => true,
             ];
         }
 
@@ -378,13 +379,13 @@ class GroupController extends Controller
         }
 
         $specialSession = $group->specialSessions()->create($request->only([
-            'date', 'start_time', 'end_time', 'description'
+            'date', 'start_time', 'end_time', 'description',
         ]));
 
         return response()->json([
             'success' => true,
             'message' => 'تم إضافة الجلسة الخاصة بنجاح',
-            'session' => $specialSession
+            'session' => $specialSession,
         ]);
     }
 
@@ -399,13 +400,13 @@ class GroupController extends Controller
         }
 
         $specialSession->update($request->only([
-            'date', 'start_time', 'end_time', 'description'
+            'date', 'start_time', 'end_time', 'description',
         ]));
 
         return response()->json([
             'success' => true,
             'message' => 'تم تحديث الجلسة الخاصة بنجاح',
-            'session' => $specialSession
+            'session' => $specialSession,
         ]);
     }
 
@@ -423,7 +424,7 @@ class GroupController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'تم حذف الجلسة الخاصة بنجاح'
+            'message' => 'تم حذف الجلسة الخاصة بنجاح',
         ]);
     }
 }

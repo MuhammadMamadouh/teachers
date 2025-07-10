@@ -2,12 +2,10 @@
 
 namespace Tests\Unit\Middleware;
 
-use Tests\TestCase;
 use App\Http\Middleware\EnsureUserCanManageAssistants;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Tests\TestCase;
 
 class EnsureUserCanManageAssistantsTest extends TestCase
 {
@@ -25,9 +23,9 @@ class EnsureUserCanManageAssistantsTest extends TestCase
         $this->createActiveSubscription($teacher);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $teacher);
+        $request->setUserResolver(fn () => $teacher);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -37,11 +35,11 @@ class EnsureUserCanManageAssistantsTest extends TestCase
         $teacher = $this->createTeacher(['is_approved' => true]);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $teacher);
+        $request->setUserResolver(fn () => $teacher);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $this->middleware->handle($request, fn() => new Response('OK'));
+        $this->middleware->handle($request, fn () => new Response('OK'));
     }
 
     public function test_assistant_cannot_manage_assistants()
@@ -51,11 +49,11 @@ class EnsureUserCanManageAssistantsTest extends TestCase
         $this->createActiveSubscription($teacher);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $assistant);
+        $request->setUserResolver(fn () => $assistant);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $this->middleware->handle($request, fn() => new Response('OK'));
+        $this->middleware->handle($request, fn () => new Response('OK'));
     }
 
     public function test_admin_cannot_manage_assistants()
@@ -63,21 +61,21 @@ class EnsureUserCanManageAssistantsTest extends TestCase
         $admin = $this->createAdmin();
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $admin);
+        $request->setUserResolver(fn () => $admin);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $this->middleware->handle($request, fn() => new Response('OK'));
+        $this->middleware->handle($request, fn () => new Response('OK'));
     }
 
     public function test_unauthenticated_user_cannot_manage_assistants()
     {
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => null);
+        $request->setUserResolver(fn () => null);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $this->middleware->handle($request, fn() => new Response('OK'));
+        $this->middleware->handle($request, fn () => new Response('OK'));
     }
 
     public function test_unapproved_teacher_cannot_manage_assistants()
@@ -86,10 +84,10 @@ class EnsureUserCanManageAssistantsTest extends TestCase
         $this->createActiveSubscription($teacher);
 
         $request = Request::create('/test');
-        $request->setUserResolver(fn() => $teacher);
+        $request->setUserResolver(fn () => $teacher);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $this->middleware->handle($request, fn() => new Response('OK'));
+        $this->middleware->handle($request, fn () => new Response('OK'));
     }
 }

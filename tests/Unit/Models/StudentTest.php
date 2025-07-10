@@ -2,17 +2,17 @@
 
 namespace Tests\Unit\Models;
 
-use Tests\TestCase;
+use App\Models\Group;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\Group;
+use Tests\TestCase;
 
 class StudentTest extends TestCase
 {
     public function test_student_can_be_created()
     {
         $teacher = $this->createTeacher();
-        
+
         $student = Student::factory()->create([
             'user_id' => $teacher->id,
             'name' => 'أحمد محمد',
@@ -98,7 +98,7 @@ class StudentTest extends TestCase
     public function test_student_name_is_fillable()
     {
         $teacher = $this->createTeacher();
-        
+
         $student = Student::create([
             'user_id' => $teacher->id,
             'name' => 'سارة أحمد',

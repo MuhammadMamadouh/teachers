@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feedback;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,13 +50,13 @@ class AdminFeedbackController extends Controller
             'feedbackTypes' => [
                 'suggestion' => 'اقتراح',
                 'bug' => 'مشكلة تقنية',
-                'question' => 'استفسار'
+                'question' => 'استفسار',
             ],
             'statuses' => [
                 'new' => 'جديد',
                 'in_progress' => 'قيد المراجعة',
-                'resolved' => 'تم الحل'
-            ]
+                'resolved' => 'تم الحل',
+            ],
         ]);
     }
 
@@ -71,7 +71,7 @@ class AdminFeedbackController extends Controller
         }
 
         return Inertia::render('Admin/Feedback/Show', [
-            'feedback' => $feedback->load('user')
+            'feedback' => $feedback->load('user'),
         ]);
     }
 
@@ -121,7 +121,7 @@ class AdminFeedbackController extends Controller
     public function destroy(Feedback $feedback): RedirectResponse
     {
         $feedback->delete();
-        
+
         return redirect()->route('admin.feedback.index')->with('success', 'تم حذف التعليق بنجاح');
     }
 
@@ -143,6 +143,7 @@ class AdminFeedbackController extends Controller
             ]);
 
         $count = count($request->feedback_ids);
+
         return redirect()->back()->with('success', "تم تحديث حالة {$count} تعليق بنجاح");
     }
 }

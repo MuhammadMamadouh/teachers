@@ -2,12 +2,10 @@
 
 namespace Tests\Unit\Middleware;
 
-use Tests\TestCase;
 use App\Http\Middleware\CheckOnboardingCompleted;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
+use Tests\TestCase;
 
 class CheckOnboardingCompletedTest extends TestCase
 {
@@ -24,7 +22,7 @@ class CheckOnboardingCompletedTest extends TestCase
      */
     private function createRouteMock($routeName = 'dashboard')
     {
-        return new class($routeName) {
+        return new class ($routeName) {
             private $routeName;
 
             public function __construct($routeName)
@@ -44,6 +42,7 @@ class CheckOnboardingCompletedTest extends TestCase
                         return true;
                     }
                 }
+
                 return false;
             }
         };
@@ -52,8 +51,8 @@ class CheckOnboardingCompletedTest extends TestCase
     public function test_unauthenticated_user_passes_through()
     {
         $request = Request::create('/test');
-        
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -65,7 +64,7 @@ class CheckOnboardingCompletedTest extends TestCase
 
         $request = Request::create('/test');
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -77,7 +76,7 @@ class CheckOnboardingCompletedTest extends TestCase
 
         $request = Request::create('/test');
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -88,9 +87,9 @@ class CheckOnboardingCompletedTest extends TestCase
         $this->actingAs($teacher);
 
         $request = Request::create('/test');
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'onboarding'));
@@ -103,9 +102,9 @@ class CheckOnboardingCompletedTest extends TestCase
         $this->actingAs($assistant);
 
         $request = Request::create('/test');
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -117,9 +116,9 @@ class CheckOnboardingCompletedTest extends TestCase
         $this->actingAs($assistant);
 
         $request = Request::create('/test');
-        $request->setRouteResolver(fn() => $this->createRouteMock('dashboard'));
+        $request->setRouteResolver(fn () => $this->createRouteMock('dashboard'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'onboarding'));
@@ -131,9 +130,9 @@ class CheckOnboardingCompletedTest extends TestCase
         $this->actingAs($teacher);
 
         $request = Request::create('/onboarding');
-        $request->setRouteResolver(fn() => $this->createRouteMock('onboarding.show'));
+        $request->setRouteResolver(fn () => $this->createRouteMock('onboarding.show'));
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }

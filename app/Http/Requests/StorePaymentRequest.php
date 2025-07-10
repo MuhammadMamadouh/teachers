@@ -43,23 +43,23 @@ class StorePaymentRequest extends FormRequest
         return [
             'student_id.required' => 'معرف الطالب مطلوب.',
             'student_id.exists' => 'الطالب المحدد غير موجود.',
-            
+
             'group_id.required' => 'معرف المجموعة مطلوب.',
             'group_id.exists' => 'المجموعة المحددة غير موجودة.',
-            
+
             'payment_type.required' => 'نوع الدفع مطلوب.',
             'payment_type.in' => 'نوع الدفع يجب أن يكون شهري أو لكل حصة.',
-            
+
             'related_date.required' => 'تاريخ الدفع مطلوب.',
             'related_date.date' => 'تاريخ الدفع يجب أن يكون تاريخ صحيح.',
-            
+
             'is_paid.boolean' => 'حالة الدفع يجب أن تكون صحيحة أو خاطئة.',
-            
+
             'amount.numeric' => 'مبلغ الدفع يجب أن يكون رقم.',
             'amount.min' => 'مبلغ الدفع يجب أن يكون 0 أو أكثر.',
-            
+
             'paid_at.date' => 'تاريخ الدفع يجب أن يكون تاريخ صحيح.',
-            
+
             'notes.string' => 'الملاحظات يجب أن تكون نص.',
             'notes.max' => 'الملاحظات يجب ألا تتجاوز 1000 حرف.',
         ];

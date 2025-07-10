@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Database\Seeders\SmallTestSeeder;
-use Database\Seeders\PerformanceTestSeeder;
-use Database\Seeders\DataVerificationSeeder;
 use Database\Seeders\ClearPerformanceDataSeeder;
+use Database\Seeders\DataVerificationSeeder;
+use Database\Seeders\PerformanceTestSeeder;
+use Database\Seeders\SmallTestSeeder;
+use Illuminate\Console\Command;
 
 class PerformanceTestCommand extends Command
 {
@@ -49,9 +49,10 @@ class PerformanceTestCommand extends Command
     {
         $this->info('🧪 Running Small Performance Test');
         $this->info('This will create 10 teachers with complete data sets.');
-        
+
         if (!$force && !$this->confirm('Do you want to continue?')) {
             $this->info('Operation cancelled.');
+
             return;
         }
 
@@ -65,16 +66,17 @@ class PerformanceTestCommand extends Command
         $this->warn('⚠️  Running Large Performance Test');
         $this->warn('This will create 1000 teachers with millions of records.');
         $this->warn('This may take 30-60 minutes and require significant system resources.');
-        
+
         if (!$force && !$this->confirm('Are you sure you want to continue?')) {
             $this->info('Operation cancelled.');
+
             return;
         }
 
         $startTime = now();
         $this->call('db:seed', ['--class' => PerformanceTestSeeder::class]);
         $endTime = now();
-        
+
         $duration = $endTime->diffInMinutes($startTime);
         $this->newLine();
         $this->info("✅ Large test completed in {$duration} minutes!");
@@ -91,9 +93,10 @@ class PerformanceTestCommand extends Command
     {
         $this->warn('🗑️  Clearing Performance Test Data');
         $this->warn('This will remove all test data but preserve admin users and plans.');
-        
+
         if (!$force && !$this->confirm('Are you sure you want to clear all test data?')) {
             $this->info('Operation cancelled.');
+
             return;
         }
 

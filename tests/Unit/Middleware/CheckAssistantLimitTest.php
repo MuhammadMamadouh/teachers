@@ -2,11 +2,10 @@
 
 namespace Tests\Unit\Middleware;
 
-use Tests\TestCase;
 use App\Http\Middleware\CheckAssistantLimit;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\TestCase;
 
 class CheckAssistantLimitTest extends TestCase
 {
@@ -23,7 +22,7 @@ class CheckAssistantLimitTest extends TestCase
      */
     private function createRouteMock($routeName = 'assistants.store')
     {
-        return new class($routeName) {
+        return new class ($routeName) {
             private $routeName;
 
             public function __construct($routeName)
@@ -49,12 +48,12 @@ class CheckAssistantLimitTest extends TestCase
         $this->createAssistant($teacher);
 
         $request = Request::create('/assistants', 'POST');
-        $request->setUserResolver(fn() => $teacher);
-        
-        $route = $this->createRouteMock();
-        $request->setRouteResolver(fn() => $route);
+        $request->setUserResolver(fn () => $teacher);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $route = $this->createRouteMock();
+        $request->setRouteResolver(fn () => $route);
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }
@@ -70,12 +69,12 @@ class CheckAssistantLimitTest extends TestCase
         $this->createAssistant($teacher);
 
         $request = Request::create('/assistants', 'POST');
-        $request->setUserResolver(fn() => $teacher);
-        
-        $route = $this->createRouteMock();
-        $request->setRouteResolver(fn() => $route);
+        $request->setUserResolver(fn () => $teacher);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $route = $this->createRouteMock();
+        $request->setRouteResolver(fn () => $route);
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
     }
@@ -85,12 +84,12 @@ class CheckAssistantLimitTest extends TestCase
         $teacher = $this->createTeacher();
 
         $request = Request::create('/assistants', 'POST');
-        $request->setUserResolver(fn() => $teacher);
-        
-        $route = $this->createRouteMock();
-        $request->setRouteResolver(fn() => $route);
+        $request->setUserResolver(fn () => $teacher);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $route = $this->createRouteMock();
+        $request->setRouteResolver(fn () => $route);
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
     }
@@ -103,12 +102,12 @@ class CheckAssistantLimitTest extends TestCase
         $this->createActiveSubscription($teacher, $plan);
 
         $request = Request::create('/assistants', 'POST');
-        $request->setUserResolver(fn() => $assistant);
-        
-        $route = $this->createRouteMock();
-        $request->setRouteResolver(fn() => $route);
+        $request->setUserResolver(fn () => $assistant);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $route = $this->createRouteMock();
+        $request->setRouteResolver(fn () => $route);
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
     }
@@ -118,12 +117,12 @@ class CheckAssistantLimitTest extends TestCase
         $admin = $this->createAdmin();
 
         $request = Request::create('/assistants', 'POST');
-        $request->setUserResolver(fn() => $admin);
-        
-        $route = $this->createRouteMock();
-        $request->setRouteResolver(fn() => $route);
+        $request->setUserResolver(fn () => $admin);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $route = $this->createRouteMock();
+        $request->setRouteResolver(fn () => $route);
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
     }
@@ -131,12 +130,12 @@ class CheckAssistantLimitTest extends TestCase
     public function test_unauthenticated_user_cannot_add_assistant()
     {
         $request = Request::create('/assistants', 'POST');
-        $request->setUserResolver(fn() => null);
-        
-        $route = $this->createRouteMock();
-        $request->setRouteResolver(fn() => $route);
+        $request->setUserResolver(fn () => null);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $route = $this->createRouteMock();
+        $request->setRouteResolver(fn () => $route);
+
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue(str_contains($response->headers->get('Location'), 'login'));
@@ -147,9 +146,9 @@ class CheckAssistantLimitTest extends TestCase
         $teacher = $this->createTeacher();
 
         $request = Request::create('/assistants', 'GET');
-        $request->setUserResolver(fn() => $teacher);
+        $request->setUserResolver(fn () => $teacher);
 
-        $response = $this->middleware->handle($request, fn() => new Response('OK'));
+        $response = $this->middleware->handle($request, fn () => new Response('OK'));
 
         $this->assertEquals('OK', $response->getContent());
     }

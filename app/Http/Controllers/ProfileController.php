@@ -22,7 +22,7 @@ class ProfileController extends Controller
         $governorates = Governorate::where('is_active', true)
             ->orderBy('name_ar')
             ->get(['id', 'name_ar', 'name_en']);
-            
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),

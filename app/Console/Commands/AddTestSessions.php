@@ -27,9 +27,10 @@ class AddTestSessions extends Command
     public function handle()
     {
         $groups = Group::all();
-        
+
         if ($groups->count() === 0) {
             $this->error('No groups found');
+
             return;
         }
 
@@ -40,20 +41,20 @@ class AddTestSessions extends Command
                     'date' => '2025-07-08',
                     'start_time' => '10:00',
                     'end_time' => '11:30',
-                    'description' => 'جلسة مراجعة عامة'
+                    'description' => 'جلسة مراجعة عامة',
                 ],
                 [
                     'date' => '2025-07-10',
                     'start_time' => '14:00',
                     'end_time' => '15:00',
-                    'description' => 'امتحان تجريبي'
+                    'description' => 'امتحان تجريبي',
                 ],
                 [
                     'date' => '2025-07-15',
                     'start_time' => '09:00',
                     'end_time' => '11:00',
-                    'description' => 'ورشة تطبيقية'
-                ]
+                    'description' => 'ورشة تطبيقية',
+                ],
             ];
 
             foreach ($testSessions as $sessionData) {

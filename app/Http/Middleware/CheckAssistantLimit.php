@@ -20,6 +20,17 @@ class CheckAssistantLimit
         // Only check limit for POST requests (creating assistants)
         if ($request->isMethod('POST') && $request->route()->getName() === 'assistants.store') {
             
+            // Check if user is authenticated
+            if (!$user) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'غير مصرح لك بالوصول',
+                    ], 401);
+                }
+                
+                return redirect()->route('login');
+            }
+            
             // Check if user can add more assistants
             if (!$user->canAddAssistants()) {
                 if ($request->expectsJson()) {

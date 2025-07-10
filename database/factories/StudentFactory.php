@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\Group;
+use App\Models\AcademicYear;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,13 +35,14 @@ class StudentFactory extends Factory
 
         $firstName = $this->faker->randomElement($arabicFirstNames);
         $lastName = $this->faker->randomElement($arabicLastNames);
-        $guardianFirstName = $this->faker->randomElement($arabicFirstNames);
 
         return [
+            'user_id' => User::factory(),
             'name' => $firstName . ' ' . $lastName,
             'phone' => '05' . $this->faker->numerify('########'),
-            'guardian_name' => $guardianFirstName . ' ' . $lastName,
             'guardian_phone' => '05' . $this->faker->numerify('########'),
+            'academic_year_id' => AcademicYear::factory(),
+            'group_id' => Group::factory(),
         ];
     }
 }

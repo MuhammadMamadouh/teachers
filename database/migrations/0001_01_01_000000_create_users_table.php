@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('phone');
+            $table->string('phone')->unique()->nullable(); // Example: "0501234567"
             $table->string('subject')->nullable(); // Example: "Math - Grade 9"
             $table->text('notes')->nullable();
             $table->boolean('is_approved')->default(false);

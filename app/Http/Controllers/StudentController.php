@@ -22,8 +22,11 @@ class StudentController extends Controller
         /** @var User $user */
         $user = Auth::user();
         
+        // For assistants, use the teacher's students
+        $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
+        
         // Build the query with search filters
-        $query = Student::where('user_id', $user->id)->with(['group', 'academicYear']);
+        $query = Student::where('user_id', $teacherId)->with(['group', 'academicYear']);
         
         // Search by name
         if ($request->filled('search')) {
@@ -50,7 +53,7 @@ class StudentController extends Controller
         }
         
         $students = $query->orderBy('name')->get();
-        $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
+        $groups = Group::where('user_id', $teacherId)->select('id', 'name')->get();
         $academicYears = \App\Models\AcademicYear::all();
         
         $subscriptionLimits = $user->getSubscriptionLimits();
@@ -120,7 +123,7 @@ class StudentController extends Controller
         ]);
 
         // Validate that if a group is selected, it matches the academic year
-        if ($validated['group_id']) {
+        if (isset($validated['group_id']) && $validated['group_id']) {
             $group = Group::find($validated['group_id']);
             if ($group && $group->academic_year_id && $group->academic_year_id != $validated['academic_year_id']) {
                 throw ValidationException::withMessages([
@@ -143,8 +146,11 @@ class StudentController extends Controller
      */
     public function show(Student $student): Response
     {
-        // Ensure the student belongs to the authenticated user
-        if ($student->user_id !== Auth::id()) {
+        $user = Auth::user();
+
+        // Ensure the student belongs to the authenticated user or their teacher
+        if ($student->user_id !== $user->id && 
+            ($user->type !== 'assistant' || $student->user_id !== $user->teacher_id)) {
             abort(403);
         }
 
@@ -218,7 +224,7 @@ class StudentController extends Controller
         ]);
 
         // Validate that if a group is selected, it matches the academic year
-        if ($validated['group_id']) {
+        if (isset($validated['group_id']) && $validated['group_id']) {
             $group = Group::find($validated['group_id']);
             if ($group && $group->academic_year_id && $group->academic_year_id != $validated['academic_year_id']) {
                 throw ValidationException::withMessages([

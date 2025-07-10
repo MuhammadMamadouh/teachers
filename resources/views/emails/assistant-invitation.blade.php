@@ -1,23 +1,38 @@
-<x-mail::message>
-# تمت دعوتك لتكون مساعداً
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دعوة مساعد</title>
+    <style>
+        body { font-family: Arial, sans-serif; direction: rtl; text-align: right; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تمت دعوتك لتكون مساعداً</h1>
+        
+        <p>{{ $teacher->name }} قام بدعوتك للانضمام كمساعد على منصة إدارة المعلمين.</p>
 
-{{ $teacher->name }} قام بدعوتك للانضمام كمساعد على منصة إدارة المعلمين.
+        <h2>معلومات تسجيل الدخول الخاصة بك</h2>
+        <ul>
+            <li><strong>رقم الهاتف:</strong> {{ $assistant->phone }}</li>
+            @if($assistant->email)
+            <li><strong>البريد الإلكتروني:</strong> {{ $assistant->email }}</li>
+            @endif
+            <li><strong>كلمة المرور المؤقتة:</strong> {{ $tempPassword }}</li>
+        </ul>
 
-## معلومات تسجيل الدخول الخاصة بك
-- **رقم الهاتف**: {{ $assistant->phone }}
-@if($assistant->email)
-- **البريد الإلكتروني**: {{ $assistant->email }}
-@endif
-- **كلمة المرور المؤقتة**: {{ $tempPassword }}
+        <p>يرجى تسجيل الدخول باستخدام الرابط أدناه وتغيير كلمة المرور المؤقتة الخاصة بك.</p>
 
-يرجى تسجيل الدخول باستخدام الرابط أدناه وتغيير كلمة المرور المؤقتة الخاصة بك.
+        <a href="{{ route('login') }}" class="button">تسجيل الدخول الآن</a>
 
-<x-mail::button :url="route('login')">
-    تسجيل الدخول الآن
-</x-mail::button>
+        <p>بعد تسجيل الدخول، ستتمكن من مساعدة {{ $teacher->name }} في إدارة الطلاب والمجموعات وتسجيل الحضور.</p>
 
-بعد تسجيل الدخول، ستتمكن من مساعدة {{ $teacher->name }} في إدارة الطلاب والمجموعات وتسجيل الحضور.
-
-شكراً لك،<br>
-{{ config('app.name') }}
-</x-mail::message>
+        <p>شكراً لك،<br>
+        {{ config('app.name') }}</p>
+    </div>
+</body>
+</html>

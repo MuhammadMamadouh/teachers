@@ -77,6 +77,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get active subscriptions for the user.
+     */
+    public function activeSubscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class)->where('is_active', true);
+    }
+
+    /**
      * Get all students for the user.
      */
     public function students(): HasMany
@@ -251,6 +259,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor for is_assistant attribute for backward compatibility.
+     */
+    public function getIsAssistantAttribute(): bool
+    {
+        return $this->isAssistant();
+    }
+
+    /**
      * Get the main teacher (if this user is an assistant, return the teacher; if teacher, return self).
      */
     public function getMainTeacher(): User
@@ -335,5 +351,21 @@ class User extends Authenticatable
         
         $subscription = $userToCheck->activeSubscription()->first();
         return $subscription && $subscription->isCurrentlyActive();
+    }
+
+    /**
+     * Get the user's current plan.
+     */
+    public function getCurrentPlan()
+    {
+        // For assistants, get the teacher's plan
+        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        
+        if (!$userToCheck) {
+            return null;
+        }
+        
+        $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+        return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
     }
 }

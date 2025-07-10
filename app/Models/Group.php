@@ -39,6 +39,14 @@ class Group extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    /**
+     * Alias for assignedStudents relationship for consistency with tests.
+     */
+    public function students(): HasMany
+    {
+        return $this->assignedStudents();
+    }
     
    
 
@@ -119,5 +127,13 @@ class Group extends Model
     public function getPaymentTypeLabel(): string
     {
         return $this->payment_type === 'monthly' ? 'شهري' : 'بالجلسة';
+    }
+
+    /**
+     * Scope a query to only include active groups.
+     */
+    public function scopeIsActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Group;
 use App\Models\User;
+use App\Models\AcademicYear;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,10 +35,14 @@ class GroupFactory extends Factory
         $level = $this->faker->randomElement($levels);
 
         return [
+            'user_id' => User::factory(),
             'name' => $subject . ' - ' . $level,
             'description' => 'مجموعة ' . $subject . ' للطلاب في ' . $level,
-            'max_students' => $this->faker->numberBetween(45, 55),
+            'max_students' => $this->faker->numberBetween(15, 25),
             'is_active' => true,
+            'payment_type' => $this->faker->randomElement(['monthly', 'per_session']),
+            'student_price' => $this->faker->randomFloat(2, 50, 200),
+            'academic_year_id' => AcademicYear::factory(),
         ];
     }
 }

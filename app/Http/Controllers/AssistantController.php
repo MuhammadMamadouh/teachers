@@ -60,6 +60,8 @@ class AssistantController extends Controller
             'type' => 'assistant',
             'teacher_id' => $user->id,
             'is_approved' => true, // Assistants are auto-approved
+            'onboarding_completed' => true, // Assume onboarding is completed for assistants
+            'onboarding_completed_at' => now(),
         ]);
         
         $assistant->save();

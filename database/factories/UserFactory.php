@@ -75,6 +75,8 @@ class UserFactory extends Factory
             'is_admin' => false,
             'is_approved' => true,
             'approved_at' => now(),
+            'onboarding_completed' => true,
+            'onboarding_completed_at' => now(),
         ]);
     }
 
@@ -86,6 +88,19 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'type' => 'assistant',
             'is_admin' => false,
+            'is_approved' => true,
+            'approved_at' => now(),
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 'teacher',
+            'is_admin' => true,
             'is_approved' => true,
             'approved_at' => now(),
         ]);

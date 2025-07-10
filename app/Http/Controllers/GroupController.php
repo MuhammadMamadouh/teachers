@@ -86,9 +86,11 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
+        $user = Auth::user();
 
-        // Ensure the group belongs to the authenticated user
-        if ($group->user_id !== Auth::id()) {
+        // Ensure the group belongs to the authenticated user or their teacher
+        if ($group->user_id !== $user->id && 
+            ($user->type !== 'assistant' || $group->user_id !== $user->teacher_id)) {
             abort(403);
         }
         

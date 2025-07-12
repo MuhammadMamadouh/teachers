@@ -18,7 +18,14 @@ jobs:
             - name: Install Dependencies
               run: npm ci
             - name: Run Lint
+              id: lint-test
               run: npm run lint
+            - name: Upload Test Results
+              if: steps.lint-test.outcome == 'success'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: lint-results
+                  path: ./tests/Pages/**/*.test.js
 
     test:
         runs-on: ubuntu-latest

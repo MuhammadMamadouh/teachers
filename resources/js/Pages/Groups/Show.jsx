@@ -78,44 +78,44 @@ export default function Show({ group, availableStudents, paymentSummary }) {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
+                    <h2 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800 truncate">
                         تفاصيل المجموعة: {group.name}
                     </h2>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 md:space-x-2 md:flex-nowrap">
                         <Link
                             href={route('groups.edit', group.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap"
                         >
                             تعديل
                         </Link>
                         <Link
                             href={route('groups.calendar', group.id)}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap"
                         >
                             التقويم
                         </Link>
                         <Link
                             href={route('attendance.index', { group_id: group.id })}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap"
                         >
                             تسجيل الحضور
                         </Link>
                         <Link
                             href={route('payments.index', { group_id: group.id })}
-                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded"
+                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap"
                         >
                             إدارة المدفوعات
                         </Link>
                         <button
                             onClick={() => setShowAssignModal(true)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap"
                         >
                             إضافة طلاب
                         </button>
                         <button
                             onClick={handleDelete}
-                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap"
                         >
                             حذف
                         </button>
@@ -125,15 +125,14 @@ export default function Show({ group, availableStudents, paymentSummary }) {
         >
             <Head title={`تفاصيل المجموعة: ${group.name}`} />
 
-            <div className="py-12">
-                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-6 sm:py-12">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            {/* Group Info */}
-                            <div className="mb-8">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-gray-900">{group.name}</h3>
+                        <div className="p-4 sm:p-6">{/* Group Info */}
+                            <div className="mb-6 sm:mb-8">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 space-y-2 sm:space-y-0">
+                                    <div className="flex-1">
+                                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{group.name}</h3>
                                         {group.academic_year && (
                                             <p className="text-sm text-gray-600 mt-1">
                                                 الصف الدراسي: 
@@ -154,17 +153,17 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                     <p className="text-gray-600 mb-4">{group.description}</p>
                                 )}
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-blue-50 p-4 rounded-lg">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
-                                                <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                                 </svg>
                                             </div>
-                                            <div className="ml-4">
-                                                <h4 className="text-lg font-medium text-blue-900">الحد الأقصى للطلاب</h4>
-                                                <p className="text-2xl font-bold text-blue-900">{group.max_students}</p>
+                                            <div className="ml-3 sm:ml-4">
+                                                <h4 className="text-sm sm:text-lg font-medium text-blue-900">الحد الأقصى للطلاب</h4>
+                                                <p className="text-xl sm:text-2xl font-bold text-blue-900">{group.max_students}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -172,13 +171,13 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                     <div className="bg-green-50 p-4 rounded-lg">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
-                                                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                                                 </svg>
                                             </div>
-                                            <div className="ml-4">
-                                                <h4 className="text-lg font-medium text-green-900">الطلاب المسجلين</h4>
-                                                <p className="text-2xl font-bold text-green-900">{group.assigned_students ? group.assigned_students.length : 0}</p>
+                                            <div className="ml-3 sm:ml-4">
+                                                <h4 className="text-sm sm:text-lg font-medium text-green-900">الطلاب المسجلين</h4>
+                                                <p className="text-xl sm:text-2xl font-bold text-green-900">{group.assigned_students ? group.assigned_students.length : 0}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -187,13 +186,13 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                     <div className="bg-indigo-50 p-4 rounded-lg">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
-                                                <svg className="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <div className="ml-4">
-                                                <h4 className="text-lg font-medium text-indigo-900">نوع الدفع</h4>
-                                                <p className="text-2xl font-bold text-indigo-900">{group.payment_type_label}</p>
+                                            <div className="ml-3 sm:ml-4">
+                                                <h4 className="text-sm sm:text-lg font-medium text-indigo-900">نوع الدفع</h4>
+                                                <p className="text-lg sm:text-2xl font-bold text-indigo-900">{group.payment_type_label}</p>
                                                 <p className="text-xs text-indigo-700">{group.student_price} ج.م/طالب</p>
                                             </div>
                                         </div>
@@ -203,13 +202,13 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                     <div className="bg-emerald-50 p-4 rounded-lg">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
-                                                <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                                 </svg>
                                             </div>
-                                            <div className="ml-4">
-                                                <h4 className="text-lg font-medium text-emerald-900">الدخل المتوقع</h4>
-                                                <p className="text-2xl font-bold text-emerald-900">
+                                            <div className="ml-3 sm:ml-4">
+                                                <h4 className="text-sm sm:text-lg font-medium text-emerald-900">الدخل المتوقع</h4>
+                                                <p className="text-lg sm:text-2xl font-bold text-emerald-900">
                                                     {group.payment_type === 'monthly' 
                                                         ? group.expected_monthly_income 
                                                         : group.expected_income_per_session
@@ -225,13 +224,13 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                     <div className="bg-purple-50 p-4 rounded-lg">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
-                                                <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <div className="ml-4">
-                                                <h4 className="text-lg font-medium text-purple-900">أيام الأسبوع</h4>
-                                                <p className="text-2xl font-bold text-purple-900">{group.schedules ? group.schedules.length : 0}</p>
+                                            <div className="ml-3 sm:ml-4">
+                                                <h4 className="text-sm sm:text-lg font-medium text-purple-900">أيام الأسبوع</h4>
+                                                <p className="text-xl sm:text-2xl font-bold text-purple-900">{group.schedules ? group.schedules.length : 0}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -240,13 +239,13 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                         <div className="bg-amber-50 p-4 rounded-lg">
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0">
-                                                    <svg className="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 </div>
-                                                <div className="ml-4">
-                                                    <h4 className="text-lg font-medium text-amber-900">المدفوعات</h4>
-                                                    <p className="text-2xl font-bold text-amber-900">
+                                                <div className="ml-3 sm:ml-4">
+                                                    <h4 className="text-sm sm:text-lg font-medium text-amber-900">المدفوعات</h4>
+                                                    <p className="text-xl sm:text-2xl font-bold text-amber-900">
                                                         {paymentSummary.paid_students}/{paymentSummary.total_students}
                                                     </p>
                                                     <p className="text-xs text-amber-700">
@@ -263,8 +262,8 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             <div className="mb-8">
                                 <h4 className="text-lg font-medium text-gray-900 mb-4">الجدول الأسبوعي</h4>
                                 {group.schedules && group.schedules.length > 0 ? (
-                                    <div className="bg-gray-50 rounded-lg p-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {group.schedules.map((schedule) => (
                                                 <div key={schedule.id} className="bg-white p-4 rounded-lg shadow-sm border">
                                                     <div className="text-center">
@@ -290,14 +289,14 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             <div>
                                 <h4 className="text-lg font-medium text-gray-900 mb-4">قائمة الطلاب</h4>
                                 {group.assigned_students && group.assigned_students.length > 0 ? (
-                                    <div className="bg-gray-50 rounded-lg p-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {group.assigned_students.map((student) => (
                                                 <div key={student.id} className="bg-white p-4 rounded-lg shadow-sm border">
                                                     <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <h5 className="font-medium text-gray-900">{student.name}</h5>
-                                                            <p className="text-sm text-gray-600">{student.phone}</p>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h5 className="font-medium text-gray-900 truncate">{student.name}</h5>
+                                                            <p className="text-sm text-gray-600 truncate">{student.phone}</p>
                                                             {student.guardian_name && (
                                                                 <p className="text-xs text-gray-500">ولي الأمر: {student.guardian_name}</p>
                                                             )}

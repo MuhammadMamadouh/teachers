@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -364,7 +364,8 @@ export default function Index() {
                         <Card>
                             <CardHeader>
                                 <div className="flex justify-between items-center">
-                                    <CardTitle className="flex items-center gap-2 text-right">
+                                    
+                                     <CardTitle className="flex items-center gap-2 text-right">
                                         <CalendarDays className="h-5 w-5" />
                                         المدفوعات من {paymentsData.date_range.start_date} إلى {paymentsData.date_range.end_date}
                                     </CardTitle>
@@ -381,17 +382,10 @@ export default function Index() {
                                             </Button>
                                         )}
                                     </div>
+                                    
                                 </div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                        <Button 
-                                            onClick={savePayments} 
-                                            disabled={saving}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Save className="h-4 w-4" />
-                                            {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
-                                        </Button>
-                                </div>
+                               
+                               
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-6">
@@ -486,11 +480,25 @@ export default function Index() {
                                                     </div>
                                                 )}
                                             </CardContent>
+                                            
                                         </Card>
                                     ))}
                                 </div>
                             </CardContent>
+                            <CardFooter className="flex justify-end">
+                             <div className="text-sm text-gray-500 mt-1">
+                                        <Button 
+                                            onClick={savePayments} 
+                                            disabled={saving}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Save className="h-4 w-4" />
+                                            {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                                        </Button>
+                                </div>
+                            </CardFooter>
                         </Card>
+                        
                     )}
 
                     {/* Helper section when students exist but no payments in date range */}

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Controllers;
 
+use App\Models\Group;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -178,5 +179,201 @@ class DashboardControllerTest extends TestCase
             ->has('planStats')
             ->where('planStats', fn ($stats) => count($stats) >= 2) // At least our 2 plans
         );
+    }
+
+    public function test_teacher_can_get_calendar_events()
+    {
+        $teacher = $this->createTeacher();
+        $this->createActiveSubscription($teacher);
+        
+        $group = Group::factory()->create(['user_id' => $teacher->id]);
+        
+        $response = $this->actingAs($teacher)->get(route('dashboard.calendar-events', [
+            'start' => '2025-07-01',
+            'end' => '2025-07-31'
+        ]));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            '*' => [
+                'id',
+                'title',
+                'start',
+                'end',
+                'backgroundColor',
+                'borderColor',
+                'extendedProps',
+                'editable'
+            ]
+        ]);
+    }
+
+    public function test_assistant_can_get_calendar_events()
+    {
+        $teacher = $this->createTeacher();
+        $assistant = $this->createAssistant($teacher);
+        $this->createActiveSubscription($teacher);
+        
+        $group = Group::factory()->create(['user_id' => $teacher->id]);
+        
+        $response = $this->actingAs($assistant)->get(route('dashboard.calendar-events', [
+            'start' => '2025-07-01',
+            'end' => '2025-07-31'
+        ]));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            '*' => [
+                'id',
+                'title',
+                'start',
+                'end',
+                'backgroundColor',
+                'borderColor',
+                'extendedProps',
+                'editable'
+            ]
+        ]);
+    }
+
+    public function test_teacher_can_get_today_sessions()
+    {
+        $teacher = $this->createTeacher();
+        $this->createActiveSubscription($teacher);
+        
+        $group = Group::factory()->create(['user_id' => $teacher->id]);
+        
+        $response = $this->actingAs($teacher)->get(route('dashboard.today-sessions'));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            '*' => [
+                'group_name',
+                'start_time',
+                'end_time',
+                'type',
+                'description',
+                'group_id'
+            ]
+        ]);
+    }
+
+    public function test_assistant_can_get_today_sessions()
+    {
+        $teacher = $this->createTeacher();
+        $assistant = $this->createAssistant($teacher);
+        $this->createActiveSubscription($teacher);
+        
+        $group = Group::factory()->create(['user_id' => $teacher->id]);
+        
+        $response = $this->actingAs($assistant)->get(route('dashboard.today-sessions'));
+
+        $response->assertOk();
+        $response->assertJson([]);
+    }
+
+    public function test_teacher_can_get_reports()
+    {
+        $teacher = $this->createTeacher();
+        $plan = $this->createPlan();
+        $this->createActiveSubscription($teacher, $plan);
+        
+        // Create some test data
+        Student::factory()->count(3)->create(['user_id' => $teacher->id]);
+        
+        $response = $this->actingAs($teacher)->get(route('dashboard.reports'));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'financial' => [
+                'total_expected_monthly_income',
+                'total_collected_payments',
+                'pending_payments',
+                'collection_rate',
+                'average_student_price',
+                'recent_payments'
+            ],
+            'groups' => [
+                'total_groups',
+                'total_students',
+                'average_students_per_group',
+                'top_groups'
+            ],
+            'attendance' => [
+                'total_sessions_this_month',
+                'total_attendances_this_month',
+                'overall_attendance_rate',
+                'average_attendance_per_session'
+            ]
+        ]);
+    }
+
+    public function test_assistant_can_get_reports()
+    {
+        $teacher = $this->createTeacher();
+        $assistant = $this->createAssistant($teacher);
+        $this->createActiveSubscription($teacher);
+        
+        $response = $this->actingAs($assistant)->get(route('dashboard.reports'));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'financial',
+            'groups',
+            'attendance'
+        ]);
+    }
+
+    public function test_teacher_can_reset_term()
+    {
+        $teacher = $this->createTeacher();
+        $plan = $this->createPlan();
+        $this->createActiveSubscription($teacher, $plan);
+        
+        // Create some test data
+        $group = Group::factory()->create(['user_id' => $teacher->id]);
+        Student::factory()->count(3)->create(['user_id' => $teacher->id]);
+        
+        $response = $this->actingAs($teacher)->post(route('dashboard.reset-term'), [
+            'confirmation' => 'CONFIRM RESET'
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(['success' => true]);
+    }
+
+    public function test_assistant_can_reset_term()
+    {
+        $teacher = $this->createTeacher();
+        $assistant = $this->createAssistant($teacher);
+        $this->createActiveSubscription($teacher);
+        
+        $response = $this->actingAs($assistant)->post(route('dashboard.reset-term'), [
+            'confirmation' => 'CONFIRM RESET'
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(['success' => true]);
+    }
+
+    public function test_admin_cannot_reset_term()
+    {
+        $admin = $this->createAdmin();
+        
+        $response = $this->actingAs($admin)->post(route('dashboard.reset-term'), [
+            'confirmation' => 'CONFIRM RESET'
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function test_reset_term_requires_confirmation()
+    {
+        $teacher = $this->createTeacher();
+        $this->createActiveSubscription($teacher);
+        
+        $response = $this->actingAs($teacher)->post(route('dashboard.reset-term'));
+
+        $response->assertSessionHasErrors(['confirmation']);
     }
 }

@@ -47,7 +47,7 @@ export default function Welcome({ auth, plans = [] }) {
 
     const testimonials = [
         {
-            name: "أستاذة مصطفى عبد المجيد",
+            name: "أستاذ مصطفى عبد المجيد",
             role: "معلم رياضيات",
             content: "هذا النظام وفر علي الكثير من الوقت في تتبع طلابي ومدفوعاتهم. أصبح التدريس أكثر تنظيماً.",
             rating: 5

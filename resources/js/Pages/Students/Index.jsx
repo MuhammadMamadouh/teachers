@@ -3,8 +3,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import { confirmDialog, successAlert, errorAlert } from '@/utils/sweetAlert';
 import { useState, useEffect } from 'react';
 import { usePrevious } from '@/hooks/usePrevious';
-import { 
-    MagnifyingGlassIcon, 
+import {
+    MagnifyingGlassIcon,
     XMarkIcon,
     UsersIcon
 } from '@heroicons/react/24/outline';
@@ -14,7 +14,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
     const [selectedGroup, setSelectedGroup] = useState(filters?.group_id || '');
     const [selectedAcademicYear, setSelectedAcademicYear] = useState(filters?.academic_year_id || '');
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const prevSearch = usePrevious(searchTerm);
     const prevGroup = usePrevious(selectedGroup);
     const prevAcademicYear = usePrevious(selectedAcademicYear);
@@ -37,11 +37,11 @@ export default function Index({ students, groups, academicYears, subscriptionLim
     const handleFilter = () => {
         setIsLoading(true);
         const params = {};
-        
+
         if (searchTerm) {
             params.search = searchTerm;
         }
-        
+
         if (selectedGroup) {
             params.group_id = selectedGroup;
         }
@@ -356,6 +356,13 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                                                         <div className="flex space-x-2">
+
+                                                            <button
+                                                                onClick={() => handleDelete(student)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                حذف
+                                                            </button>
                                                             <Link
                                                                 href={route('students.show', student.id)}
                                                                 className="text-indigo-600 hover:text-indigo-900"
@@ -368,12 +375,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                             >
                                                                 تعديل
                                                             </Link>
-                                                            <button
-                                                                onClick={() => handleDelete(student)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                حذف
-                                                            </button>
+
                                                         </div>
                                                     </td>
                                                 </tr>

@@ -67,14 +67,14 @@ export default function Create({ academicYears }) {
         >
             <Head title="إضافة مجموعة جديدة" />
 
-            <div className="py-12">
+            <div className="py-12" dir="rtl">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <form onSubmit={submit} className="p-6">
                             <div className="space-y-6">
                                 {/* Group Name */}
                                 <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 text-right">
                                         اسم المجموعة *
                                     </label>
                                     <input
@@ -82,15 +82,15 @@ export default function Create({ academicYears }) {
                                         type="text"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                         required
                                     />
-                                    {errors.name && <div className="text-red-600 text-sm mt-1">{errors.name}</div>}
+                                    {errors.name && <div className="text-red-600 text-sm mt-1 text-right">{errors.name}</div>}
                                 </div>
 
                                 {/* Description */}
                                 <div>
-                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 text-right">
                                         الوصف
                                     </label>
                                     <textarea
@@ -98,21 +98,21 @@ export default function Create({ academicYears }) {
                                         value={data.description}
                                         onChange={(e) => setData('description', e.target.value)}
                                         rows={3}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                     />
-                                    {errors.description && <div className="text-red-600 text-sm mt-1">{errors.description}</div>}
+                                    {errors.description && <div className="text-red-600 text-sm mt-1 text-right">{errors.description}</div>}
                                 </div>
 
                                 {/* Academic Year */}
                                 <div>
-                                    <label htmlFor="academic_year_id" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="academic_year_id" className="block text-sm font-medium text-gray-700 text-right">
                                         الصف الدراسي *
                                     </label>
                                     <select
                                         id="academic_year_id"
                                         value={data.academic_year_id}
                                         onChange={(e) => setData('academic_year_id', e.target.value)}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                         required
                                     >
                                         <option value="">اختر الصف الدراسي</option>
@@ -122,12 +122,12 @@ export default function Create({ academicYears }) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.academic_year_id && <div className="text-red-600 text-sm mt-1">{errors.academic_year_id}</div>}
+                                    {errors.academic_year_id && <div className="text-red-600 text-sm mt-1 text-right">{errors.academic_year_id}</div>}
                                 </div>
 
                                 {/* Max Students */}
                                 <div>
-                                    <label htmlFor="max_students" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="max_students" className="block text-sm font-medium text-gray-700 text-right">
                                         الحد الأقصى للطلاب *
                                     </label>
                                     <input
@@ -136,33 +136,33 @@ export default function Create({ academicYears }) {
                                         min="1"
                                         value={data.max_students}
                                         onChange={(e) => setData('max_students', parseInt(e.target.value))}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                         required
                                     />
-                                    {errors.max_students && <div className="text-red-600 text-sm mt-1">{errors.max_students}</div>}
+                                    {errors.max_students && <div className="text-red-600 text-sm mt-1 text-right">{errors.max_students}</div>}
                                 </div>
 
                                 {/* Payment Type */}
                                 <div>
-                                    <label htmlFor="payment_type" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="payment_type" className="block text-sm font-medium text-gray-700 text-right">
                                         نوع الدفع *
                                     </label>
                                     <select
                                         id="payment_type"
                                         value={data.payment_type}
                                         onChange={(e) => setData('payment_type', e.target.value)}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                         required
                                     >
                                         <option value="monthly">شهري</option>
                                         <option value="per_session">بالجلسة</option>
                                     </select>
-                                    {errors.payment_type && <div className="text-red-600 text-sm mt-1">{errors.payment_type}</div>}
+                                    {errors.payment_type && <div className="text-red-600 text-sm mt-1 text-right">{errors.payment_type}</div>}
                                 </div>
 
                                 {/* Student Price */}
                                 <div>
-                                    <label htmlFor="student_price" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="student_price" className="block text-sm font-medium text-gray-700 text-right">
                                         سعر الطالب (جنيه مصري) *
                                     </label>
                                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -170,19 +170,19 @@ export default function Create({ academicYears }) {
                                             id="student_price"
                                             type="number"
                                             min="0"
-                                            step="0.01"
+                                            step="1"
                                             value={data.student_price}
                                             onChange={(e) => setData('student_price', parseFloat(e.target.value) || 0)}
-                                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 pl-12"
+                                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 pr-12 text-right"
                                             placeholder="0.00"
                                             required
                                         />
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                             <span className="text-gray-500 sm:text-sm">ج.م</span>
                                         </div>
                                     </div>
-                                    {errors.student_price && <div className="text-red-600 text-sm mt-1">{errors.student_price}</div>}
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    {errors.student_price && <div className="text-red-600 text-sm mt-1 text-right">{errors.student_price}</div>}
+                                    <p className="mt-1 text-xs text-gray-500 text-right">
                                         {data.payment_type === 'monthly' 
                                             ? 'المبلغ الذي يدفعه كل طالب شهرياً' 
                                             : 'المبلغ الذي يدفعه كل طالب عن كل جلسة حضور'
@@ -192,26 +192,29 @@ export default function Create({ academicYears }) {
 
                                 {/* Status */}
                                 <div>
-                                    <label className="flex items-center">
+                                    <label className="flex items-center text-right">
+                                        <span className="mr-2 text-sm text-gray-700">المجموعة نشطة</span>
                                         <input
                                             type="checkbox"
                                             checked={data.is_active}
                                             onChange={(e) => setData('is_active', e.target.checked)}
                                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                         />
-                                        <span className="ml-2 text-sm text-gray-700">المجموعة نشطة</span>
                                     </label>
                                 </div>
 
                                 {/* Schedule */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    <label className="block text-sm font-medium text-gray-700 mb-3 text-right">
                                         الجدول الأسبوعي * (اختر على الأقل يوم واحد)
                                     </label>
                                     <div className="space-y-4">
                                         {days.map((day) => (
                                             <div key={day.value} className="border border-gray-200 rounded-lg p-4">
                                                 <div className="flex items-center mb-3">
+                                                    <label htmlFor={`day_${day.value}`} className="mr-2 text-sm font-medium text-gray-700">
+                                                        {day.label}
+                                                    </label>
                                                     <input
                                                         type="checkbox"
                                                         id={`day_${day.value}`}
@@ -219,33 +222,30 @@ export default function Create({ academicYears }) {
                                                         onChange={(e) => handleDayChange(day.value, e.target.checked)}
                                                         className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                                     />
-                                                    <label htmlFor={`day_${day.value}`} className="ml-2 text-sm font-medium text-gray-700">
-                                                        {day.label}
-                                                    </label>
                                                 </div>
                                                 
                                                 {selectedDays[day.value] && (
                                                     <div className="grid grid-cols-2 gap-4 mt-3">
                                                         <div>
-                                                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                                                            <label className="block text-xs font-medium text-gray-600 mb-1 text-right">
                                                                 وقت البداية
                                                             </label>
                                                             <input
                                                                 type="time"
                                                                 value={selectedDays[day.value].start_time}
                                                                 onChange={(e) => handleTimeChange(day.value, 'start_time', e.target.value)}
-                                                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm text-right"
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                                                            <label className="block text-xs font-medium text-gray-600 mb-1 text-right">
                                                                 وقت النهاية
                                                             </label>
                                                             <input
                                                                 type="time"
                                                                 value={selectedDays[day.value].end_time}
                                                                 onChange={(e) => handleTimeChange(day.value, 'end_time', e.target.value)}
-                                                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm text-right"
                                                             />
                                                         </div>
                                                     </div>
@@ -253,17 +253,11 @@ export default function Create({ academicYears }) {
                                             </div>
                                         ))}
                                     </div>
-                                    {errors.schedules && <div className="text-red-600 text-sm mt-1">{errors.schedules}</div>}
+                                    {errors.schedules && <div className="text-red-600 text-sm mt-1 text-right">{errors.schedules}</div>}
                                 </div>
 
                                 {/* Submit Buttons */}
-                                <div className="flex items-center justify-end space-x-4">
-                                    <a
-                                        href={route('groups.index')}
-                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium"
-                                    >
-                                        إلغاء
-                                    </a>
+                                <div className="flex items-center justify-start space-x-4 space-x-reverse">
                                     <button
                                         type="submit"
                                         disabled={processing}
@@ -271,6 +265,12 @@ export default function Create({ academicYears }) {
                                     >
                                         {processing ? 'جاري الحفظ...' : 'حفظ المجموعة'}
                                     </button>
+                                    <a
+                                        href={route('groups.index')}
+                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                                    >
+                                        إلغاء
+                                    </a>
                                 </div>
                             </div>
                         </form>

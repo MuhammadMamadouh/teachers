@@ -95,7 +95,7 @@ export default function Create({ groups, academicYears }) {
                                             className="mt-1 block w-full"
                                             autoComplete="tel"
                                             onChange={(e) => setData('phone', e.target.value)}
-                                            required
+                                            
                                         />
                                         <InputError message={errors.phone} className="mt-2" />
                                     </div>
@@ -167,7 +167,7 @@ export default function Create({ groups, academicYears }) {
                                                 className="mt-1 block w-full"
                                                 autoComplete="tel"
                                                 onChange={(e) => setData('guardian_phone', e.target.value)}
-                                                required
+                                                
                                             />
                                             <InputError message={errors.guardian_phone} className="mt-2" />
                                         </div>

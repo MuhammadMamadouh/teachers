@@ -21,6 +21,8 @@ class PaymentFactory extends Factory
         $isPaid = $this->faker->boolean(85); // 85% chance of being paid
 
         return [
+            'payment_type' => $this->faker->randomElement(['monthly', 'per_session']),
+            'related_date' => $this->faker->dateTimeThisYear(),
             'is_paid' => $isPaid,
             'amount' => $this->faker->randomElement($amounts),
             'paid_at' => $isPaid ? $this->faker->dateTimeThisYear() : null,

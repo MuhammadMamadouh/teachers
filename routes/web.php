@@ -181,6 +181,7 @@ Route::middleware('auth')->group(function () {
         // Payment routes
         Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/show', [\App\Http\Controllers\PaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments', [\App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
         Route::post('/payments/generate-monthly', [\App\Http\Controllers\PaymentController::class, 'generateMonthlyPayments'])->name('payments.generate-monthly');
         Route::patch('/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'updatePayment'])->name('payments.update');
         Route::post('/payments/bulk-update', [\App\Http\Controllers\PaymentController::class, 'bulkUpdate'])->name('payments.bulk-update');

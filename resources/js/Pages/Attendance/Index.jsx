@@ -72,26 +72,27 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" dir="rtl">
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800 text-right">
                         تسجيل الحضور
                     </h2>
-                    <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3 sm:space-x-reverse w-full sm:w-auto">
                         <button
                             onClick={() => router.get(route('attendance.last-month-report'))}
-                            className="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                            className="inline-flex items-center justify-center px-3 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
                         >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            تقرير الشهر الماضي
+                            <span className="hidden sm:inline">تقرير الشهر الماضي</span>
+                            <span className="sm:hidden">تقرير الشهر</span>
                         </button>
                         {selectedGroup && (
                             <button
                                 onClick={() => router.get(route('attendance.summary', selectedGroup.id))}
-                                className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                className="inline-flex items-center justify-center px-3 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
                                 تقرير الحضور
@@ -103,21 +104,21 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
         >
             <Head title="تسجيل الحضور" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-6 sm:py-12" dir="rtl">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                             {/* Group and Date Selection */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 mb-6">
                                 <div>
-                                    <label htmlFor="group_select" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="group_select" className="block text-sm font-medium text-gray-700 mb-2 text-right">
                                         اختر المجموعة
                                     </label>
                                     <select
                                         id="group_select"
                                         value={localSelectedGroup}
                                         onChange={(e) => handleGroupChange(e.target.value)}
-                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right text-sm"
                                     >
                                         <option value="">اختر المجموعة</option>
                                         {groups.map((group) => (
@@ -129,7 +130,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                 </div>
 
                                 <div>
-                                    <label htmlFor="date_select" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="date_select" className="block text-sm font-medium text-gray-700 mb-2 text-right">
                                         اختر التاريخ
                                     </label>
                                     <input
@@ -137,7 +138,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                         type="date"
                                         value={localSelectedDate}
                                         onChange={(e) => handleDateChange(e.target.value)}
-                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right text-sm"
                                     />
                                 </div>
                             </div>
@@ -146,7 +147,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                 selectedGroup.assigned_students.length > 0 ? (
                                     <form onSubmit={submit}>
                                         <div className="mb-6">
-                                            <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 text-right">
                                                 قائمة طلاب {selectedGroup.name} - {new Date(selectedDate).toLocaleDateString('ar-EG', {
                                                         year: 'numeric',
                                                         month: 'long',
@@ -154,11 +155,12 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                                     })}
                                             </h3>
                                             
-                                            <div className="space-y-4">
+                                            <div className="space-y-3 sm:space-y-4">
                                                 {selectedGroup.assigned_students.map((student, index) => (
-                                                    <div key={student.id} className="border border-gray-200 rounded-lg p-4">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center space-x-4">
+                                                    <div key={student.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                                                            {/* Student Info */}
+                                                            <div className="flex items-center space-x-3 space-x-reverse">
                                                                 <div className="flex-shrink-0">
                                                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                                                                         <span className="text-sm font-medium text-gray-600">
@@ -166,21 +168,22 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                                <div>
+                                                                <div className="text-right">
                                                                     <h4 className="text-sm font-medium text-gray-900">{student.name}</h4>
-                                                                    <p className="text-sm text-gray-500">{student.phone}</p>
+                                                                    <p className="text-xs sm:text-sm text-gray-500">{student.phone}</p>
                                                                 </div>
                                                             </div>
                                                             
-                                                            <div className="flex items-center space-x-6">
-                                                                <label className="flex items-center">
+                                                            {/* Attendance Controls */}
+                                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                                                                <label className="flex items-center justify-center sm:justify-start">
+                                                                    <span className="mr-2 text-sm text-gray-700">حاضر</span>
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={data.attendances[index]?.is_present || false}
                                                                         onChange={(e) => handleAttendanceChange(index, 'is_present', e.target.checked)}
                                                                         className="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
                                                                     />
-                                                                    <span className="ml-2 text-sm text-gray-700">حاضر</span>
                                                                 </label>
                                                                 
                                                                 <input
@@ -188,7 +191,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                                                     placeholder="ملاحظات (اختياري)"
                                                                     value={data.attendances[index]?.notes || ''}
                                                                     onChange={(e) => handleAttendanceChange(index, 'notes', e.target.value)}
-                                                                    className="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                                    className="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right w-full sm:w-auto"
                                                                 />
                                                             </div>
                                                         </div>
@@ -197,28 +200,28 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-between items-center">
-                                            <div className="text-sm text-gray-500">
+                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                                            <div className="text-sm text-gray-500 text-right order-2 sm:order-1">
                                                 المجموع: {selectedGroup.assigned_students.length} طالب
                                                 {data.attendances && (
-                                                    <span className="ml-4"> | 
+                                                    <span className="mr-2 sm:mr-4"> | 
                                                         الحاضرين: {data.attendances.filter(a => a.is_present).length}
                                                     </span>
                                                 )}
                                             </div>
-                                                              <button
-                                type="submit"
-                                disabled={processing}
-                                className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                            >
-                                {processing && (
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                )}
-                                {processing ? 'جاري الحفظ...' : 'حفظ الحضور'}
-                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={processing}
+                                                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 w-full sm:w-auto order-1 sm:order-2"
+                                            >
+                                                {processing && (
+                                                    <svg className="animate-spin -mr-1 ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                )}
+                                                {processing ? 'جاري الحفظ...' : 'حفظ الحضور'}
+                                            </button>
                                         </div>
                                     </form>
                                 ) : (

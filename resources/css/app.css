@@ -37,9 +37,9 @@ html[dir="rtl"] .form-textarea {
 }
 
 /* Button and navigation RTL adjustments */
-html[dir="rtl"] .flex {
+/* html[dir="rtl"] .flex {
     flex-direction: row-reverse;
-}
+} */
 
 html[dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1;

@@ -30,7 +30,7 @@ class UserWorkflowTest extends TestCase
 
         // Create a plan and subscription
         $plan = Plan::factory()->create();
-        $subscription = Subscription::factory()->create([
+        Subscription::factory()->create([
             'user_id' => $teacher->id,
             'plan_id' => $plan->id,
             'is_active' => true,

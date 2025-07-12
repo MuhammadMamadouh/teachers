@@ -9,18 +9,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Schedule automatic database backups
-Schedule::command('backup:run --only-db')
+// Schedule automatic database backups using our custom command
+Schedule::command('backup:daily')
     ->dailyAt('03:00')
-    ->name('database-backup')
+    ->name('daily-backup')
     ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/backup.log'));
-
-// Schedule automatic backup cleanup (runs after backup)
-Schedule::command('backup:clean')
-    ->dailyAt('03:30')
-    ->name('backup-cleanup')
-    ->withoutOverlapping()
+    ->onOneServer() // Prevent running on multiple servers
     ->appendOutputTo(storage_path('logs/backup.log'));
 
 // Schedule daily check for expired subscriptions

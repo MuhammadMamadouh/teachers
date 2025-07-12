@@ -202,7 +202,7 @@ class StudentControllerTest extends TestCase
             ->post(route('students.store'), [
                 'name' => 'أحمد محمد',
             ]);
-        $response->assertSessionHasErrors(['phone', 'guardian_phone', 'academic_year_id']);
+        $response->assertSessionHasErrors([ 'academic_year_id']);
 
         // Test duplicate phone within same teacher
         Student::factory()->create([

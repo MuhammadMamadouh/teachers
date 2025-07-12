@@ -137,6 +137,7 @@ export default [
             '**/dist/**',
             '**/*.tsx', // Exclude TypeScript React files until TS is configured
             'lighthouserc.js', // Has non-standard syntax
+            'resources/js/ziggy.js', // Auto-generated file
         ],
     },
 ];

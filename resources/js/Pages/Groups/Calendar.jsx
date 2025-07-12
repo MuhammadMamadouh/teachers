@@ -1,11 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { useState, useRef, useEffect } from 'react';
+import { Head } from '@inertiajs/react';
+import { useState, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { Plus, Calendar as CalendarIcon, Clock, FileText } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { confirmDialog, successAlert, errorAlert } from '@/utils/sweetAlert';
 
 export default function Calendar({ group }) {
@@ -90,7 +90,7 @@ export default function Calendar({ group }) {
                     text: response.data.message
                 });
             }
-        } catch (error) {
+        } catch {
             errorAlert({
                 title: 'خطأ',
                 text: 'حدث خطأ أثناء إضافة الجلسة الخاصة'
@@ -126,7 +126,7 @@ export default function Calendar({ group }) {
                     text: response.data.message
                 });
             }
-        } catch (error) {
+        } catch {
             errorAlert({
                 title: 'خطأ',
                 text: 'حدث خطأ أثناء تحديث الجلسة الخاصة'
@@ -175,8 +175,7 @@ export default function Calendar({ group }) {
                     text: response.data.message
                 });
             }
-        } catch (error) {
-            console.error('Error deleting special session:', error);
+        } catch {
             errorAlert({
                 title: 'خطأ',
                 text: 'حدث خطأ أثناء حذف الجلسة الخاصة'

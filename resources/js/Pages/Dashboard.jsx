@@ -19,8 +19,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                 setTodaySessions(data);
                 setLoadingSessions(false);
             })
-            .catch(error => {
-                console.error('Error fetching today sessions:', error);
+            .catch(() => {
                 setLoadingSessions(false);
             });
 
@@ -31,8 +30,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                 setReports(data);
                 setLoadingReports(false);
             })
-            .catch(error => {
-                console.error('Error fetching reports:', error);
+            .catch(() => {
                 setLoadingReports(false);
             });
     }, []);

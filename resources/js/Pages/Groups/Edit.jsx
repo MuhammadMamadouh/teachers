@@ -3,7 +3,6 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
 export default function Edit({ group, academicYears }) {
-    console.log('Editing group:', group);
     const { data, setData, put, processing, errors } = useForm({
         name: group.name || '',
         description: group.description || '',
@@ -14,7 +13,6 @@ export default function Edit({ group, academicYears }) {
         academic_year_id: group.academic_year_id || '',
         schedules: []
     });
-    console.log('Initial data:', data);
 
     const [selectedDays, setSelectedDays] = useState({});
 
@@ -42,7 +40,7 @@ export default function Edit({ group, academicYears }) {
             setSelectedDays(initialSelectedDays);
             setData('schedules', Object.values(initialSelectedDays));
         }
-    }, [group.schedules]);
+    }, [group.schedules, setData]);
 
     const handleDayChange = (dayValue, checked) => {
         const newSelectedDays = { ...selectedDays };

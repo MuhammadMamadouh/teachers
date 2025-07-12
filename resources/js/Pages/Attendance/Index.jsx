@@ -22,6 +22,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
             }));
             setData('attendances', attendanceData);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedGroup, attendances]);
 
     const handleGroupChange = (groupId) => {
@@ -59,8 +60,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                     timerProgressBar: true
                 });
             },
-            onError: (errors) => {
-                console.error('Error saving attendance:', errors);
+            onError: () => {
                 errorAlert({
                     title: 'خطأ!',
                     text: 'حدث خطأ أثناء حفظ سجل الحضور. يرجى المحاولة مرة أخرى.',

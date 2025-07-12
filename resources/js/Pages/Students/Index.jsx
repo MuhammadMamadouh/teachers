@@ -32,6 +32,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
         }, 300);
 
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, selectedGroup, selectedAcademicYear]);
 
     const handleFilter = () => {
@@ -86,9 +87,8 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                             text: `تم حذف الطالب ${student.name} بنجاح!`
                         });
                     },
-                    onError: (errors) => {
+                    onError: () => {
                         // Handle any deletion errors
-                        console.error('Error deleting student:', errors);
                         errorAlert({
                             title: 'خطأ',
                             text: 'حدث خطأ أثناء حذف الطالب. يرجى المحاولة مرة أخرى.'

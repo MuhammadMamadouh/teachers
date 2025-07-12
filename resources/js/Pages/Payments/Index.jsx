@@ -46,21 +46,6 @@ export default function Index() {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    const months = [
-        { value: 1, label: 'يناير' },
-        { value: 2, label: 'فبراير' },
-        { value: 3, label: 'مارس' },
-        { value: 4, label: 'أبريل' },
-        { value: 5, label: 'مايو' },
-        { value: 6, label: 'يونيو' },
-        { value: 7, label: 'يوليو' },
-        { value: 8, label: 'أغسطس' },
-        { value: 9, label: 'سبتمبر' },
-        { value: 10, label: 'أكتوبر' },
-        { value: 11, label: 'نوفمبر' },
-        { value: 12, label: 'ديسمبر' },
-    ];
-
     const years = [];
     for (let year = 2020; year <= 2030; year++) {
         years.push(year);
@@ -84,19 +69,12 @@ export default function Index() {
                     end_date: endDate,
                 }
             });
-            console.log('Fetched payments:', response.data);
-            
-            // Debug: Check if students have payments
-            response.data.student_payments.forEach(studentPayment => {
-                console.log(`Student ${studentPayment.student.name}: ${studentPayment.payments.length} payments`);
-            });
             
             setPaymentsData(response.data);
         } catch (error) {
-            console.error('Error fetching payments:', error);
             errorAlert({
                 title: 'خطأ',
-                text: 'حدث خطأ في جلب بيانات المدفوعات'
+                text: error.response?.data?.message || 'حدث خطأ في جلب بيانات المدفوعات'
             });
         } finally {
             setLoading(false);
@@ -140,10 +118,9 @@ export default function Index() {
                 text: 'تم حفظ جميع المدفوعات بنجاح'
             });
         } catch (error) {
-            console.error('Error saving payments:', error);
             errorAlert({
                 title: 'خطأ',
-                text: 'حدث خطأ في حفظ المدفوعات'
+                text: error.response?.data?.message || 'حدث خطأ في حفظ المدفوعات'
             });
         } finally {
             setSaving(false);
@@ -186,7 +163,6 @@ export default function Index() {
             // Refresh the payments data
             fetchPayments();
         } catch (error) {
-            console.error('Error generating monthly payments:', error);
             errorAlert({
                 title: 'خطأ',
                 text: error.response?.data?.error || 'حدث خطأ في إنشاء المدفوعات الشهرية'

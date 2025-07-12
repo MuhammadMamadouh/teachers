@@ -14,7 +14,6 @@ export default function PlansIndex({ currentPlan, availablePlans, currentStudent
         }).then((result) => {
 
             if (result.isConfirmed) {
-                console.log('Sending upgrade request for plan ID:', planId);
                 router.post(route('plans.upgrade'), {
                     plan_id: planId,
                 });

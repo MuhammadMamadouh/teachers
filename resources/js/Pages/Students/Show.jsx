@@ -4,7 +4,6 @@ import { Badge } from '@/Components/ui/badge';
 import { confirmDialog } from '@/utils/sweetAlert';
 
 export default function Show({ student, recentPayments }) {
-    console.log('Student Data:', student, 'Recent Payments:', recentPayments);
     const handleDelete = () => {
         confirmDialog({
             title: 'حذف الطالب',

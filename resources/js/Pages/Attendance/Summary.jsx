@@ -212,7 +212,7 @@ export default function Summary() {
                                     <div className="flex-1">
                                         <p className="text-sm text-gray-600 text-right">إجمالي سجلات الحضور</p>
                                         <p className="text-2xl font-bold text-right">{stats.totalSessions}</p>
-                                        <p className="text-xs text-gray-500 text-right">
+                                        <p className="text-xs text-gray-500 ">
                                             حاضر: {stats.totalPresent} | غائب: {stats.totalAbsent}
                                         </p>
                                     </div>
@@ -249,7 +249,7 @@ export default function Summary() {
                                             
                                             <div className="text-center">
                                                 <p className="text-sm text-gray-600 text-right">حاضر</p>
-                                                <div className="flex items-center justify-end gap-1">
+                                                <div className="flex items-center gap-1">
                                                     <span className="text-lg font-bold text-green-600">{stat.present}</span>
                                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                                 </div>
@@ -257,7 +257,7 @@ export default function Summary() {
                                             
                                             <div className="text-center">
                                                 <p className="text-sm text-gray-600 text-right">غائب</p>
-                                                <div className="flex items-center justify-end gap-1">
+                                                <div className="flex items-center gap-1">
                                                     <span className="text-lg font-bold text-red-600">{stat.absent}</span>
                                                     <XCircle className="h-4 w-4 text-red-500" />
                                                 </div>

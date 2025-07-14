@@ -429,7 +429,9 @@ class DashboardController extends Controller
         $totalCollectedPayments = DB::table('payments')
             ->join('students', 'payments.student_id', '=', 'students.id')
             ->where('students.user_id', $user->id)
+            ->where('students.group_id', '!=', null)
             ->where('payments.is_paid', true)
+            
             ->sum('payments.amount');
 
         // Get pending payments (for current month)
@@ -442,7 +444,7 @@ class DashboardController extends Controller
             ->where('payments.is_paid', true)
             ->count();
 
-        $totalStudentsCount = $students->count();
+        $totalStudentsCount = $students->where('group_id', '!=', null)->count();
         $pendingPayments = ($totalStudentsCount - $paidStudentsThisMonth) *
             ($groups->where('payment_type', 'monthly')->avg('student_price') ?: 0);
 
@@ -478,8 +480,11 @@ class DashboardController extends Controller
 
         // Groups and Students Reports
         $totalGroups = $groups->count();
-        $totalStudents = $students->count();
-        $averageStudentsPerGroup = $totalGroups > 0 ? round($totalStudents / $totalGroups, 1) : 0;
+        $totalStudentsInGroups = $students->where('group_id', '!=', null)->count();
+        $averageStudentsPerGroup = $totalGroups > 0 ? round($totalStudentsInGroups / $totalGroups, 1) : 0;
+
+        // total students in no group
+        $totalStudentsWithoutGroup = $students->where('group_id', null)->count();
 
         // Attendance Reports
         $totalSessionsThisMonth = DB::table('attendances')
@@ -546,7 +551,8 @@ class DashboardController extends Controller
             ],
             'groups' => [
                 'total_groups' => $totalGroups,
-                'total_students' => $totalStudents,
+                'total_students_in_groups' => $totalStudentsInGroups,
+                'total_students_without_group' => $totalStudentsWithoutGroup,
                 'average_students_per_group' => $averageStudentsPerGroup,
                 'top_groups' => $topGroups,
             ],

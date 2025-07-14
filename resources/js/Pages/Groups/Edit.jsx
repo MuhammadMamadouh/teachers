@@ -276,7 +276,7 @@ export default function Edit({ group, academicYears }) {
                                 <div className="flex items-center justify-end space-x-4">
                                     <a
                                         href={route('groups.index')}
-                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium  ml-2 mr-2"
                                     >
                                         إلغاء
                                     </a>

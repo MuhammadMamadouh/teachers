@@ -198,7 +198,7 @@ export default function Create({ academicYears }) {
                                             type="checkbox"
                                             checked={data.is_active}
                                             onChange={(e) => setData('is_active', e.target.checked)}
-                                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 ml-2 mr-2"
                                         />
                                     </label>
                                 </div>
@@ -220,7 +220,7 @@ export default function Create({ academicYears }) {
                                                         id={`day_${day.value}`}
                                                         checked={!!selectedDays[day.value]}
                                                         onChange={(e) => handleDayChange(day.value, e.target.checked)}
-                                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 ml-2 mr-2"
                                                     />
                                                 </div>
                                                 
@@ -267,7 +267,7 @@ export default function Create({ academicYears }) {
                                     </button>
                                     <a
                                         href={route('groups.index')}
-                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium ml-2 mr-2"
                                     >
                                         إلغاء
                                     </a>

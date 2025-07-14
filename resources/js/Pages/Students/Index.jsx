@@ -102,16 +102,17 @@ export default function Index({ students, groups, academicYears, subscriptionLim
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                    <h2 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
                         طلابي
                     </h2>
                     {canAdd && (
                         <Link
                             href={route('students.create')}
-                            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="w-full sm:w-auto text-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                            إضافة طالب
+                            <span className="sm:hidden">إضافة طالب جديد</span>
+                            <span className="hidden sm:inline">إضافة طالب</span>
                         </Link>
                     )}
                 </div>
@@ -119,8 +120,8 @@ export default function Index({ students, groups, academicYears, subscriptionLim
         >
             <Head title="الطلاب" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="py-6 sm:py-12">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Subscription Status Banner - Only show if subscription data is available */}
                     {hasSubscriptionLimits && (
                         <div className="mb-6 rounded-lg bg-blue-50 p-4">
@@ -132,7 +133,12 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 </div>
                                 <div className="ml-3">
                                     <p className="text-sm font-medium text-blue-800">
-                                        استخدام {currentStudentCount} من {subscriptionLimits.max_students} طالب
+                                        <span className="sm:hidden">
+                                            {currentStudentCount}/{subscriptionLimits.max_students} طالب
+                                        </span>
+                                        <span className="hidden sm:inline">
+                                            استخدام {currentStudentCount} من {subscriptionLimits.max_students} طالب
+                                        </span>
                                         {subscriptionLimits.plan && (
                                             <span className="ml-2 text-blue-600">
                                                 (خطة {subscriptionLimits.plan.name})
@@ -140,7 +146,8 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                         )}
                                         {!canAdd && (
                                             <span className="ml-2 font-normal text-blue-600">
-                                                - تم الوصول للحد الأقصى
+                                                <span className="sm:hidden">- وصل للحد الأقصى</span>
+                                                <span className="hidden sm:inline">- تم الوصول للحد الأقصى</span>
                                             </span>
                                         )}
                                     </p>
@@ -150,8 +157,8 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                     )}
 
                     {/* Search and Filter Section */}
-                    <div className="mb-6 rounded-lg bg-white shadow-sm border border-gray-200 p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="mb-6 rounded-lg bg-white shadow-sm border border-gray-200 p-4 sm:p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Search Input */}
                             <div className="relative">
                                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
@@ -218,11 +225,12 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 {hasActiveFilters && (
                                     <button
                                         onClick={handleClearFilters}
-                                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         disabled={isLoading}
                                     >
                                         <XMarkIcon className="h-4 w-4 mr-2" />
-                                        مسح الفلاتر
+                                        <span className="sm:hidden">مسح</span>
+                                        <span className="hidden sm:inline">مسح الفلاتر</span>
                                     </button>
                                 )}
                             </div>
@@ -256,7 +264,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                             </div>
                         )}
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                             {students.length === 0 ? (
                                 <div className="text-center py-12">
                                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,7 +308,73 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                     )}
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
+                                <>
+                                    {/* Mobile Card View */}
+                                    <div className="sm:hidden space-y-4">
+                                        {students.map((student) => (
+                                            <div key={student.id} className="bg-gray-50 rounded-lg p-4 border hover:bg-gray-100">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex-1">
+                                                        <h3 className="font-medium text-gray-900 text-right">{student.name}</h3>
+                                                        <p className="text-sm text-gray-600 text-right">{student.phone}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="space-y-2 mb-3">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">الصف الدراسي:</span>
+                                                        {student.academic_year ? (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                {student.academic_year.name_ar}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-sm">غير محدد</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">المجموعة:</span>
+                                                        {student.group ? (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {student.group.name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-sm">غير محدد</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">هاتف ولي الأمر:</span>
+                                                        <span className="text-sm text-gray-900">{student.guardian_phone}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex justify-end space-x-2 space-x-reverse pt-3 border-t border-gray-200">
+                                                    <Link
+                                                        href={route('students.edit', student.id)}
+                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                                    >
+                                                        تعديل
+                                                    </Link>
+                                                    <Link
+                                                        href={route('students.show', student.id)}
+                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                                    >
+                                                        عرض
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(student)}
+                                                        className="text-red-600 hover:text-red-900 text-sm font-medium"
+                                                    >
+                                                        حذف
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    {/* Desktop Table View */}
+                                    <div className="hidden sm:block overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
@@ -356,26 +430,24 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                                                         <div className="flex space-x-2">
-
-                                                            <button
-                                                                onClick={() => handleDelete(student)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                حذف
-                                                            </button>
-                                                            <Link
-                                                                href={route('students.show', student.id)}
-                                                                className="text-indigo-600 hover:text-indigo-900"
-                                                            >
-                                                                عرض
-                                                            </Link>
                                                             <Link
                                                                 href={route('students.edit', student.id)}
                                                                 className="text-indigo-600 hover:text-indigo-900"
                                                             >
                                                                 تعديل
                                                             </Link>
-
+                                                            <Link
+                                                                href={route('students.show', student.id)}
+                                                                className="text-indigo-600 hover:text-indigo-900"
+                                                            >
+                                                                عرض
+                                                            </Link>
+                                                            <button
+                                                                onClick={() => handleDelete(student)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                حذف
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -383,6 +455,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                         </tbody>
                                     </table>
                                 </div>
+                                </>
                             )}
                         </div>
                     </div>

@@ -25,16 +25,71 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedGroup, attendances]);
 
+    // Get valid days for the selected group
+    const getValidDays = () => {
+        if (!selectedGroup || !selectedGroup.schedules) return [];
+        return selectedGroup.schedules.map(schedule => schedule.day_of_week);
+    };
+
+    // Check if a date is valid (matches group schedule days)
+    const isDateValid = (dateString) => {
+        if (!selectedGroup || !selectedGroup.schedules) return true;
+        
+        const date = new Date(dateString);
+        const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const validDays = getValidDays();
+        
+        return validDays.includes(dayOfWeek);
+    };
+
     const handleGroupChange = (groupId) => {
         setLocalSelectedGroup(groupId);
-        router.get(route('attendance.index'), { 
-            group_id: groupId, 
-            date: localSelectedDate 
-        });
+        
+        // Find the selected group
+        const group = groups.find(g => g.id == groupId);
+        
+        // If group has schedules, set to next valid date
+        if (group && group.schedules && group.schedules.length > 0) {
+            const validDays = group.schedules.map(schedule => schedule.day_of_week);
+            const today = new Date();
+            
+            // Find the next valid date starting from today
+            let nextValidDate = today.toISOString().split('T')[0];
+            for (let i = 0; i < 14; i++) { // Check next 14 days
+                const checkDate = new Date(today);
+                checkDate.setDate(today.getDate() + i);
+                
+                if (validDays.includes(checkDate.getDay())) {
+                    nextValidDate = checkDate.toISOString().split('T')[0];
+                    break;
+                }
+            }
+            
+            setLocalSelectedDate(nextValidDate);
+            router.get(route('attendance.index'), { 
+                group_id: groupId, 
+                date: nextValidDate 
+            });
+        } else {
+            router.get(route('attendance.index'), { 
+                group_id: groupId, 
+                date: localSelectedDate 
+            });
+        }
     };
 
     const handleDateChange = (date) => {
         setLocalSelectedDate(date);
+        
+        // Check if the selected date is valid for the group's schedule
+        if (selectedGroup && selectedGroup.schedules && !isDateValid(date)) {
+            errorAlert({
+                title: 'تاريخ غير صالح',
+                text: 'يرجى اختيار تاريخ يتطابق مع أيام جدول المجموعة.',
+            });
+            return;
+        }
+        
         if (localSelectedGroup) {
             router.get(route('attendance.index'), { 
                 group_id: localSelectedGroup, 
@@ -132,14 +187,39 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                 <div>
                                     <label htmlFor="date_select" className="block text-sm font-medium text-gray-700 mb-2 text-right">
                                         اختر التاريخ
+                                        {selectedGroup && selectedGroup.schedules && (
+                                            <span className="text-xs text-gray-500 block mt-1">
+                                                أيام المجموعة: {selectedGroup.schedules.map(schedule => {
+                                                    const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                                                    return days[schedule.day_of_week];
+                                                }).join(', ')}
+                                            </span>
+                                        )}
                                     </label>
                                     <input
                                         id="date_select"
                                         type="date"
                                         value={localSelectedDate}
                                         onChange={(e) => handleDateChange(e.target.value)}
-                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right text-sm"
+                                        disabled={!localSelectedGroup}
+                                        className={`block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right text-sm ${
+                                            !localSelectedGroup ? 'bg-gray-100 cursor-not-allowed' : ''
+                                        } ${
+                                            selectedGroup && selectedGroup.schedules && !isDateValid(localSelectedDate) 
+                                                ? 'border-red-300 bg-red-50' 
+                                                : ''
+                                        }`}
                                     />
+                                    {!localSelectedGroup && (
+                                        <p className="mt-1 text-xs text-gray-500 text-right">
+                                            اختر مجموعة أولاً
+                                        </p>
+                                    )}
+                                    {selectedGroup && selectedGroup.schedules && !isDateValid(localSelectedDate) && (
+                                        <p className="mt-1 text-xs text-red-600 text-right">
+                                            هذا التاريخ لا يتطابق مع أيام جدول المجموعة
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -177,7 +257,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                                             {/* Attendance Controls */}
                                                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                                                                 <label className="flex items-center justify-center sm:justify-start">
-                                                                    <span className="mr-2 text-sm text-gray-700">حاضر</span>
+                                                                    <span className="ml-2 text-sm text-gray-700">حاضر</span>
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={data.attendances[index]?.is_present || false}

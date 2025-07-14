@@ -96,6 +96,7 @@ class StudentController extends Controller
             'canAddStudents' => $canAdd,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
+            'lastStudent' => session('last_student'), // Pass last created student name
         ]);
     }
 
@@ -113,15 +114,14 @@ class StudentController extends Controller
                 'subscription' => 'لقد وصلت إلى الحد الأقصى للطلاب في خطتك الحالية.',
             ]);
         }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'guardian_phone' => 'nullable|string|max:20',
             'academic_year_id' => 'required|exists:academic_years,id',
             'group_id' => 'nullable|exists:groups,id',
+            'redirect_to' => 'nullable|string|in:create,index', // Add redirect option
         ]);
-
         // Validate that if a group is selected, it matches the academic year
         if (isset($validated['group_id']) && $validated['group_id']) {
             $group = Group::find($validated['group_id']);
@@ -135,7 +135,17 @@ class StudentController extends Controller
         // Add user_id to the validated data
         $validated['user_id'] = $user->id;
 
-        Student::create($validated);
+        // Remove redirect_to from validated data before creating student
+        $redirectTo = $validated['redirect_to'] ?? 'index';
+        unset($validated['redirect_to']);
+
+        $student = Student::create($validated);
+        // Determine redirect destination
+        if ($redirectTo === 'create') {
+            return redirect()->route('students.create')
+                ->with('success', 'تم إضافة الطالب بنجاح! يمكنك إضافة طالب آخر.')
+                ->with('last_student', $student->name);
+        }
 
         return redirect()->route('students.index')
             ->with('success', 'تم إضافة الطالب بنجاح!');

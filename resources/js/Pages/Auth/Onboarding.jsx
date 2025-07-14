@@ -16,6 +16,7 @@ import {
     Crown,
     Zap
 } from 'lucide-react';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 export default function Onboarding({ user }) {
     const [currentStep, setCurrentStep] = useState(0);
@@ -290,7 +291,7 @@ export default function Onboarding({ user }) {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex items-center">
-                            <BookOpen className="h-8 w-8 text-indigo-600 ml-3" />
+                            <ApplicationLogo className="h-8 w-8 text-indigo-600 ml-3" />
                             <span className="text-xl font-bold text-gray-900">نظام إدارة المعلمين</span>
                         </div>
                         <button

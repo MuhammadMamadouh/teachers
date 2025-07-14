@@ -46,21 +46,6 @@ export default function Index() {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    const months = [
-        { value: 1, label: 'يناير' },
-        { value: 2, label: 'فبراير' },
-        { value: 3, label: 'مارس' },
-        { value: 4, label: 'أبريل' },
-        { value: 5, label: 'مايو' },
-        { value: 6, label: 'يونيو' },
-        { value: 7, label: 'يوليو' },
-        { value: 8, label: 'أغسطس' },
-        { value: 9, label: 'سبتمبر' },
-        { value: 10, label: 'أكتوبر' },
-        { value: 11, label: 'نوفمبر' },
-        { value: 12, label: 'ديسمبر' },
-    ];
-
     const years = [];
     for (let year = 2020; year <= 2030; year++) {
         years.push(year);
@@ -84,19 +69,12 @@ export default function Index() {
                     end_date: endDate,
                 }
             });
-            console.log('Fetched payments:', response.data);
-            
-            // Debug: Check if students have payments
-            response.data.student_payments.forEach(studentPayment => {
-                console.log(`Student ${studentPayment.student.name}: ${studentPayment.payments.length} payments`);
-            });
             
             setPaymentsData(response.data);
         } catch (error) {
-            console.error('Error fetching payments:', error);
             errorAlert({
                 title: 'خطأ',
-                text: 'حدث خطأ في جلب بيانات المدفوعات'
+                text: error.response?.data?.message || 'حدث خطأ في جلب بيانات المدفوعات'
             });
         } finally {
             setLoading(false);
@@ -140,10 +118,9 @@ export default function Index() {
                 text: 'تم حفظ جميع المدفوعات بنجاح'
             });
         } catch (error) {
-            console.error('Error saving payments:', error);
             errorAlert({
                 title: 'خطأ',
-                text: 'حدث خطأ في حفظ المدفوعات'
+                text: error.response?.data?.message || 'حدث خطأ في حفظ المدفوعات'
             });
         } finally {
             setSaving(false);
@@ -186,7 +163,6 @@ export default function Index() {
             // Refresh the payments data
             fetchPayments();
         } catch (error) {
-            console.error('Error generating monthly payments:', error);
             errorAlert({
                 title: 'خطأ',
                 text: error.response?.data?.error || 'حدث خطأ في إنشاء المدفوعات الشهرية'
@@ -200,17 +176,18 @@ export default function Index() {
         <AuthenticatedLayout
             header={
                 <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    <h2 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
                         إدارة المدفوعات الشهرية
                     </h2>
-                    <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                         <Button
                             onClick={() => router.get('/attendance/last-month-report')}
                             variant="outline"
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 focus:bg-gray-50 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                            className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 focus:bg-gray-50 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                         >
-                            <BarChart3 className="w-4 h-4 mr-2" />
-                            تقرير حضور الشهر الماضي
+                            <BarChart3 className="w-4 h-4 sm:mr-2" />
+                            <span className="hidden sm:inline">تقرير حضور الشهر الماضي</span>
+                            <span className="sm:hidden">تقرير الشهر الماضي</span>
                         </Button>
                         <Button
                             onClick={() => {
@@ -250,7 +227,7 @@ export default function Index() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div>
                                     <Label>المجموعة</Label>
                                     <Select value={selectedGroup} onValueChange={(value) => {
@@ -305,13 +282,13 @@ export default function Index() {
 
                     {/* Summary Section */}
                     {paymentsData && (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <Card>
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-2 text-right">
                                         <div className="flex-1">
                                             <p className="text-sm text-gray-600 text-right">إجمالي الطلاب</p>
-                                            <p className="text-2xl font-bold text-right">{paymentsData.student_payments.length}</p>
+                                            <p className="text-xl sm:text-2xl font-bold text-right">{paymentsData.student_payments.length}</p>
                                         </div>
                                         <Users className="h-5 w-5 text-blue-500" />
                                     </div>
@@ -323,7 +300,7 @@ export default function Index() {
                                     <div className="flex items-center gap-2 text-right">
                                         <div className="flex-1">
                                             <p className="text-sm text-gray-600 text-right">المبلغ المدفوع</p>
-                                            <p className="text-2xl font-bold text-right">{paymentsData.summary.total_paid.toFixed(2)} ج.م</p>
+                                            <p className="text-xl sm:text-2xl font-bold text-right">{paymentsData.summary.total_paid.toFixed(2)} ج.م</p>
                                         </div>
                                         <CheckCircle className="h-5 w-5 text-green-500" />
                                     </div>
@@ -335,7 +312,7 @@ export default function Index() {
                                     <div className="flex items-center gap-2 text-right">
                                         <div className="flex-1">
                                             <p className="text-sm text-gray-600 text-right">المتبقي</p>
-                                            <p className="text-2xl font-bold text-right">{paymentsData.summary.total_unpaid.toFixed(2)} ج.م</p>
+                                            <p className="text-xl sm:text-2xl font-bold text-right">{paymentsData.summary.total_unpaid.toFixed(2)} ج.م</p>
                                         </div>
                                         <XCircle className="h-5 w-5 text-red-500" />
                                     </div>
@@ -347,7 +324,7 @@ export default function Index() {
                                     <div className="flex items-center gap-2 text-right">
                                         <div className="flex-1">
                                             <p className="text-sm text-gray-600 text-right">سعر الطالب</p>
-                                            <p className="text-2xl font-bold text-right">{paymentsData.group.student_price} ج.م</p>
+                                            <p className="text-xl sm:text-2xl font-bold text-right">{paymentsData.group.student_price} ج.م</p>
                                             <p className="text-xs text-gray-500 text-right">
                                                 {paymentsData.group.payment_type === 'monthly' ? 'شهرياً' : 'لكل حصة'}
                                             </p>
@@ -378,7 +355,8 @@ export default function Index() {
                                                 className="flex items-center gap-2"
                                             >
                                                 <DollarSign className="h-4 w-4" />
-                                                {saving ? 'جاري الإنشاء...' : 'إنشاء مدفوعات شهرية'}
+                                                <span className="hidden sm:inline">{saving ? 'جاري الإنشاء...' : 'إنشاء مدفوعات شهرية'}</span>
+                                                <span className="sm:hidden">{saving ? 'إنشاء...' : 'إنشاء مدفوعات'}</span>
                                             </Button>
                                         )}
                                     </div>
@@ -403,63 +381,62 @@ export default function Index() {
                                                 {studentPayment.payments.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {studentPayment.payments.map((payment, paymentIndex) => (
-                                                            <div key={payment.id} className="border rounded-lg p-3 bg-gray-50">
-                                                                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center text-right">
-                                                                    <div>
-                                                                        <Label className="text-sm font-medium">التاريخ</Label>
-                                                                        <p className="text-sm text-right">
-                                                                            {new Date(payment.related_date).toLocaleDateString('ar-EG')}
-                                                                        </p>
-                                                                        <p className="text-xs text-gray-500 text-right">
-                                                                            {payment.payment_type === 'monthly' ? 'شهري' : 'حصة'}
-                                                                        </p>
-                                                                    </div>
+                                                            <div key={payment.id} className="border rounded-lg p-3 bg-gray-50">                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-start text-right">
+                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                        <Label className="text-sm font-medium">التاريخ</Label>
+                                                        <p className="text-sm text-right">
+                                                            {new Date(payment.related_date).toLocaleDateString('ar-EG')}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 text-right">
+                                                            {payment.payment_type === 'monthly' ? 'شهري' : 'حصة'}
+                                                        </p>
+                                                    </div>
 
-                                                                    <div>
-                                                                        <Label className="text-sm font-medium">المبلغ</Label>
-                                                                        <p className="text-sm font-bold text-right">
-                                                                            {payment.amount} ج.م
-                                                                        </p>
-                                                                    </div>
+                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                        <Label className="text-sm font-medium">المبلغ</Label>
+                                                        <p className="text-sm font-bold text-right">
+                                                            {payment.amount} ج.م
+                                                        </p>
+                                                    </div>
 
-                                                                    <div>
-                                                                        <Label className="text-sm font-medium">حالة الدفع</Label>
-                                                                        <div className="flex items-center gap-2 mt-1" dir="rtl">
-                                                                            <Label htmlFor={`paid-${payment.id}`} className="mr-0">
-                                                                                مدفوع
-                                                                            </Label>
-                                                                            <Checkbox
-                                                                                id={`paid-${payment.id}`}
-                                                                                checked={payment.is_paid}
-                                                                                onCheckedChange={(checked) => updatePayment(studentIndex, paymentIndex, 'is_paid', checked)}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="mt-1">
-                                                                            {getPaymentStatus(payment)}
-                                                                        </div>
-                                                                    </div>
+                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                        <Label className="text-sm font-medium">حالة الدفع</Label>
+                                                        <div className="flex items-center gap-2 mt-1" dir="rtl">
+                                                            <Label htmlFor={`paid-${payment.id}`} className="mr-0">
+                                                                مدفوع
+                                                            </Label>
+                                                            <Checkbox
+                                                                id={`paid-${payment.id}`}
+                                                                checked={payment.is_paid}
+                                                                onCheckedChange={(checked) => updatePayment(studentIndex, paymentIndex, 'is_paid', checked)}
+                                                            />
+                                                        </div>
+                                                        <div className="mt-1">
+                                                            {getPaymentStatus(payment)}
+                                                        </div>
+                                                    </div>
 
-                                                                    <div>
-                                                                        <Label className="text-sm font-medium">تاريخ الدفع</Label>
-                                                                        <Input
-                                                                            type="datetime-local"
-                                                                            value={payment.paid_at ? new Date(payment.paid_at).toISOString().slice(0, 16) : ''}
-                                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'paid_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
-                                                                            disabled={!payment.is_paid}
-                                                                            className="text-right text-sm"
-                                                                        />
-                                                                    </div>
+                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                        <Label className="text-sm font-medium">تاريخ الدفع</Label>
+                                                        <Input
+                                                            type="datetime-local"
+                                                            value={payment.paid_at ? new Date(payment.paid_at).toISOString().slice(0, 16) : ''}
+                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'paid_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
+                                                            disabled={!payment.is_paid}
+                                                            className="text-right text-sm mt-1"
+                                                        />
+                                                    </div>
 
-                                                                    <div>
-                                                                        <Label className="text-sm font-medium">ملاحظات</Label>
-                                                                        <Textarea
-                                                                            placeholder="ملاحظات..."
-                                                                            className="resize-none h-16 text-right text-sm"
-                                                                            value={payment.notes || ''}
-                                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'notes', e.target.value)}
-                                                                        />
-                                                                    </div>
-                                                                </div>
+                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                        <Label className="text-sm font-medium">ملاحظات</Label>
+                                                        <Textarea
+                                                            placeholder="ملاحظات..."
+                                                            className="resize-none h-16 text-right text-sm mt-1"
+                                                            value={payment.notes || ''}
+                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'notes', e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -493,7 +470,8 @@ export default function Index() {
                                             className="flex items-center gap-2"
                                         >
                                             <Save className="h-4 w-4" />
-                                            {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                                            <span className="hidden sm:inline">{saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}</span>
+                                            <span className="sm:hidden">{saving ? 'حفظ...' : 'حفظ'}</span>
                                         </Button>
                                 </div>
                             </CardFooter>

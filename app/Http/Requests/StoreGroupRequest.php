@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Group;
+use App\Models\GroupSchedule;
 
 class StoreGroupRequest extends FormRequest
 {
@@ -34,6 +37,75 @@ class StoreGroupRequest extends FormRequest
             'schedules.*.start_time' => 'required|date_format:H:i',
             'schedules.*.end_time' => 'required|date_format:H:i|after:schedules.*.start_time',
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $this->validateScheduleConflicts($validator);
+        });
+    }
+
+    /**
+     * Validate that schedules don't conflict with existing groups
+     */
+    protected function validateScheduleConflicts($validator)
+    {
+        $schedules = $this->input('schedules', []);
+        
+        foreach ($schedules as $index => $schedule) {
+            $dayOfWeek = $schedule['day_of_week'];
+            $startTime = $schedule['start_time'];
+            $endTime = $schedule['end_time'];
+            
+            // Check for conflicts with existing groups for this user
+            $conflictingSchedules = GroupSchedule::whereHas('group', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->where('day_of_week', $dayOfWeek)
+            ->where(function ($query) use ($startTime, $endTime) {
+                // Check if the new schedule overlaps with existing schedules
+                $query->where(function ($q) use ($startTime, $endTime) {
+                    // New schedule starts during existing schedule
+                    $q->where('start_time', '<=', $startTime)
+                      ->where('end_time', '>', $startTime);
+                })->orWhere(function ($q) use ($startTime, $endTime) {
+                    // New schedule ends during existing schedule
+                    $q->where('start_time', '<', $endTime)
+                      ->where('end_time', '>=', $endTime);
+                })->orWhere(function ($q) use ($startTime, $endTime) {
+                    // New schedule completely contains existing schedule
+                    $q->where('start_time', '>=', $startTime)
+                      ->where('end_time', '<=', $endTime);
+                });
+            })
+            ->with('group')
+            ->get();
+            
+            if ($conflictingSchedules->isNotEmpty()) {
+                $conflictingGroup = $conflictingSchedules->first()->group;
+                $dayNames = [
+                    0 => 'الأحد',
+                    1 => 'الاثنين', 
+                    2 => 'الثلاثاء',
+                    3 => 'الأربعاء',
+                    4 => 'الخميس',
+                    5 => 'الجمعة',
+                    6 => 'السبت'
+                ];
+                
+                $validator->errors()->add(
+                    "schedules.{$index}.start_time",
+                    "يوجد تعارض في الجدول الزمني مع مجموعة '{$conflictingGroup->name}' في يوم {$dayNames[$dayOfWeek]} من {$conflictingSchedules->first()->start_time} إلى {$conflictingSchedules->first()->end_time}"
+                );
+            }
+        }
     }
 
     /**

@@ -27,6 +27,7 @@ export default function Index({ groups, academicYears, filters }) {
         }, 300);
 
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, selectedAcademicYear]);
 
     const handleFilter = () => {
@@ -262,26 +263,27 @@ export default function Index({ groups, academicYears, filters }) {
                                             </div>
 
                                             <div className="flex justify-between space-x-2">
-                                                
+                                                    
+                                                <Link href={route('groups.show', group.id)}
+                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                                >
+                                                    عرض
+                                                </Link>
+
+
+                                               <Link
+                                                    href={route('groups.edit', group.id)}
+                                                    className="text-green-600 hover:text-green-800 text-sm font-medium"
+                                                >
+                                                    تعديل
+                                                </Link>
                                                  <button
                                                     onClick={() => handleDelete(group)}
                                                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >
                                                     حذف
                                                 </button>
-                                                <Link
-                                                    href={route('groups.edit', group.id)}
-                                                    className="text-green-600 hover:text-green-800 text-sm font-medium"
-                                                >
-                                                    تعديل
-                                                </Link>
-                                               
-                                                <Link
-                                                    href={route('groups.show', group.id)}
-                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                                >
-                                                    عرض
-                                                </Link>
+                                                
                                             </div>
                                         </div>
                                     ))}

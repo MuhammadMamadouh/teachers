@@ -1,3 +1,4 @@
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link } from '@inertiajs/react';
 import { Users, BookOpen, Calendar, DollarSign, Shield, Star, CheckCircle, ArrowLeft, UserPlus, BarChart3, CreditCard } from 'lucide-react';
 
@@ -75,7 +76,7 @@ export default function Welcome({ auth, plans = [] }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-6">
                         <div className="flex items-center">
-                            <BookOpen className="h-8 w-8 text-indigo-600 ml-3" />
+                            <ApplicationLogo className="h-20 w-20 text-indigo-600 ml-3" />
                             <span className="text-xl font-bold text-gray-900">نظام إدارة المعلمين</span>
                         </div>
                         <div className="flex items-center space-x-reverse space-x-4">

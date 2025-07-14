@@ -1,32 +1,76 @@
 name: Frontend Testing
-on: push
+on:
+  push:
+    branches: [main]
 jobs:
     lint:
         runs-on: ubuntu-latest
         steps:
             - name: Get Code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+            - name: Cache Node Modules
+              uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-${{
+                          hashFiles('**/package-lock.json')
+                      }}
             - name: Install Dependencies
               run: npm ci
             - name: Run Lint
+              id: lint-test
               run: npm run lint
+            - name: Upload Test Results
+              if: steps.lint-test.outcome == 'success'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: lint-results
+                  path: ./tests/Pages/**/*.test.js
+
     test:
-        needs: lint
         runs-on: ubuntu-latest
         steps:
             - name: Get Code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+            - name: Cache Node Modules
+              uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-${{
+                          hashFiles('**/package-lock.json')
+                      }}
             - name: Install Dependencies
               run: npm ci
             - name: Run Tests
-              run: npm test
+              run: npm run test
 
     deploy:
-        needs: test
+        needs: [lint, test]
         runs-on: ubuntu-latest
         steps:
             - name: Get Code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+            - name: Cache Node Modules
+              uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-${{
+                          hashFiles('**/package-lock.json')
+                      }}
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.2'
+            - name: Install Composer Dependencies
+              run: composer install --no-dev --optimize-autoloader
+            - name: Generate Ziggy Routes
+              run: php artisan ziggy:generate
             - name: Install Dependencies
               run: npm ci
             - name: Build Project

@@ -1,10 +1,9 @@
 import React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { 
     CheckCircleIcon, 
     XMarkIcon,
-    CreditCardIcon,
     UsersIcon,
     CalendarDaysIcon,
     StarIcon,
@@ -13,20 +12,11 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function Plans({ plans, currentSubscription, currentStudentCount, hasHadTrial }) {
-    // Debug logging
-    console.log('Plans data:', { plans, currentSubscription, currentStudentCount, hasHadTrial });
-
-    const handleSubscribe = (planId) => {
+    
+    const handleSubscribe = (_planId) => {
         // This would typically redirect to a payment gateway
         // For now, we'll just show a message
         alert('سيتم توجيهك إلى صفحة الدفع قريباً');
-    };
-
-    const getPlanStatus = (plan) => {
-        if (currentSubscription && currentSubscription.plan_id === plan.id) {
-            return 'current';
-        }
-        return 'available';
     };
 
     const getPlanBadge = (plan) => {
@@ -50,19 +40,9 @@ export default function Plans({ plans, currentSubscription, currentStudentCount,
     };
 
     const isCurrentPlan = (plan) => {
-        console.log('Checking if current plan:', plan.id, currentSubscription?.plan_id);
         return currentSubscription && currentSubscription.plan_id === plan.id;
     };
 
-    const canSelectPlan = (plan) => {
-        // Can't select current plan
-        if (isCurrentPlan(plan)) return false;
-        
-        // Can't select trial if already had one
-        if (plan.is_trial && hasHadTrial) return false;
-        
-        return true;
-    };
 
     return (
         <AuthenticatedLayout

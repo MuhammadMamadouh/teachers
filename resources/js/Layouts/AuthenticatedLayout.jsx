@@ -113,6 +113,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     موافقات المعلمين
                                 </NavLink>
                                 <NavLink
+                                    href={route('admin.teachers.index')}
+                                    active={route().current('admin.teachers.*')}
+                                >
+                                    إدارة المعلمين
+                                </NavLink>
+                                <NavLink
                                     href={route('admin.plans.index')}
                                     active={route().current('admin.plans.*')}
                                 >
@@ -123,6 +129,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('admin.plan-upgrade-requests.*')}
                                 >
                                     طلبات ترقية الخطط
+                                </NavLink>
+                                <NavLink
+                                    href={route('admin.reports.governorates')}
+                                    active={route().current('admin.reports.*')}
+                                >
+                                    التقارير الإدارية
                                 </NavLink>
                                 <NavLink
                                     href={route('admin.feedback.index')}
@@ -296,6 +308,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     موافقات المعلمين
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
+                                    href={route('admin.teachers.index')}
+                                    active={route().current('admin.teachers.*')}
+                                >
+                                    إدارة المعلمين
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
                                     href={route('admin.plans.index')}
                                     active={route().current('admin.plans.*')}
                                 >
@@ -306,6 +324,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('admin.plan-upgrade-requests.*')}
                                 >
                                     طلبات ترقية الخطط
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.reports.governorates')}
+                                    active={route().current('admin.reports.*')}
+                                >
+                                    التقارير الإدارية
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
                                     href={route('admin.feedback.index')}

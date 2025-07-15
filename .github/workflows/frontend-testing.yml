@@ -84,7 +84,7 @@ jobs:
             - name: Output Failure Report
               run: |
                 echo "One or more jobs failed. Please check the logs for details."
-                echo "github object: ${{ github}}"
+                echo "github object: ${{ toJson(github) }}"
                 echo "Failure Report:"
                 echo "Lint Job:"
                 if [ -f ./tests/Pages/lint-results.txt ]; then

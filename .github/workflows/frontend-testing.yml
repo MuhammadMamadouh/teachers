@@ -75,3 +75,16 @@ jobs:
               run: npm ci
             - name: Build Project
               run: npm run build
+
+    failure-report:
+        needs: [lint, test]
+        if: failure()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Output Failure Report
+              run: |
+                echo "One or more jobs failed. Please check the logs for details."
+                echo "github object: ${{ github}}"
+                echo "Failure Report:"
+                echo "Lint Job:"
+                cat ./tests/Pages/**/*.test.js

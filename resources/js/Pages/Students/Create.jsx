@@ -29,8 +29,8 @@ export default function Create({ groups, academicYears, lastStudent }) {
 
         // Set the redirect preference
         setData('redirectTo', redirectTo);
-        console.log('Redirecting to:',data);
-        // Create the request data with the redirect preference
+        
+        
         const requestData = {
             ...data
         };

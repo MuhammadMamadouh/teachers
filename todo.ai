@@ -1,110 +1,285 @@
-🎯 Goal: Implement a complete attendance and payment system for a Laravel + Inertia React SaaS app for teachers. Each group has a payment type: 'per_session' or 'monthly'. Each student in a group has a defined `student_price`. Students can only be added to groups with the same academic year.
 
----
+Update this SaaS platform for managing educational centers. The system should handle two types of clients:
 
-🟩 Step 1: Attendance System
+Individual teacher (acts as an educational center with a single teacher who is also the owner/admin).
 
-📦 Create `attendances` table:
+Educational center (with multiple teachers, assistants, and an owner/admin).
 
-| Column      | Type     | Notes |
-|-------------|----------|-------|
-| id          | bigint   | Primary Key |
-| group_id    | foreign key → groups.id |
-| student_id  | foreign key → students.id |
-| date        | date     | Attendance date |
-| is_present  | boolean  | true if present |
-| created_at  | timestamp |
+All clients in the system are represented as "centers".
 
-✅ Add unique constraint on (`group_id`, `student_id`, `date`) to prevent duplicate attendance entries for the same day.
+Every user (teacher, assistant, admin) belongs to one center only.
+Centers can have multiple users, but each user is linked to a single center.
+Centers can have multiple branches or locations, but the core data model is centered around the concept of a single center.
 
-➕ When marking attendance:
-- Filter students by group’s academic year
-- Display list of students
-- Allow marking present/absent for today’s session
+All educational data (students, groups, sessions, payments, etc.) is always linked to a center, and usually also to a specific teacher within the center.
 
-If the group’s `payment_type = per_session`, trigger a related payment (see Step 2).
+Entities and Relationships:
+centers table:
 
----
+Represents the main account for every client (either an individual teacher or an educational center).
 
-🟨 Step 2: Payments System
+Fields: id, name, address, subscription info, etc.
 
-📦 Create `payments` table:
+Each center has an "owner" (admin user).
 
-| Column        | Type       | Notes |
-|---------------|------------|-------|
-| id            | bigint     | Primary |
-| group_id      | foreign key |
-| student_id    | foreign key |
-| payment_type  | enum('monthly', 'per_session') |
-| related_date  | date       | For per_session → attendance date, for monthly → month start |
-| amount        | decimal(8,2) |
-| is_paid       | boolean    | default false |
-| paid_at       | datetime (nullable) |
-| notes         | text (nullable) |
-| created_at    | timestamp |
+users table:
 
-✅ Add unique constraint on (`group_id`, `student_id`, `related_date`) to prevent duplicate payments.
+Every user belongs to a center (center_id foreign key).
 
----
+Fields: id, center_id, name, email, role (admin, teacher, assistant), password, etc.
 
-🟦 Step 3: Payment Logic by Group Type
+A center can have multiple users. Roles:
 
-### If `per_session`:
-- After saving attendance (`is_present = true`)
-- Automatically create a payment record with:
-  - `payment_type = per_session`
-  - `related_date = attendance.date`
-  - `amount = group.student_price`
+admin: owner/manager of the center. Can see and manage all data in the center.
 
-### If `monthly`:
-- On the 1st day of each month (or when student is added to group), generate:
-  - `payment_type = monthly`
-  - `related_date = first day of month`
-  - `amount = group.student_price`
-  - `is_paid = false`
+teacher: can only see/manage their own students, groups, sessions.
 
-✅ Teacher can manually update `is_paid = true` and `paid_at` when payment is received (cash only for now).
+assistant: has limited permissions (defined by the admin).
 
----
 
-🟫 Step 4: Frontend Views (Inertia React)
+Admin can add, edit, or remove other teachers and assistants within their center.
 
-### For Teacher:
+students table:
 
-📆 Attendance Page:
-- Show list of today’s sessions (based on group schedule)
-- For each session:
-  - List of students (filtered by academic year)
-  - Checkbox for presence
-  - After submission → save attendances
-  - If `per_session`, trigger payment generation
+Each student belongs to a specific teacher (teacher_id) and a center (center_id for easier filtering).
 
-💰 Payments Page:
-- Monthly View:
-  - List of students with due/unpaid payments (for current month or current day)
-  - Status: Paid / Unpaid
-  - Date of payment
-  - Total expected income
-  - Total paid so far
-  - Remaining due
+Fields: id, center_id, teacher_id, name, academic_year, etc.
 
-📊 Group Summary:
-- Show:
-  - Number of students
-  - Group `payment_type`
-  - `student_price`
-  - Total collected this month
-  - Total pending
-  - Number of unpaid students
+groups table:
 
----
+Each group will be owned by a specific teacher and center.
 
-🛡️ Step 5: Validations & Guards
+Fields: id, center_id, teacher_id, name, academic_year, etc.
 
-- Only allow attendance marking and payment view for authorized teachers/assistants
-- Validate that students assigned to a group belong to the same `academic_year_id`
-- Prevent duplicate payments or attendance records for the same day/student/group
+sessions table:
 
----
-🟩 Step 6: Additional Features
-- Weekly/monthly revenue summaries per group
+Represents class sessions. Each session belongs to a group and a teacher.
+
+Fields: id, group_id, teacher_id, center_id, date, session_type, etc.
+
+assistants will be filter by center_id and can have customizable permissions.
+
+Features/Requirements:
+Authentication & Authorization:
+
+Users only access data within their center.
+
+admin sees all teachers, students, groups, reports, and can manage users.
+
+teacher sees only their groups, students, and sessions.
+
+assistant can have customizable permissions (e.g., view attendance, edit students).
+
+Registration/Onboarding:
+
+New user signs up as a center.
+
+If the user is an individual teacher, the center name can default to their name.
+
+The first user is always admin and can also be a teacher (dual role if needed).
+
+Subscription/Billing:
+
+Subscriptions are linked to centers.
+
+Center can upgrade plan to allow more teachers, assistants, or students.
+
+Multi-tenancy:
+
+All data is isolated per center (soft multi-tenancy using center_id).
+
+Data Migration (if there is legacy data):
+
+For current teachers in the system: create a new center for each, link all their data to this center, and make them admin and teacher for their own center.
+
+Database Schema Example (Laravel Migrations):
+php
+Copy
+Edit
+// centers table
+Schema::create('centers', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->foreignId('owner_id')->constrained('users'); // owner/admin user
+    $table->string('address')->nullable();
+    $table->timestamps();
+});
+
+
+
+Business Rules / Scenarios:
+A center (organization) can have one or more teachers, assistants, and an admin.
+
+If the center has only one teacher (the owner), the system works exactly like the "single teacher" scenario.
+
+Admins can invite other users to join the center (teachers or assistants).
+
+All access to data must be filtered by center_id.
+
+Teachers cannot see other teachers’ students/groups/sessions unless they have an admin role.
+
+UI/UX Notes:
+Registration page should clearly state that the account is for a center or for an individual teacher.
+
+Dashboard for admins shows full center analytics and management.
+
+Dashboard for teachers is limited to their own data.
+
+Option to add/invite new teachers or assistants from the admin panel.
+
+Extra Instructions:
+Implement permissions using Spatie Laravel-Permission.
+
+Prepare seeders/factories for sample data for both single-teacher and multi-teacher centers.
+
+All endpoints and resources must always check center_id for security.
+
+Start building this new architecture now. Make sure your code and migrations follow the above pattern.
+Document any special business logic or decisions you make.
+Start with the models and migrations, then the authentication/authorization logic.
+Don’t forget to seed example data for both types of centers (individual teacher, and multi-teacher center).
+
+
+
+
+
+
+Backend Changes (Laravel)
+1. User & Teacher Management
+All users belong to a center (center_id).
+
+Every user has a role: admin, teacher, or assistant.
+
+
+
+API Endpoints:
+GET /api/center/users
+List all users (teachers, assistants) in the center. Only accessible by admin.
+
+POST /api/center/users
+Add new teacher/assistant (input: name, email, role). Send invitation email if needed.
+
+PUT /api/center/users/{id}
+Edit user info or change role.
+
+DELETE /api/center/users/{id}
+Remove a user (except admin).
+
+2. Students & Groups Filtering
+Each student and group has both center_id and teacher_id.
+
+API endpoints for students/groups must:
+
+Filter data by both center_id (always!) and teacher_id:
+
+For teachers: show only their own students and groups.
+
+For admins: show all, with ability to filter by teacher.
+
+API Endpoints:
+GET /api/students?teacher_id=xx
+List students for a specific teacher (admin only). Teachers auto-filtered.
+
+GET /api/groups?teacher_id=xx
+Same for groups.
+
+All create/update endpoints require valid center_id and teacher_id in payload.
+
+3. Subscription Plans (Plans Table)
+Update subscription logic to include:
+
+max_teachers (number of teachers allowed in plan)
+
+max_assistants
+
+max_students
+
+When adding new teachers/assistants, enforce these limits.
+
+API returns an error if the center exceeds its allowed users.
+
+Sample Plan Table Structure:
+id	name	price	max_teachers	max_assistants	max_students	features
+
+4. Authorization & Security
+All API access must be scoped by center_id.
+
+Only admins can manage other users.
+
+Teachers only see their own data.
+
+Add policies or middleware for fine-grained permissions.
+
+Frontend Changes (React/Blade/Other SPA)
+1. User Management UI (Admin Only)
+Add a "Users" or "Staff" section in the center admin dashboard.
+
+List all teachers and assistants, with roles and current status.
+
+Button to "Add Teacher/Assistant" (opens modal/form to input data).
+
+Option to edit or remove users.
+
+Show a counter: "3/5 teachers used" based on current plan.
+
+If max reached, show upgrade prompt.
+
+2. Students & Groups Pages
+For teachers:
+
+Show only their students/groups.
+
+For admins:
+
+Ability to filter by teacher (dropdown/select at top).
+
+Show all students/groups with teacher name column.
+
+3. Plan/Subscription Management UI
+In the billing/subscription page:
+
+Show how many teachers, assistants, students are allowed by current plan.
+
+Show current usage (e.g., "You have 3 teachers of 5 allowed in your plan").
+
+If the admin tries to add more than allowed, show clear upgrade/paywall message.
+
+Display available plans and allow plan upgrades.
+
+4. Invitations/Onboarding
+When admin adds a new teacher/assistant, send an invitation email with a registration link.
+
+Show status: "Pending invite", "Active", "Suspended", etc.
+
+5. Filtering and Navigation
+In all lists (students, groups, sessions, reports):
+
+Add teacher filter (for admin).
+
+Always scope data to the center of the logged-in user.
+
+Database Schema Adjustments
+Ensure center_id exists on all main entities.
+
+Add teacher_id where applicable (students, groups, sessions).
+
+Update seeder/factory logic to create realistic multi-teacher and single-teacher centers.
+
+Business Logic / Rules
+Only admin can invite/manage users in a center.
+
+Enforce plan limits on teachers, assistants, and students.
+
+Data is always filtered by center_id, and, for teachers, also by teacher_id.
+
+Upgrading plan unlocks higher limits.
+
+Optional Extras
+Audit log for user management actions (added/removed teachers).
+
+Role management can be extended with Spatie Laravel Permission if needed.
+
+Start implementing these changes.
+Document any edge cases and keep API and UI in sync with the above requirements.
+Provide seeders/factories for easy testing of centers with varying numbers of teachers and students.
+

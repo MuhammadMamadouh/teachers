@@ -9,12 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use Notifiable;
+    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -29,6 +31,7 @@ class User extends Authenticatable
         'subject',
         'city',
         'governorate_id',
+        'center_id',
         'notes',
         'is_approved',
         'is_admin',
@@ -91,6 +94,38 @@ class User extends Authenticatable
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
+    }
+
+    /**
+     * Get the center this user belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
+    }
+
+    /**
+     * Get all centers owned by this user (admin/owner).
+     */
+    public function ownedCenters(): HasMany
+    {
+        return $this->hasMany(Center::class, 'owner_id');
+    }
+
+    /**
+     * Check if user is the owner of their center.
+     */
+    public function isCenterOwner(): bool
+    {
+        return $this->center && $this->center->owner_id === $this->id;
+    }
+
+    /**
+     * Check if user has admin role in their center.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin') || $this->is_admin;
     }
 
     /**
@@ -248,7 +283,7 @@ class User extends Authenticatable
      */
     public function isTeacher(): bool
     {
-        return $this->type === 'teacher';
+        return $this->hasRole('teacher') || $this->type === 'teacher';
     }
 
     /**
@@ -256,7 +291,7 @@ class User extends Authenticatable
      */
     public function isAssistant(): bool
     {
-        return $this->type === 'assistant';
+        return $this->hasRole('assistant') || $this->type === 'assistant';
     }
 
     /**

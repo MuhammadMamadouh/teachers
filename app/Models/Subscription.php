@@ -12,6 +12,7 @@ class Subscription extends Model
 
     protected $fillable = [
         'user_id',
+        'center_id',
         'plan_id',
         'max_students',
         'is_active',
@@ -33,6 +34,14 @@ class Subscription extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the center that the subscription belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
     }
 
     /**

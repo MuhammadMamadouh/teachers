@@ -26,88 +26,122 @@ class DashboardController extends Controller
     /**
      * Display the dashboard.
      */
-    public function index(): Response
+    public function index()
     {
         $user = Auth::user();
 
-        if ($user->is_admin) {
-            return $this->adminDashboard();
+        // Ensure user belongs to a center
+        if (!$user->center_id) {
+            return redirect()->route('center.setup');
+        }
+
+        // Get the User model instance to access role methods
+        $userModel = User::find($user->id);
+
+        // Determine dashboard type based on user role
+        if ($userModel->hasRole('admin')) {
+            return $this->adminDashboard($userModel);
         }
 
         if ($user->type === 'assistant') {
-            return $this->assistantDashboard($user);
+            return $this->assistantDashboard($userModel);
         }
 
-        return $this->teacherDashboard($user);
+        return $this->teacherDashboard($userModel);
     }
 
     /**
-     * Admin dashboard with system reports.
+     * Admin dashboard with center-wide reports.
      */
-    private function adminDashboard(): Response
+    private function adminDashboard(User $user)
     {
-        $totalTeachers = User::where('is_admin', false)
-        ->where('type', self::TEACHER) // Exclude assistants
-        ;
-        // System statistics
-        $approvedTeachers = $totalTeachers->where('is_approved', true)->count();
-        $pendingTeachers = $totalTeachers->where('is_approved', false)->count();
+        $center = $user->center;
+        
+        if (!$center) {
+            return redirect()->route('center.setup');
+        }
 
+        // Get center-wide statistics
+        $totalTeachers = User::where('center_id', $user->center_id)
+            ->where('type', self::TEACHER)
+            ->where('is_admin', false)
+            ->count();
 
-        $totalTeachers = User::where('is_admin', false)
-        ->where('type', self::TEACHER)->count();
-        $totalStudents = Student::count();
+        $totalAssistants = User::where('center_id', $user->center_id)
+            ->where('type', self::ASSISTANT)
+            ->count();
 
-        // Plan statistics
-        $planStats = Plan::withCount('subscriptions')
-            ->get()
-            ->map(function ($plan) {
-                return [
-                    'name' => $plan->name,
-                    'max_students' => $plan->max_students,
-                    'price' => $plan->formatted_price,
-                    'subscribers' => $plan->subscriptions_count,
-                    'is_default' => $plan->is_default,
-                ];
-            });
+        $totalStudents = Student::where('center_id', $user->center_id)->count();
+        $totalGroups = Group::where('center_id', $user->center_id)->count();
 
-        // Recent activity
-        $recentUsers = User::where('is_admin', false)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get(['id', 'name', 'email', 'is_approved', 'created_at']);
+        // Get center subscription info
+        $subscription = Subscription::where('center_id', $user->center_id)
+            ->where('is_active', true)
+            ->with('plan')
+            ->first();
 
-        // Usage statistics
-        $usageStats = User::where('is_admin', false)
-        // ->where('type', self::TEACHER) // Exclude assistants
-            ->where('is_approved', true)
-            ->with(['students', 'activeSubscription.plan'])
-            ->get()
-            ->map(function ($user) {
-                $subscription = $user->activeSubscription;
-                $maxStudents = $subscription && $subscription->plan ? $subscription->plan->max_students : 0;
+        // Get recent activities (last 7 days)
+        $recentStudents = Student::where('center_id', $user->center_id)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->with('user')
+            ->latest()
+            ->take(10)
+            ->get();
 
-                return [
-                    'student_count' => $user->students->count(),
-                    'max_students' => $maxStudents,
-                    'plan_name' => $subscription && $subscription->plan ? $subscription->plan->name : 'No Plan',
-                ];
-            });
+        $recentGroups = Group::where('center_id', $user->center_id)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->with('user')
+            ->latest()
+            ->take(10)
+            ->get();
 
-        // Get comprehensive admin reports
-        $adminReports = $this->getAdminReports();
+        // Get teachers with their stats
+        $teachersWithStats = User::where('center_id', $user->center_id)
+            ->where('type', self::TEACHER)
+            ->withCount(['students', 'groups'])
+            ->get();
 
-        return Inertia::render('Admin/Dashboard', [
-            'systemStats' => [
-                'total_users' => $totalTeachers,
-                'approved_users' => $approvedTeachers,
-                'pending_users' => $pendingTeachers,
-                'total_students' => $totalStudents,
+        // Get all center users for the admin dashboard
+        $students = Student::where('center_id', $user->center_id)
+            ->with('user')
+            ->get();
+
+        $groups = Group::where('center_id', $user->center_id)
+            ->with('user')
+            ->get();
+
+        $teachers = User::where('center_id', $user->center_id)
+            ->where('type', self::TEACHER)
+            ->where('is_admin', false)
+            ->get();
+
+        $assistants = User::where('center_id', $user->center_id)
+            ->where('type', self::ASSISTANT)
+            ->get();
+
+        // Get subscription limits for the admin/center
+        $subscriptionLimits = $user->getSubscriptionLimits();
+        
+        return Inertia::render('Dashboard', [
+            'center' => $center,
+            'students' => $students,
+            'groups' => $groups,
+            'teachers' => $teachers,
+            'assistants' => $assistants,
+            'subscriptionLimits' => $subscriptionLimits,
+            'currentStudentCount' => $totalStudents,
+            'canAddStudents' => $user->canAddStudents(),
+            'availablePlans' => [],
+            'stats' => [
+                'totalTeachers' => $totalTeachers,
+                'totalAssistants' => $totalAssistants,
+                'totalStudents' => $totalStudents,
+                'totalGroups' => $totalGroups,
             ],
-            'planStats' => $planStats,
-            'recentUsers' => $recentUsers,
-            'usageStats' => $usageStats,
-            'adminReports' => $adminReports,
+            'subscription' => $subscription,
+            'recentStudents' => $recentStudents,
+            'recentGroups' => $recentGroups,
+            'teachersWithStats' => $teachersWithStats,
         ]);
     }
 
@@ -122,11 +156,24 @@ class DashboardController extends Controller
             ->orderBy('max_students')
             ->get();
 
+        // Get teacher's students and groups
+        $students = Student::where('center_id', $user->center_id)
+            ->where('user_id', $user->id)
+            ->with('user')
+            ->get();
+
+        $groups = Group::where('center_id', $user->center_id)
+            ->where('user_id', $user->id)
+            ->with('user')
+            ->get();
+
         return Inertia::render('Dashboard', [
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
             'availablePlans' => $availablePlans,
+            'students' => $students,
+            'groups' => $groups,
         ]);
     }
 
@@ -141,11 +188,31 @@ class DashboardController extends Controller
         if (!$teacher) {
             return Inertia::render('Dashboard', [
                 'error' => 'No teacher found for this assistant',
+                'subscriptionLimits' => [
+                    'max_students' => 0,
+                    'has_active_subscription' => false,
+                ],
+                'currentStudentCount' => 0,
+                'canAddStudents' => false,
+                'availablePlans' => [],
+                'isAssistant' => true,
+                'teacherName' => '',
             ]);
         }
 
         $subscriptionLimits = $teacher->getSubscriptionLimits();
         $currentStudentCount = $teacher->getStudentCount();
+
+        // Get teacher's students and groups for the assistant
+        $students = Student::where('center_id', $user->center_id)
+            ->where('user_id', $teacher->id)
+            ->with('user')
+            ->get();
+
+        $groups = Group::where('center_id', $user->center_id)
+            ->where('user_id', $teacher->id)
+            ->with('user')
+            ->get();
 
         return Inertia::render('Dashboard', [
             'subscriptionLimits' => $subscriptionLimits,
@@ -154,6 +221,8 @@ class DashboardController extends Controller
             'availablePlans' => [], // Assistants don't need to see upgrade options
             'isAssistant' => true,
             'teacherName' => $teacher->name,
+            'students' => $students,
+            'groups' => $groups,
         ]);
     }
 

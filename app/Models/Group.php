@@ -12,6 +12,7 @@ class Group extends Model
     use HasFactory;
     protected $fillable = [
         'user_id',
+        'center_id',
         'name',
         'description',
         'max_students',
@@ -25,6 +26,14 @@ class Group extends Model
         'is_active' => 'boolean',
         'student_price' => 'decimal:2',
     ];
+
+    /**
+     * Get the center that the group belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
+    }
 
     public function schedules(): HasMany
     {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminTeacherController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CenterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GroupController;
@@ -190,6 +191,19 @@ Route::middleware('auth')->group(function () {
         // Plan management routes
         Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
         Route::post('/plans/upgrade', [PlanController::class, 'upgrade'])->name('plans.upgrade');
+
+        // Center management routes
+        Route::get('/center/setup', [CenterController::class, 'setup'])->name('center.setup');
+        Route::post('/center', [CenterController::class, 'store'])->name('center.store');
+        Route::get('/center/dashboard', [CenterController::class, 'dashboard'])->name('center.dashboard');
+        Route::get('/center/users', [CenterController::class, 'users'])->name('center.users');
+        Route::post('/center/users', [CenterController::class, 'createUser'])->name('center.users.create');
+        Route::delete('/center/users/{user}', [CenterController::class, 'deleteUser'])->name('center.users.delete');
+        Route::post('/center/invite', [CenterController::class, 'inviteUser'])->name('center.invite');
+        Route::patch('/center/{center}', [CenterController::class, 'update'])->name('center.update');
+        Route::get('/center/statistics', [CenterController::class, 'statistics'])->name('center.statistics');
+        Route::get('/center/subscription/upgrade', [CenterController::class, 'subscriptionUpgrade'])->name('center.subscription.upgrade');
+        Route::post('/center/subscription/upgrade', [CenterController::class, 'processSubscriptionUpgrade'])->name('center.subscription.upgrade.process');
 
         // Feedback routes (for teachers to submit feedback)
         Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');

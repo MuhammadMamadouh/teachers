@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Center;
 use App\Models\Governorate;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -60,7 +61,19 @@ class RegisteredUserController extends Controller
             'subject' => 'required|string|max:255',
             'governorate_id' => 'required|exists:governorates,id',
             'plan_id' => 'nullable|exists:plans,id',
+            'center_name' => 'required|string|max:255',
+            'center_type' => 'required|in:individual,organization',
+            'center_address' => 'nullable|string|max:255',
+        ]);
 
+        // Create center first
+        $center = Center::create([
+            'name' => $request->center_name,
+            'type' => $request->center_type,
+            'address' => $request->center_address,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'is_active' => true,
         ]);
 
         $user = User::create([
@@ -70,8 +83,19 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'subject' => $request->subject,
             'governorate_id' => $request->governorate_id,
+            'center_id' => $center->id,
+            'type' => 'teacher',
             'is_approved' => false,
         ]);
+
+        // Update center with owner
+        $center->update(['owner_id' => $user->id]);
+
+        // Assign roles
+        $user->assignRole('admin');
+        if ($request->center_type === 'individual') {
+            $user->assignRole('teacher');
+        }
 
         // Create subscription for new user based on selected plan
         $selectedPlan = null;
@@ -86,6 +110,7 @@ class RegisteredUserController extends Controller
 
         Subscription::create([
             'user_id' => $user->id,
+            'center_id' => $center->id,
             'plan_id' => $selectedPlan ? $selectedPlan->id : null,
             'max_students' => $selectedPlan ? $selectedPlan->max_students : 5, // Fallback to 5
             'is_active' => true,

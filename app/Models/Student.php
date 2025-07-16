@@ -13,6 +13,7 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'group_id',
+        'center_id',
         'name',
         'phone',
         'guardian_phone',
@@ -58,5 +59,13 @@ class Student extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the center that the student belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
     }
 }

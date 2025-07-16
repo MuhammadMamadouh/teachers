@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, BookOpen, RotateCcw, DollarSign, TrendingUp, BarChart3, PieChart } from 'lucide-react';
 import StartNewTermModal from '@/Components/StartNewTermModal';
 
-export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans, isAssistant = false, teacherName = '', error }) {
+export default function Dashboard({ 
+    subscriptionLimits = {}, 
+    currentStudentCount = 0, 
+    canAddStudents = false, 
+    availablePlans = [], 
+    isAssistant = false, 
+    teacherName = '', 
+    error = null 
+}) {
     const [todaySessions, setTodaySessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
     const [showTermResetModal, setShowTermResetModal] = useState(false);
@@ -99,11 +107,11 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <div className="ml-4">
                                         <h4 className="text-lg font-medium text-gray-900">الطلاب</h4>
                                         <p className="text-2xl font-bold text-gray-900">
-                                            {currentStudentCount} من {subscriptionLimits.max_students || 0}
+                                            {currentStudentCount} من {subscriptionLimits?.max_students || 0}
                                         </p>                        <p className="text-sm text-gray-500">
-                                            {subscriptionLimits.has_active_subscription ? 'خطة نشطة' : 'لا توجد خطة نشطة'}
+                                            {subscriptionLimits?.has_active_subscription ? 'خطة نشطة' : 'لا توجد خطة نشطة'}
                                         </p>
-                                        {subscriptionLimits.plan && (
+                                        {subscriptionLimits?.plan && (
                                             <p className="text-xs text-blue-600 font-medium mt-1">
                                                 خطة {subscriptionLimits.plan.name}
                                             </p>
@@ -117,20 +125,20 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                             <div className="p-6">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0  ml-2 mr-2">
-                                        <div className={`flex items-center justify-center h-12 w-12 rounded-md ${subscriptionLimits.has_active_subscription ? 'bg-green-100' : 'bg-red-100'
+                                        <div className={`flex items-center justify-center h-12 w-12 rounded-md ${subscriptionLimits?.has_active_subscription ? 'bg-green-100' : 'bg-red-100'
                                             }`}>
-                                            <svg className={`h-6 w-6 ${subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
+                                            <svg className={`h-6 w-6 ${subscriptionLimits?.has_active_subscription ? 'text-green-600' : 'text-red-600'
                                                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>                        <p className={`text-sm font-medium ${subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
+                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>                        <p className={`text-sm font-medium ${subscriptionLimits?.has_active_subscription ? 'text-green-600' : 'text-red-600'
                                             }`}>
-                                            {subscriptionLimits.has_active_subscription ? 'نشط' : 'غير نشط'}
+                                            {subscriptionLimits?.has_active_subscription ? 'نشط' : 'غير نشط'}
                                         </p>
-                                        {subscriptionLimits.plan ? (
+                                        {subscriptionLimits?.plan ? (
                                             <p className="text-sm text-gray-500">خطة {subscriptionLimits.plan.name}</p>
                                         ) : (
                                             <p className="text-sm text-gray-500">لا توجد خطة</p>
@@ -159,7 +167,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                             {canAddStudents ? 'متاح' : 'تم الوصول للحد الأقصى'}
                                         </p>
                                         <p className="text-sm text-gray-500">
-                                            {subscriptionLimits.max_students - currentStudentCount} مقعد متبقي
+                                            {(subscriptionLimits?.max_students || 0) - currentStudentCount} مقعد متبقي
                                         </p>
                                     </div>
                                 </div>

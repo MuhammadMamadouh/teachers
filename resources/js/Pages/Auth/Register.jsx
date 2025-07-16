@@ -16,6 +16,9 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
         subject: '',
         governorate_id: '',
         plan_id: selectedPlan ? selectedPlan.id.toString() : '',
+        center_name: '',
+        center_type: 'individual',
+        center_address: '',
     });
     const submit = (e) => {
         e.preventDefault();
@@ -194,6 +197,69 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
                                     className="mt-2"
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Center Information Section */}
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <Users className="w-5 h-5 text-green-600 ml-2" />
+                            معلومات المركز التعليمي
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel htmlFor="center_name" value="اسم المركز" />
+                                <TextInput
+                                    id="center_name"
+                                    name="center_name"
+                                    value={data.center_name}
+                                    className="mt-1 block w-full"
+                                    onChange={(e) => setData('center_name', e.target.value)}
+                                    required
+                                    placeholder="مثال: مركز أحمد للرياضيات"
+                                />
+                                <InputError message={errors.center_name} className="mt-2" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="center_type" value="نوع المركز" />
+                                <select
+                                    id="center_type"
+                                    name="center_type"
+                                    value={data.center_type}
+                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-right"
+                                    onChange={(e) => setData('center_type', e.target.value)}
+                                    required
+                                >
+                                    <option value="individual">معلم فردي</option>
+                                    <option value="organization">مؤسسة تعليمية</option>
+                                </select>
+                                <InputError message={errors.center_type} className="mt-2" />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <InputLabel htmlFor="center_address" value="عنوان المركز" />
+                                <TextInput
+                                    id="center_address"
+                                    name="center_address"
+                                    value={data.center_address}
+                                    className="mt-1 block w-full"
+                                    onChange={(e) => setData('center_address', e.target.value)}
+                                    placeholder="مثال: الرياض، المملكة العربية السعودية"
+                                />
+                                <InputError message={errors.center_address} className="mt-2" />
+                            </div>
+                        </div>
+
+                        <div className="mt-4 p-3 bg-green-100 rounded-lg">
+                            <p className="text-sm text-green-800">
+                                <strong>نصيحة:</strong> {' '}
+                                {data.center_type === 'individual' 
+                                    ? 'للمعلمين الفرديين، يمكنك استخدام اسمك مع المادة (مثل: مركز أحمد للرياضيات)'
+                                    : 'للمؤسسات التعليمية، استخدم اسم المركز أو المدرسة الرسمي'
+                                }
+                            </p>
                         </div>
                     </div>
 

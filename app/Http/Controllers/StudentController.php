@@ -17,16 +17,37 @@ class StudentController extends Controller
     /**
      * Display a listing of the students.
      */
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
         /** @var User $user */
         $user = Auth::user();
 
-        // For assistants, use the teacher's students
-        $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
+        // Ensure user belongs to a center
+        if (!$user->center_id) {
+            return redirect()->route('center.setup');
+        }
 
-        // Build the query with search filters
-        $query = Student::where('user_id', $teacherId)->with(['group', 'academicYear']);
+        // Determine which students to show based on user role and permissions
+        if ($user->hasRole('admin')) {
+            // Admins can see all students in their center
+            $query = Student::where('center_id', $user->center_id);
+        } elseif ($user->hasRole('teacher')) {
+            // Teachers can only see their own students
+            $query = Student::where('user_id', $user->id)
+                           ->where('center_id', $user->center_id);
+        } elseif ($user->hasRole('assistant')) {
+            // Assistants can see their teacher's students
+            $teacherId = $user->teacher_id;
+            $query = Student::where('user_id', $teacherId)
+                           ->where('center_id', $user->center_id);
+        } else {
+            // Fallback for legacy users
+            $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
+            $query = Student::where('user_id', $teacherId)
+                           ->where('center_id', $user->center_id);
+        }
+
+        $query->with(['group', 'academicYear']);
 
         // Search by name
         if ($request->filled('search')) {
@@ -53,7 +74,7 @@ class StudentController extends Controller
         }
 
         $students = $query->orderBy('name')->get();
-        $groups = Group::where('user_id', $teacherId)->select('id', 'name')->get();
+        $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
         $academicYears = \App\Models\AcademicYear::all();
 
         $subscriptionLimits = $user->getSubscriptionLimits();
@@ -87,7 +108,11 @@ class StudentController extends Controller
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
 
-        $groups = Group::where('user_id', $user->id)->where('is_active', true)->with('academicYear')->get();
+        $groups = Group::where('user_id', $user->id)
+                      ->where('center_id', $user->center_id)
+                      ->where('is_active', true)
+                      ->with('academicYear')
+                      ->get();
         $academicYears = \App\Models\AcademicYear::all();
 
         return Inertia::render('Students/Create', [
@@ -132,8 +157,9 @@ class StudentController extends Controller
             }
         }
 
-        // Add user_id to the validated data
+        // Add user_id and center_id to the validated data
         $validated['user_id'] = $user->id;
+        $validated['center_id'] = $user->center_id;
 
         // Remove redirect_to from validated data before creating student
         $redirectTo = $validated['redirect_to'] ?? 'index';

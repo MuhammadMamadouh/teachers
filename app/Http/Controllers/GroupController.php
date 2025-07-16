@@ -21,7 +21,33 @@ class GroupController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Group::where('user_id', Auth::id())->with(['schedules', 'assignedStudents', 'academicYear']);
+        $user = Auth::user();
+
+        // Ensure user belongs to a center
+        if (!$user->center_id) {
+            return redirect()->route('center.setup');
+        }
+
+        // Determine which groups to show based on user role and permissions
+        if ($user->hasRole('admin')) {
+            // Admins can see all groups in their center
+            $query = Group::where('center_id', $user->center_id);
+        } elseif ($user->hasRole('teacher')) {
+            // Teachers can only see their own groups
+            $query = Group::where('user_id', $user->id)
+                          ->where('center_id', $user->center_id);
+        } elseif ($user->hasRole('assistant')) {
+            // Assistants can see their teacher's groups
+            $teacherId = $user->teacher_id;
+            $query = Group::where('user_id', $teacherId)
+                          ->where('center_id', $user->center_id);
+        } else {
+            // Fallback for legacy users
+            $query = Group::where('user_id', $user->id)
+                          ->where('center_id', $user->center_id);
+        }
+
+        $query->with(['schedules', 'assignedStudents', 'academicYear']);
 
         // Apply search filter
         if ($request->filled('search')) {
@@ -68,13 +94,20 @@ class GroupController extends Controller
      */
     public function store(StoreGroupRequest $request)
     {
+        $user = Auth::user();
+
         $group = Group::create(array_merge(
             $request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id']),
-            ['user_id' => Auth::id()]
+            [
+                'user_id' => $user->id,
+                'center_id' => $user->center_id,
+            ]
         ));
 
         foreach ($request->schedules as $schedule) {
-            $group->schedules()->create($schedule);
+            $group->schedules()->create(array_merge($schedule, [
+                'center_id' => $user->center_id,
+            ]));
         }
 
         return redirect()->route('groups.index')->with('success', 'تم إنشاء المجموعة بنجاح');
@@ -87,10 +120,22 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
-        // Ensure the group belongs to the authenticated user or their teacher
-        if ($group->user_id !== $user->id &&
-            ($user->type !== 'assistant' || $group->user_id !== $user->teacher_id)) {
+        // Ensure the group belongs to the user's center
+        if ($group->center_id !== $user->center_id) {
             abort(403);
+        }
+
+        // Additional role-based authorization
+        if ($user->hasRole('teacher') && $group->user_id !== $user->id) {
+            abort(403);
+        } elseif ($user->hasRole('assistant') && $group->user_id !== $user->teacher_id) {
+            abort(403);
+        } elseif (!$user->hasRole(['admin', 'teacher', 'assistant'])) {
+            // Legacy check for users without roles
+            if ($group->user_id !== $user->id &&
+                ($user->type !== 'assistant' || $group->user_id !== $user->teacher_id)) {
+                abort(403);
+            }
         }
 
         $group->load(['schedules', 'assignedStudents', 'specialSessions', 'academicYear']);

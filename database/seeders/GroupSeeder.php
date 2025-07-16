@@ -37,7 +37,7 @@ class GroupSeeder extends Seeder
         // Create sample groups with different payment types
         $groups = [
             [
-                'name' => 'مجموعة الصباح - شهري',
+                'name' => 'مجموعة أبو حنان - شهري',
                 'description' => 'مجموعة طلاب الفترة الصباحية - دفع شهري',
                 'max_students' => 15,
                 'is_active' => true,
@@ -51,7 +51,7 @@ class GroupSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'مجموعة المساء - بالجلسة',
+                'name' => 'مجموعة أبو علاء - بالجلسة',
                 'description' => 'مجموعة طلاب الفترة المسائية - دفع بالجلسة',
                 'max_students' => 20,
                 'is_active' => true,
@@ -82,7 +82,7 @@ class GroupSeeder extends Seeder
             $schedules = $groupData['schedules'];
             unset($groupData['schedules']);
 
-            $group = Group::create(array_merge($groupData, ['user_id' => $user->id]));
+            $group = Group::create(array_merge($groupData, ['user_id' => $user->id, 'center_id' => $user->center_id]));
 
             foreach ($schedules as $schedule) {
                 $group->schedules()->create($schedule);
@@ -107,12 +107,23 @@ class GroupSeeder extends Seeder
                 'academic_year_id' => $academicYear->id,
             ]));
 
+
+
             // Assign each student to a random group
             if ($createdGroups->isNotEmpty()) {
                 $randomGroup = $createdGroups->random();
 
                 // Update student to belong to this group
                 $student->update(['group_id' => $randomGroup->id]);
+
+                // seed students with factory
+                Student::factory(900)->create([
+                    'user_id' => $user->id,
+                    'group_id' => $randomGroup->id,
+                    'center_id' => $user->center_id,
+                    'academic_year_id' => $academicYear->id,
+                ]);
+                
 
                 // Create sample payment records based on payment type
                 if ($randomGroup->payment_type === 'monthly') {

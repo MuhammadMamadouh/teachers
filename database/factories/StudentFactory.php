@@ -42,6 +42,8 @@ class StudentFactory extends Factory
             'guardian_phone' => '05' . $this->faker->numerify('########'),
             'academic_year_id' => AcademicYear::factory(),
             'group_id' => Group::factory(),
+            'center_id' => $this->faker->randomElement(User::pluck('center_id')->toArray()),
+            'level' => $this->faker->randomElement(['ابتدائي', 'إعدادي', 'ثانوي']),
         ];
     }
 }

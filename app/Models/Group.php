@@ -81,6 +81,14 @@ class Group extends Model
     }
 
     /**
+     * Get the teacher that owns this group (alias for user relationship).
+     */
+    public function teacher(): BelongsTo
+    {
+        return $this->user();
+    }
+
+    /**
      * Get the academic year that the group belongs to.
      */
     public function academicYear(): BelongsTo

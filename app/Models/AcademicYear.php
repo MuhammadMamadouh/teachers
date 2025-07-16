@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\EducationLevel;
 
 class AcademicYear extends Model
 {
@@ -14,6 +15,10 @@ class AcademicYear extends Model
         'name_ar',
         'code',
         'level',
+    ];
+
+    protected $casts = [
+        'level' => EducationLevel::class,
     ];
 
     /**

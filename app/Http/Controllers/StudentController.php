@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Group;
 use App\Models\Student;
 use App\Models\User;
+use App\Enums\EducationLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,7 +81,13 @@ class StudentController extends Controller
             });
         }
 
-        $students = $query->orderBy('name')->get();
+        // Filter by level
+        if ($request->filled('level')) {
+            $query->where('level', $request->input('level'));
+        }
+
+        // Apply pagination with 20 students per page
+        $students = $query->orderBy('name')->paginate(20)->withQueryString();
         $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
         $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
 
@@ -133,6 +140,7 @@ class StudentController extends Controller
                 'group_id' => $request->input('group_id', ''),
                 'academic_year_id' => $request->input('academic_year_id', ''),
                 'teacher_id' => $request->input('teacher_id', ''),
+                'level' => $request->input('level', ''),
             ],
         ]);
     }
@@ -150,11 +158,11 @@ class StudentController extends Controller
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
 
-        $groups = Group::where('user_id', $user->id)
-                      ->where('center_id', $user->center_id)
+        $groups = Group::where('center_id', $user->center_id)
                       ->where('is_active', true)
                       ->with(['academicYear', 'teacher'])
                       ->get();
+                    //   dd($groups->toArray());
         $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
         
         // Get teachers for the center
@@ -193,6 +201,7 @@ class StudentController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'guardian_phone' => 'nullable|string|max:20',
+            'level' => ['required', 'string', 'in:' . implode(',', EducationLevel::values())],
             'academic_year_id' => 'required|exists:academic_years,id',
             'group_id' => 'nullable|exists:groups,id',
             'redirect_to' => 'nullable|string|in:create,index', // Add redirect option
@@ -314,6 +323,7 @@ class StudentController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'guardian_phone' => 'required|string|max:20',
+            'level' => ['required', 'string', 'in:' . implode(',', EducationLevel::values())],
             'academic_year_id' => 'required|exists:academic_years,id',
             'group_id' => 'nullable|exists:groups,id',
         ]);

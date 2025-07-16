@@ -156,8 +156,6 @@ class PaymentController extends Controller
             return response()->json(['error' => 'هذه المجموعة لا تستخدم نظام الدفع الشهري'], 400);
         }
 
-
-
         $relatedDate = Carbon::createFromDate($request->year, $request->month, 1);
         $paymentsCreated = 0;
 
@@ -184,6 +182,66 @@ class PaymentController extends Controller
 
         return response()->json([
             'message' => "تم إنشاء {$paymentsCreated} دفعة جديدة",
+            'payments_created' => $paymentsCreated,
+        ]);
+    }
+
+    /**
+     * Generate per-session payments for a group
+     */
+    public function generateSessionPayments(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required|exists:groups,id',
+            'session_date' => 'required|date',
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+        ]);
+
+        $user = Auth::user();
+        $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
+
+        $group = Group::where('user_id', $teacherId)
+            ->where('id', $request->group_id)
+            ->with('assignedStudents')
+            ->firstOrFail();
+
+        if ($group->payment_type !== 'per_session') {
+            return response()->json(['error' => 'هذه المجموعة لا تستخدم نظام الدفع بالجلسة'], 400);
+        }
+
+        $sessionDate = Carbon::parse($request->session_date);
+        $paymentsCreated = 0;
+
+        DB::transaction(function () use ($group, $sessionDate, $request, &$paymentsCreated) {
+            foreach ($request->student_ids as $studentId) {
+                // Verify student belongs to this group
+                $student = $group->assignedStudents->firstWhere('id', $studentId);
+                if (!$student) {
+                    continue;
+                }
+
+                $payment = Payment::firstOrCreate(
+                    [
+                        'group_id' => $group->id,
+                        'student_id' => $studentId,
+                        'related_date' => $sessionDate,
+                    ],
+                    [
+                        'payment_type' => 'per_session',
+                        'amount' => $group->student_price,
+                        'is_paid' => false,
+                    ]
+                );
+
+                if ($payment->wasRecentlyCreated) {
+                    $paymentsCreated++;
+                }
+            }
+        });
+
+        return response()->json([
+            'message' => "تم إنشاء {$paymentsCreated} دفعة جديدة للجلسة",
             'payments_created' => $paymentsCreated,
         ]);
     }

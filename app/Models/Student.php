@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\EducationLevel;
 
 class Student extends Model
 {
@@ -19,6 +20,10 @@ class Student extends Model
         'guardian_phone',
         'level',
         'academic_year_id',
+    ];
+
+    protected $casts = [
+        'level' => EducationLevel::class,
     ];
 
     /**

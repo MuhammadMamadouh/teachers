@@ -22,8 +22,11 @@ import {
     CheckCircle, 
     XCircle,
     Save,
-    Search,
     BarChart3,
+    Filter,
+    Calendar,
+    ChevronDown,
+    ChevronUp,
 } from 'lucide-react';
 import axios from 'axios';
 import { successAlert, errorAlert, infoAlert } from '@/utils/sweetAlert';
@@ -45,6 +48,9 @@ export default function Index() {
     const [paymentsData, setPaymentsData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [dateGrouping, setDateGrouping] = useState('month'); // 'day', 'week', 'month'
+    const [paymentStatusFilter, setPaymentStatusFilter] = useState('all'); // 'all', 'paid', 'unpaid'
+    const [expandedGroups, setExpandedGroups] = useState({});
 
     const years = [];
     for (let year = 2020; year <= 2030; year++) {
@@ -132,6 +138,116 @@ export default function Index() {
             return <Badge className="bg-green-600 text-green-800">مدفوع</Badge>;
         }
         return <Badge variant="secondary" className="bg-red-100 text-red-800">غير مدفوع</Badge>;
+    };
+
+    // Group payments by date periods
+    const groupPaymentsByDate = (payments) => {
+        if (!payments || payments.length === 0) return {};
+        
+        const grouped = {};
+        
+        payments.forEach(payment => {
+            const date = new Date(payment.related_date);
+            let key;
+            
+            switch (dateGrouping) {
+                case 'day':
+                    key = date.toISOString().split('T')[0];
+                    break;
+                case 'week': {
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    key = `${weekStart.toISOString().split('T')[0]}-week`;
+                    break;
+                }
+                case 'month':
+                default:
+                    key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    break;
+            }
+            
+            if (!grouped[key]) {
+                grouped[key] = [];
+            }
+            grouped[key].push(payment);
+        });
+        
+        return grouped;
+    };
+
+    // Filter payments by status
+    const filterPaymentsByStatus = (payments) => {
+        if (!payments || paymentStatusFilter === 'all') return payments;
+        
+        return payments.filter(payment => {
+            if (paymentStatusFilter === 'paid') return payment.is_paid;
+            if (paymentStatusFilter === 'unpaid') return !payment.is_paid;
+            return true;
+        });
+    };
+
+    // Get formatted date range label
+    const getDateRangeLabel = (key) => {
+        if (key.includes('-week')) {
+            const weekStart = new Date(key.replace('-week', ''));
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            return `الأسبوع من ${weekStart.toLocaleDateString('ar-EG')} إلى ${weekEnd.toLocaleDateString('ar-EG')}`;
+        }
+        
+        if (key.includes('-')) {
+            const [year, month] = key.split('-');
+            const date = new Date(year, month - 1);
+            return date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
+        }
+        
+        return new Date(key).toLocaleDateString('ar-EG');
+    };
+
+    // Quick date range setters
+    const setQuickDateRange = (range) => {
+        const now = new Date();
+        let start, end;
+        
+        switch (range) {
+            case 'today':
+                start = end = now.toISOString().split('T')[0];
+                break;
+            case 'yesterday': {
+                const yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                start = end = yesterday.toISOString().split('T')[0];
+                break;
+            }
+            case 'this_week': {
+                start = new Date(now);
+                start.setDate(now.getDate() - now.getDay());
+                end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                start = start.toISOString().split('T')[0];
+                end = end.toISOString().split('T')[0];
+                break;
+            }
+            case 'this_month': {
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                start = start.toISOString().split('T')[0];
+                end = end.toISOString().split('T')[0];
+                break;
+            }
+            case 'last_month': {
+                start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                end = new Date(now.getFullYear(), now.getMonth(), 0);
+                start = start.toISOString().split('T')[0];
+                end = end.toISOString().split('T')[0];
+                break;
+            }
+            default:
+                return;
+        }
+        
+        setStartDate(start);
+        setEndDate(end);
     };
 
     const generateMonthlyPayments = async () => {
@@ -222,7 +338,7 @@ export default function Index() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-right">
-                                <Search className="h-5 w-5" />
+                                <Filter className="h-5 w-5" />
                                 فلترة المدفوعات
                             </CardTitle>
                         </CardHeader>
@@ -277,6 +393,86 @@ export default function Index() {
                                     </Button>
                                 </div>
                             </div>
+                            
+                            {/* Quick Date Range Buttons */}
+                            <div className="mt-4 pt-4 border-t">
+                                <Label className="text-sm font-medium mb-2 block">تواريخ سريعة</Label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setQuickDateRange('today')}
+                                        className="text-xs"
+                                    >
+                                        اليوم
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setQuickDateRange('yesterday')}
+                                        className="text-xs"
+                                    >
+                                        أمس
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setQuickDateRange('this_week')}
+                                        className="text-xs"
+                                    >
+                                        هذا الأسبوع
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setQuickDateRange('this_month')}
+                                        className="text-xs"
+                                    >
+                                        هذا الشهر
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setQuickDateRange('last_month')}
+                                        className="text-xs"
+                                    >
+                                        الشهر الماضي
+                                    </Button>
+                                </div>
+                            </div>
+                            
+                            {/* Filtering Options */}
+                            <div className="mt-4 pt-4 border-t">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>تجميع حسب</Label>
+                                        <Select value={dateGrouping} onValueChange={setDateGrouping}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="day">اليوم</SelectItem>
+                                                <SelectItem value="week">الأسبوع</SelectItem>
+                                                <SelectItem value="month">الشهر</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    
+                                    <div>
+                                        <Label>فلترة حسب الحالة</Label>
+                                        <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">جميع المدفوعات</SelectItem>
+                                                <SelectItem value="paid">المدفوعات المكتملة</SelectItem>
+                                                <SelectItem value="unpaid">المدفوعات المعلقة</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -323,10 +519,12 @@ export default function Index() {
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-2 text-right">
                                         <div className="flex-1">
-                                            <p className="text-sm text-gray-600 text-right">سعر الطالب</p>
+                                            <p className="text-sm text-gray-600 text-right">
+                                                {paymentsData.group.payment_type === 'monthly' ? 'سعر الشهر' : 'سعر الجلسة'}
+                                            </p>
                                             <p className="text-xl sm:text-2xl font-bold text-right">{paymentsData.group.student_price} ج.م</p>
                                             <p className="text-xs text-gray-500 text-right">
-                                                {paymentsData.group.payment_type === 'monthly' ? 'شهرياً' : 'لكل حصة'}
+                                                {paymentsData.group.payment_type === 'monthly' ? 'شهرياً' : 'لكل جلسة'}
                                             </p>
                                         </div>
                                         <DollarSign className="h-5 w-5 text-blue-500" />
@@ -344,7 +542,10 @@ export default function Index() {
                                     
                                      <CardTitle className="flex items-center gap-2 text-right">
                                         <CalendarDays className="h-5 w-5" />
-                                        المدفوعات من {paymentsData.date_range.start_date} إلى {paymentsData.date_range.end_date}
+                                        {paymentsData.group.payment_type === 'monthly' 
+                                            ? `المدفوعات الشهرية من ${paymentsData.date_range.start_date} إلى ${paymentsData.date_range.end_date}`
+                                            : `مدفوعات الجلسات من ${paymentsData.date_range.start_date} إلى ${paymentsData.date_range.end_date}`
+                                        }
                                     </CardTitle>
                                     <div className="flex gap-2">
                                         {paymentsData.group.payment_type === 'monthly' && (
@@ -359,6 +560,11 @@ export default function Index() {
                                                 <span className="sm:hidden">{saving ? 'إنشاء...' : 'إنشاء مدفوعات'}</span>
                                             </Button>
                                         )}
+                                        {paymentsData.group.payment_type === 'per_session' && (
+                                            <div className="text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-lg">
+                                                <span className="font-medium">مدفوعات الجلسات:</span> يتم إنشاؤها تلقائياً عند تسجيل الحضور
+                                            </div>
+                                        )}
                                     </div>
                                     
                                 </div>
@@ -367,99 +573,161 @@ export default function Index() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-6">
-                                    {paymentsData.student_payments.map((studentPayment, studentIndex) => (
-                                        <Card key={studentPayment.student.id} className="border-2">
-                                            <CardHeader className="pb-3">
-                                                <div className="flex justify-between items-center">
-                                                    <h3 className="text-lg font-semibold text-right">
-                                                        {studentPayment.student.name}
-                                                    </h3>
-                                                   
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {studentPayment.payments.length > 0 ? (
-                                                    <div className="space-y-3">
-                                                        {studentPayment.payments.map((payment, paymentIndex) => (
-                                                            <div key={payment.id} className="border rounded-lg p-3 bg-gray-50">                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-start text-right">
-                                                    <div className="sm:col-span-2 lg:col-span-1">
-                                                        <Label className="text-sm font-medium">التاريخ</Label>
-                                                        <p className="text-sm text-right">
-                                                            {new Date(payment.related_date).toLocaleDateString('ar-EG')}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 text-right">
-                                                            {payment.payment_type === 'monthly' ? 'شهري' : 'حصة'}
-                                                        </p>
+                                    {paymentsData.student_payments.map((studentPayment, studentIndex) => {
+                                        // Filter payments by status
+                                        const filteredPayments = filterPaymentsByStatus(studentPayment.payments);
+                                        
+                                        if (filteredPayments.length === 0) return null;
+                                        
+                                        // Group payments by date
+                                        const groupedPayments = groupPaymentsByDate(filteredPayments);
+                                        const groupKeys = Object.keys(groupedPayments).sort();
+                                        
+                                        return (
+                                            <Card key={studentPayment.student.id} className="border-2">
+                                                <CardHeader className="pb-3">
+                                                    <div className="flex justify-between items-center">
+                                                        <h3 className="text-lg font-semibold text-right">
+                                                            {studentPayment.student.name}
+                                                        </h3>
+                                                        <Badge variant="outline" className="text-xs">
+                                                            {filteredPayments.length} مدفوعة
+                                                        </Badge>
                                                     </div>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    {groupKeys.length > 0 ? (
+                                                        <div className="space-y-4">
+                                                            {groupKeys.map(groupKey => {
+                                                                const groupPayments = groupedPayments[groupKey];
+                                                                const isExpanded = expandedGroups[`${studentPayment.student.id}-${groupKey}`] !== false;
+                                                                
+                                                                return (
+                                                                    <div key={groupKey} className="border rounded-lg bg-gray-50">
+                                                                        <div
+                                                                            className="p-3 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
+                                                                            onClick={() => setExpandedGroups(prev => ({
+                                                                                ...prev,
+                                                                                [`${studentPayment.student.id}-${groupKey}`]: !isExpanded
+                                                                            }))}
+                                                                        >
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Calendar className="h-4 w-4" />
+                                                                                <span className="font-medium text-sm">
+                                                                                    {getDateRangeLabel(groupKey)}
+                                                                                </span>
+                                                                                <Badge variant="secondary" className="text-xs">
+                                                                                    {groupPayments.length} مدفوعة
+                                                                                </Badge>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="text-sm font-semibold">
+                                                                                    {groupPayments.reduce((sum, p) => sum + p.amount, 0)} ج.م
+                                                                                </span>
+                                                                                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                        {isExpanded && (
+                                                                            <div className="border-t bg-white">
+                                                                                <div className="space-y-2 p-3">
+                                                                                    {groupPayments.map(payment => {
+                                                                                        const paymentIndex = studentPayment.payments.findIndex(p => p.id === payment.id);
+                                                                                        
+                                                                                        return (
+                                                                                            <div key={payment.id} className="border rounded-lg p-3 bg-gray-50">
+                                                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-start text-right">
+                                                                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                                                                        <Label className="text-sm font-medium">
+                                                                                                            {paymentsData.group.payment_type === 'monthly' ? 'الشهر' : 'تاريخ الجلسة'}
+                                                                                                        </Label>
+                                                                                                        <p className="text-sm text-right">
+                                                                                                            {paymentsData.group.payment_type === 'monthly' 
+                                                                                                                ? new Date(payment.related_date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' })
+                                                                                                                : new Date(payment.related_date).toLocaleDateString('ar-EG')
+                                                                                                            }
+                                                                                                        </p>
+                                                                                                        <p className="text-xs text-gray-500 text-right">
+                                                                                                            {payment.payment_type === 'monthly' ? 'مدفوع شهري' : 'مدفوع لجلسة'}
+                                                                                                        </p>
+                                                                                                    </div>
 
-                                                    <div className="sm:col-span-2 lg:col-span-1">
-                                                        <Label className="text-sm font-medium">المبلغ</Label>
-                                                        <p className="text-sm font-bold text-right">
-                                                            {payment.amount} ج.م
-                                                        </p>
-                                                    </div>
+                                                                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                                                                        <Label className="text-sm font-medium">المبلغ</Label>
+                                                                                                        <p className="text-sm font-bold text-right">
+                                                                                                            {payment.amount} ج.م
+                                                                                                        </p>
+                                                                                                    </div>
 
-                                                    <div className="sm:col-span-2 lg:col-span-1">
-                                                        <Label className="text-sm font-medium">حالة الدفع</Label>
-                                                        <div className="flex items-center gap-2 mt-1" dir="rtl">
-                                                            <Label htmlFor={`paid-${payment.id}`} className="mr-0">
-                                                                مدفوع
-                                                            </Label>
-                                                            <Checkbox
-                                                                id={`paid-${payment.id}`}
-                                                                checked={payment.is_paid}
-                                                                onCheckedChange={(checked) => updatePayment(studentIndex, paymentIndex, 'is_paid', checked)}
-                                                            />
+                                                                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                                                                        <Label className="text-sm font-medium">حالة الدفع</Label>
+                                                                                                        <div className="flex items-center gap-2 mt-1" dir="rtl">
+                                                                                                            <Label htmlFor={`paid-${payment.id}`} className="mr-0">
+                                                                                                                مدفوع
+                                                                                                            </Label>
+                                                                                                            <Checkbox
+                                                                                                                id={`paid-${payment.id}`}
+                                                                                                                checked={payment.is_paid}
+                                                                                                                onCheckedChange={(checked) => updatePayment(studentIndex, paymentIndex, 'is_paid', checked)}
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                        <div className="mt-1">
+                                                                                                            {getPaymentStatus(payment)}
+                                                                                                        </div>
+                                                                                                    </div>
+
+                                                                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                                                                        <Label className="text-sm font-medium">تاريخ الدفع</Label>
+                                                                                                        <Input
+                                                                                                            type="datetime-local"
+                                                                                                            value={payment.paid_at ? new Date(payment.paid_at).toISOString().slice(0, 16) : ''}
+                                                                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'paid_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
+                                                                                                            disabled={!payment.is_paid}
+                                                                                                            className="text-right text-sm mt-1"
+                                                                                                        />
+                                                                                                    </div>
+
+                                                                                                    <div className="sm:col-span-2 lg:col-span-1">
+                                                                                                        <Label className="text-sm font-medium">ملاحظات</Label>
+                                                                                                        <Textarea
+                                                                                                            placeholder="ملاحظات..."
+                                                                                                            className="resize-none h-16 text-right text-sm mt-1"
+                                                                                                            value={payment.notes || ''}
+                                                                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'notes', e.target.value)}
+                                                                                                        />
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        );
+                                                                                    })}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
-                                                        <div className="mt-1">
-                                                            {getPaymentStatus(payment)}
+                                                    ) : (
+                                                        <div className="text-center py-6 text-gray-500">
+                                                            <DollarSign className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                                                            <p className="text-sm mb-3">لا توجد مدفوعات لهذا الطالب في الفترة المحددة</p>
+                                                            {paymentsData.group.payment_type === 'monthly' && (
+                                                                <p className="text-xs text-gray-400 mb-3">
+                                                                    يمكنك إنشاء مدفوعات شهرية للطلاب باستخدام الزر &quot;إنشاء مدفوعات شهرية&quot; أعلاه
+                                                                </p>
+                                                            )}
+                                                            {paymentsData.group.payment_type === 'per_session' && (
+                                                                <div className="text-xs text-gray-400 space-y-1">
+                                                                    <p>المدفوعات يتم إنشاؤها تلقائياً عند تسجيل حضور الطالب في الجلسات</p>
+                                                                    <p>إذا لم يحضر الطالب أي جلسة، فلن تظهر أي مدفوعات له</p>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    </div>
-
-                                                    <div className="sm:col-span-2 lg:col-span-1">
-                                                        <Label className="text-sm font-medium">تاريخ الدفع</Label>
-                                                        <Input
-                                                            type="datetime-local"
-                                                            value={payment.paid_at ? new Date(payment.paid_at).toISOString().slice(0, 16) : ''}
-                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'paid_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
-                                                            disabled={!payment.is_paid}
-                                                            className="text-right text-sm mt-1"
-                                                        />
-                                                    </div>
-
-                                                    <div className="sm:col-span-2 lg:col-span-1">
-                                                        <Label className="text-sm font-medium">ملاحظات</Label>
-                                                        <Textarea
-                                                            placeholder="ملاحظات..."
-                                                            className="resize-none h-16 text-right text-sm mt-1"
-                                                            value={payment.notes || ''}
-                                                            onChange={(e) => updatePayment(studentIndex, paymentIndex, 'notes', e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-center py-6 text-gray-500">
-                                                        <DollarSign className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                                                        <p className="text-sm mb-3">لا توجد مدفوعات لهذا الطالب في الفترة المحددة</p>
-                                                        {paymentsData.group.payment_type === 'monthly' && (
-                                                            <p className="text-xs text-gray-400 mb-3">
-                                                                يمكنك إنشاء مدفوعات شهرية للطلاب باستخدام الزر &quot;إنشاء مدفوعات شهرية&quot; أعلاه
-                                                            </p>
-                                                        )}
-                                                        {paymentsData.group.payment_type === 'per_session' && (
-                                                            <p className="text-xs text-gray-400">
-                                                                سيتم إنشاء المدفوعات تلقائياً عند تسجيل حضور الطالب في جلسة
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                            
-                                        </Card>
-                                    ))}
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    }).filter(Boolean)}
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end">

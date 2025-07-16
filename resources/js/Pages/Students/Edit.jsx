@@ -10,17 +10,31 @@ export default function Edit({ student, groups, academicYears, teachers }) {
         name: student.name,
         phone: student.phone,
         guardian_phone: student.guardian_phone,
+        level: student.level || '',
         academic_year_id: student.academic_year_id || '',
         teacher_id: student.group?.user_id || '',
         group_id: student.group_id || '',
     });
 
-    // Filter groups based on selected academic year and teacher
+    // Filter academic years based on selected level
+    const filteredAcademicYears = data.level && academicYears[data.level] ? academicYears[data.level] : [];
+
+    // Filter groups based on selected academic year, teacher, and level
     const filteredGroups = groups ? groups.filter(group => {
         const academicYearMatch = !data.academic_year_id || group.academic_year_id == data.academic_year_id;
         const teacherMatch = !data.teacher_id || group.user_id == data.teacher_id;
-        return academicYearMatch && teacherMatch;
+        const levelMatch = !data.level || group.level === data.level;
+        return academicYearMatch && teacherMatch && levelMatch;
     }) : [];
+
+    const handleLevelChange = (level) => {
+        setData(prevData => ({
+            ...prevData,
+            level: level,
+            academic_year_id: '', // Reset academic year when level changes
+            group_id: '' // Reset group when level changes
+        }));
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -84,6 +98,25 @@ export default function Edit({ student, groups, academicYears, teachers }) {
                                     </div>
 
                                     <div>
+                                        <InputLabel htmlFor="level" value="المستوى التعليمي" />
+                                        <select
+                                            id="level"
+                                            name="level"
+                                            value={data.level}
+                                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            onChange={(e) => handleLevelChange(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">اختر المستوى</option>
+                                            <option value="ابتدائي">ابتدائي</option>
+                                            <option value="إعدادي">إعدادي</option>
+                                            <option value="ثانوي">ثانوي</option>
+                                            <option value="جامعي">جامعي</option>
+                                        </select>
+                                        <InputError message={errors.level} className="mt-2" />
+                                    </div>
+
+                                    <div>
                                         <InputLabel htmlFor="academic_year_id" value="الصف الدراسي" />
                                         <select
                                             id="academic_year_id"
@@ -98,19 +131,23 @@ export default function Edit({ student, groups, academicYears, teachers }) {
                                                 }
                                             }}
                                             required
+                                            disabled={!data.level}
                                         >
-                                            <option value="">اختر الصف الدراسي</option>
-                                            {academicYears && Object.entries(academicYears).map(([level, years]) => (
-                                                <optgroup key={level} label={level}>
-                                                    {years.map((year) => (
-                                                        <option key={year.id} value={year.id}>
-                                                            {year.name_ar}
-                                                        </option>
-                                                    ))}
-                                                </optgroup>
+                                            <option value="">
+                                                {data.level ? 'اختر الصف الدراسي' : 'اختر المستوى التعليمي أولاً'}
+                                            </option>
+                                            {filteredAcademicYears.map((year) => (
+                                                <option key={year.id} value={year.id}>
+                                                    {year.name_ar}
+                                                </option>
                                             ))}
                                         </select>
                                         <InputError message={errors.academic_year_id} className="mt-2" />
+                                        {data.level && filteredAcademicYears.length === 0 && (
+                                            <div className="text-amber-600 text-sm mt-1">
+                                                لا توجد صفوف دراسية متاحة لهذا المستوى
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>

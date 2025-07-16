@@ -2,19 +2,49 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
-export default function Edit({ group, academicYears }) {
+export default function Edit({ group, academicYears, teachers, defaultTeacherId, centerType }) {
     const { data, setData, put, processing, errors } = useForm({
         name: group.name || '',
+        subject: group.subject || '',
+        level: group.level || '',
         description: group.description || '',
         max_students: group.max_students || 10,
         is_active: group.is_active,
         payment_type: group.payment_type || 'monthly',
         student_price: group.student_price || 0,
         academic_year_id: group.academic_year_id || '',
+        teacher_id: defaultTeacherId || group.user_id || '',
         schedules: []
     });
 
     const [selectedDays, setSelectedDays] = useState({});
+    const [filteredAcademicYears, setFilteredAcademicYears] = useState([]);
+
+    // Handle level change and filter academic years
+    const handleLevelChange = (level) => {
+        setData('level', level);
+        
+        // Only reset academic year if it doesn't match the new level
+        if (level && academicYears && academicYears[level]) {
+            setFilteredAcademicYears(academicYears[level]);
+            
+            // Check if current academic year is still valid for the new level
+            const currentAcademicYear = academicYears[level].find(year => year.id.toString() === data.academic_year_id);
+            if (!currentAcademicYear) {
+                setData('academic_year_id', '');
+            }
+        } else {
+            setFilteredAcademicYears([]);
+            setData('academic_year_id', '');
+        }
+    };
+
+    // Initialize filtered academic years on component mount
+    useEffect(() => {
+        if (data.level && academicYears && academicYears[data.level]) {
+            setFilteredAcademicYears(academicYears[data.level]);
+        }
+    }, [data.level, academicYears]);
 
     const days = [
         { value: 0, label: 'الأحد' },
@@ -104,6 +134,81 @@ export default function Edit({ group, academicYears }) {
                                     {errors.name && <div className="text-red-600 text-sm mt-1">{errors.name}</div>}
                                 </div>
 
+                                {/* Subject */}
+                                <div>
+                                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                                        المادة
+                                    </label>
+                                    <input
+                                        id="subject"
+                                        type="text"
+                                        value={data.subject}
+                                        onChange={(e) => setData('subject', e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="مثال: الرياضيات، العلوم، اللغة العربية"
+                                    />
+                                    {errors.subject && <div className="text-red-600 text-sm mt-1">{errors.subject}</div>}
+                                </div>
+
+                                {/* Level */}
+                                <div>
+                                    <label htmlFor="level" className="block text-sm font-medium text-gray-700">
+                                        المستوى التعليمي *
+                                    </label>
+                                    <select
+                                        id="level"
+                                        value={data.level}
+                                        onChange={(e) => handleLevelChange(e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        required
+                                    >
+                                        <option value="">اختر المستوى</option>
+                                        <option value="ابتدائي">ابتدائي</option>
+                                        <option value="إعدادي">إعدادي</option>
+                                        <option value="ثانوي">ثانوي</option>
+                                        <option value="جامعي">جامعي</option>
+                                    </select>
+                                    {errors.level && <div className="text-red-600 text-sm mt-1">{errors.level}</div>}
+                                </div>
+
+                                {/* Teacher Selection - Only show if multiple teachers available */}
+                                {teachers && teachers.length > 1 && (
+                                    <div>
+                                        <label htmlFor="teacher_id" className="block text-sm font-medium text-gray-700">
+                                            المعلم المسؤول *
+                                        </label>
+                                        <select
+                                            id="teacher_id"
+                                            value={data.teacher_id}
+                                            onChange={(e) => setData('teacher_id', e.target.value)}
+                                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            required
+                                        >
+                                            <option value="">اختر المعلم</option>
+                                            {teachers.map((teacher) => (
+                                                <option key={teacher.id} value={teacher.id}>
+                                                    {teacher.name} {teacher.subject ? `- ${teacher.subject}` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.teacher_id && <div className="text-red-600 text-sm mt-1">{errors.teacher_id}</div>}
+                                    </div>
+                                )}
+
+                                {/* Display selected teacher for individual centers */}
+                                {centerType === 'individual' && teachers && teachers.length === 1 && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            المعلم المسؤول
+                                        </label>
+                                        <div className="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200">
+                                            <p className="text-sm text-gray-900">
+                                                {teachers[0].name} {teachers[0].subject ? `- ${teachers[0].subject}` : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Description */}
                                 <div>
                                     <label htmlFor="description" className="block text-sm font-medium text-gray-700">
@@ -130,15 +235,23 @@ export default function Edit({ group, academicYears }) {
                                         onChange={(e) => setData('academic_year_id', e.target.value)}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                         required
+                                        disabled={!data.level}
                                     >
-                                        <option value="">اختر الصف الدراسي</option>
-                                        {academicYears && academicYears.map((year) => (
+                                        <option value="">
+                                            {data.level ? 'اختر الصف الدراسي' : 'اختر المستوى التعليمي أولاً'}
+                                        </option>
+                                        {filteredAcademicYears.map((year) => (
                                             <option key={year.id} value={year.id}>
                                                 {year.name_ar}
                                             </option>
                                         ))}
                                     </select>
                                     {errors.academic_year_id && <div className="text-red-600 text-sm mt-1">{errors.academic_year_id}</div>}
+                                    {data.level && filteredAcademicYears.length === 0 && (
+                                        <div className="text-amber-600 text-sm mt-1">
+                                            لا توجد صفوف دراسية متاحة لهذا المستوى
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Max Students */}

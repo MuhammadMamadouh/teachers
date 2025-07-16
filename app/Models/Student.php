@@ -17,6 +17,7 @@ class Student extends Model
         'name',
         'phone',
         'guardian_phone',
+        'level',
         'academic_year_id',
     ];
 

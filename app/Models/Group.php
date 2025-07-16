@@ -14,6 +14,8 @@ class Group extends Model
         'user_id',
         'center_id',
         'name',
+        'subject',
+        'level',
         'description',
         'max_students',
         'is_active',

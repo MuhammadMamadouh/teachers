@@ -2,11 +2,15 @@
 
 namespace Tests\Feature\Center;
 
+use App\Enums\CenterType;
 use App\Models\Center;
+use App\Models\Governorate;
 use App\Models\Plan;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Testing\WithFaker;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RegistrationWorkflowTest extends TestCase
@@ -17,13 +21,16 @@ class RegistrationWorkflowTest extends TestCase
     {
         parent::setUp();
         
-        // Create a default plan for testing
-        Plan::factory()->create([
-            'name' => 'Basic Plan',
-            'max_students' => 50,
-            'max_assistants' => 3,
-            'price' => 100,
-            'is_default' => true,
+        // Create necessary roles
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'teacher', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'assistant', 'guard_name' => 'web']);
+        
+        // Create a governorate for testing
+        Governorate::firstOrCreate([
+            'name_ar' => 'الرياض',
+            'name_en' => 'Riyadh',
+            'is_active' => true,
         ]);
     }
 
@@ -39,7 +46,7 @@ class RegistrationWorkflowTest extends TestCase
             'subject' => 'الرياضيات',
             'governorate_id' => 1,
             'center_name' => 'مركز أحمد للرياضيات',
-            'center_type' => 'individual',
+            'center_type' => CenterType::INDIVIDUAL->value,
             'center_address' => 'الرياض، المملكة العربية السعودية',
         ]);
 
@@ -92,7 +99,7 @@ class RegistrationWorkflowTest extends TestCase
             'subject' => 'إدارة تعليمية',
             'governorate_id' => 1,
             'center_name' => 'مركز النور التعليمي',
-            'center_type' => 'organization',
+            'center_type' => CenterType::ORGANIZATION->value,
             'center_address' => 'جدة، المملكة العربية السعودية',
         ]);
 

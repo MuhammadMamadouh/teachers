@@ -108,6 +108,18 @@ export default function Show({ student, recentPayments }) {
                                                     )}
                                                 </dd>
                                             </div>
+                                            <div>
+                                                <dt className="text-sm font-medium text-gray-500">المعلم</dt>
+                                                <dd className="text-sm text-gray-900">
+                                                    {student.group?.teacher ? (
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                            {student.group.teacher.name}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400">غير محدد</span>
+                                                    )}
+                                                </dd>
+                                            </div>
                                         </dl>
                                     </div>
                                 </div>

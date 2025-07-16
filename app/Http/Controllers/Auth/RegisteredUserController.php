@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\CenterType;
 use App\Http\Controllers\Controller;
 use App\Models\Center;
 use App\Models\Governorate;
@@ -42,6 +43,7 @@ class RegisteredUserController extends Controller
             'governorates' => $governorates,
             'plans' => $plans,
             'selectedPlan' => $selectedPlan,
+            'centerTypes' => CenterType::options(),
         ]);
     }
 
@@ -62,7 +64,7 @@ class RegisteredUserController extends Controller
             'governorate_id' => 'required|exists:governorates,id',
             'plan_id' => 'nullable|exists:plans,id',
             'center_name' => 'required|string|max:255',
-            'center_type' => 'required|in:individual,organization',
+            'center_type' => 'required|in:' . implode(',', array_column(CenterType::cases(), 'value')),
             'center_address' => 'nullable|string|max:255',
         ]);
 
@@ -93,7 +95,7 @@ class RegisteredUserController extends Controller
 
         // Assign roles
         $user->assignRole('admin');
-        if ($request->center_type === 'individual') {
+        if ($request->center_type === CenterType::INDIVIDUAL->value) {
             $user->assignRole('teacher');
         }
 

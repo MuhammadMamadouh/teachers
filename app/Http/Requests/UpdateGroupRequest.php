@@ -26,12 +26,15 @@ class UpdateGroupRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'level' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'max_students' => 'required|integer|min:1|max:200',
             'is_active' => 'boolean',
             'payment_type' => 'required|in:monthly,per_session',
             'student_price' => 'required|numeric|min:0|max:999999.99',
             'academic_year_id' => 'required|exists:academic_years,id',
+            'teacher_id' => 'nullable|exists:users,id',
             'schedules' => 'required|array|min:1|max:7',
             'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
             'schedules.*.start_time' => 'required|date_format:H:i',

@@ -203,6 +203,29 @@ Route::middleware('auth')->group(function () {
         Route::patch('/center/{center}', [CenterController::class, 'update'])->name('center.update');
         Route::get('/center/statistics', [CenterController::class, 'statistics'])->name('center.statistics');
         Route::get('/center/subscription/upgrade', [CenterController::class, 'subscriptionUpgrade'])->name('center.subscription.upgrade');
+        
+        // Center Dashboard Management Routes
+        Route::prefix('center/manage')->name('center.manage.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Center\CenterDashboardController::class, 'index'])->name('index');
+            Route::get('/users', [App\Http\Controllers\Center\CenterDashboardController::class, 'users'])->name('users');
+            Route::post('/users', [App\Http\Controllers\Center\CenterDashboardController::class, 'createUser'])->name('users.create');
+            Route::post('/users/invite', [App\Http\Controllers\Center\CenterDashboardController::class, 'inviteUser'])->name('users.invite');
+            Route::put('/users/{user}', [App\Http\Controllers\Center\CenterDashboardController::class, 'updateUser'])->name('users.update');
+            Route::delete('/users/{user}', [App\Http\Controllers\Center\CenterDashboardController::class, 'deleteUser'])->name('users.delete');
+            Route::get('/students', [App\Http\Controllers\Center\CenterDashboardController::class, 'students'])->name('students');
+            Route::post('/students', [App\Http\Controllers\Center\CenterDashboardController::class, 'createStudent'])->name('students.create');
+            Route::put('/students/{student}', [App\Http\Controllers\Center\CenterDashboardController::class, 'updateStudent'])->name('students.update');
+            Route::delete('/students/{student}', [App\Http\Controllers\Center\CenterDashboardController::class, 'deleteStudent'])->name('students.delete');
+            Route::get('/groups', [App\Http\Controllers\Center\CenterDashboardController::class, 'groups'])->name('groups');
+            Route::post('/groups', [App\Http\Controllers\Center\CenterDashboardController::class, 'createGroup'])->name('groups.create');
+            Route::put('/groups/{group}', [App\Http\Controllers\Center\CenterDashboardController::class, 'updateGroup'])->name('groups.update');
+            Route::delete('/groups/{group}', [App\Http\Controllers\Center\CenterDashboardController::class, 'deleteGroup'])->name('groups.delete');
+            Route::get('/subscription', [App\Http\Controllers\Center\CenterDashboardController::class, 'subscription'])->name('subscription');
+            Route::post('/subscription/upgrade', [App\Http\Controllers\Center\CenterDashboardController::class, 'upgradeSubscription'])->name('subscription.upgrade');
+            // API endpoints for dropdowns
+            Route::get('/api/teachers', [App\Http\Controllers\Center\CenterDashboardController::class, 'getTeachers'])->name('api.teachers');
+            Route::get('/api/teacher-groups', [App\Http\Controllers\Center\CenterDashboardController::class, 'getTeacherGroups'])->name('api.teacher-groups');
+        });
         Route::post('/center/subscription/upgrade', [CenterController::class, 'processSubscriptionUpgrade'])->name('center.subscription.upgrade.process');
 
         // Feedback routes (for teachers to submit feedback)

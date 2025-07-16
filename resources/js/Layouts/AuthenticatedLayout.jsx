@@ -53,97 +53,157 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <div className="hidden space-x-reverse space-x-8 sm:-my-px sm:mr-10 sm:flex">                        
                                 <NavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            لوحة التحكم
-                        </NavLink>
-                        {!user.is_admin && (
-                            <>
-                                <NavLink
-                                    href={route('students.index')}
-                                    active={route().current('students.*')}
+                                    href={route('dashboard')}
+                                    active={route().current('dashboard')}
                                 >
-                                    الطلاب
+                                    لوحة التحكم
                                 </NavLink>
-                                <NavLink
-                                    href={route('groups.index')}
-                                    active={route().current('groups.*')}
-                                >
-                                    المجموعات
-                                </NavLink>
-                                <NavLink
-                                    href={route('attendance.index')}
-                                    active={route().current('attendance.*')}
-                                >
-                                    الحضور
-                                </NavLink>
-                                <NavLink
-                                    href={route('payments.index')}
-                                    active={route().current('payments.*')}
-                                >
-                                    المدفوعات
-                                </NavLink>
-                                <NavLink
-                                    href={route('plans.index')}
-                                    active={route().current('plans.*')}
-                                >
-                                    الخطط
-                                </NavLink>
-                                <NavLink
-                                    href={route('assistants.index')}
-                                    active={route().current('assistants.*')}
-                                >
-                                    المساعدين
-                                </NavLink>
-                                <NavLink
-                                    href={route('feedback.index')}
-                                    active={route().current('feedback.*')}
-                                >
-                                    التواصل والاقتراحات
-                                </NavLink>
-                            </>
-                        )}
-                        {user.is_admin && (
-                            <>
-                                <NavLink
-                                    href={route('admin.users')}
-                                    active={route().current('admin.users')}
-                                >
-                                    موافقات المعلمين
-                                </NavLink>
-                                <NavLink
-                                    href={route('admin.teachers.index')}
-                                    active={route().current('admin.teachers.*')}
-                                >
-                                    إدارة المعلمين
-                                </NavLink>
-                                <NavLink
-                                    href={route('admin.plans.index')}
-                                    active={route().current('admin.plans.*')}
-                                >
-                                    إدارة الخطط
-                                </NavLink>
-                                <NavLink
-                                    href={route('admin.plan-upgrade-requests.index')}
-                                    active={route().current('admin.plan-upgrade-requests.*')}
-                                >
-                                    طلبات ترقية الخطط
-                                </NavLink>
-                                <NavLink
-                                    href={route('admin.reports.governorates')}
-                                    active={route().current('admin.reports.*')}
-                                >
-                                    التقارير الإدارية
-                                </NavLink>
-                                <NavLink
-                                    href={route('admin.feedback.index')}
-                                    active={route().current('admin.feedback.*')}
-                                >
-                                    إدارة التواصل والاقتراحات
-                                </NavLink>
-                            </>
-                        )}
+                                {/* Show teacher navigation for non-admin users */}
+                                {!user.is_admin && (
+                                    <>
+                                        <NavLink
+                                            href={route('students.index')}
+                                            active={route().current('students.*')}
+                                        >
+                                            الطلاب
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('groups.index')}
+                                            active={route().current('groups.*')}
+                                        >
+                                            المجموعات
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('attendance.index')}
+                                            active={route().current('attendance.*')}
+                                        >
+                                            الحضور
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('payments.index')}
+                                            active={route().current('payments.*')}
+                                        >
+                                            المدفوعات
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('plans.index')}
+                                            active={route().current('plans.*')}
+                                        >
+                                            الخطط
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('assistants.index')}
+                                            active={route().current('assistants.*')}
+                                        >
+                                            المساعدين
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('feedback.index')}
+                                            active={route().current('feedback.*')}
+                                        >
+                                            التواصل والاقتراحات
+                                        </NavLink>
+                                    </>
+                                )}
+                                {/* Show admin navigation for admin users (including center admins) */}
+                                {user.is_admin && (
+                                    <>
+                                        <NavLink
+                                            href={route('students.index')}
+                                            active={route().current('students.*')}
+                                        >
+                                            الطلاب
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('groups.index')}
+                                            active={route().current('groups.*')}
+                                        >
+                                            المجموعات
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('attendance.index')}
+                                            active={route().current('attendance.*')}
+                                        >
+                                            الحضور
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('payments.index')}
+                                            active={route().current('payments.*')}
+                                        >
+                                            المدفوعات
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('assistants.index')}
+                                            active={route().current('assistants.*')}
+                                        >
+                                            المساعدين
+                                        </NavLink>
+                                        {/* Center management links for center admins */}
+                                        {user.center_id && (
+                                            <>
+                                                <NavLink
+                                                    href={route('center.manage.index')}
+                                                    active={route().current('center.manage.*')}
+                                                >
+                                                    إدارة المركز
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('plans.index')}
+                                                    active={route().current('plans.*')}
+                                                >
+                                                    الخطط
+                                                </NavLink>
+                                            </>
+                                        )}
+                                        {/* System admin links for global admins */}
+                                        {!user.center_id && (
+                                            <>
+                                                <NavLink
+                                                    href={route('admin.users')}
+                                                    active={route().current('admin.users')}
+                                                >
+                                                    موافقات المعلمين
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('admin.teachers.index')}
+                                                    active={route().current('admin.teachers.*')}
+                                                >
+                                                    إدارة المعلمين
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('admin.plans.index')}
+                                                    active={route().current('admin.plans.*')}
+                                                >
+                                                    إدارة الخطط
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('admin.plan-upgrade-requests.index')}
+                                                    active={route().current('admin.plan-upgrade-requests.*')}
+                                                >
+                                                    طلبات ترقية الخطط
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('admin.reports.governorates')}
+                                                    active={route().current('admin.reports.*')}
+                                                >
+                                                    التقارير الإدارية
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('admin.feedback.index')}
+                                                    active={route().current('admin.feedback.*')}
+                                                >
+                                                    إدارة التواصل والاقتراحات
+                                                </NavLink>
+                                                <NavLink
+                                                    href={route('center.manage.index')}
+                                                    active={route().current('center.manage.*')}
+                                                >
+                                                    إدارة المركز
+                                                </NavLink>
+                                            </>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -253,6 +313,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             لوحة التحكم
                         </ResponsiveNavLink>
+                        {/* Show teacher navigation for non-admin users */}
                         {!user.is_admin && (
                             <>
                                 <ResponsiveNavLink
@@ -299,44 +360,103 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
                             </>
                         )}
+                        {/* Show admin navigation for admin users (including center admins) */}
                         {user.is_admin && (
                             <>
                                 <ResponsiveNavLink
-                                    href={route('admin.users')}
-                                    active={route().current('admin.users')}
+                                    href={route('students.index')}
+                                    active={route().current('students.*')}
                                 >
-                                    موافقات المعلمين
+                                    الطلاب
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
-                                    href={route('admin.teachers.index')}
-                                    active={route().current('admin.teachers.*')}
+                                    href={route('groups.index')}
+                                    active={route().current('groups.*')}
                                 >
-                                    إدارة المعلمين
+                                    المجموعات
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
-                                    href={route('admin.plans.index')}
-                                    active={route().current('admin.plans.*')}
+                                    href={route('attendance.index')}
+                                    active={route().current('attendance.*')}
                                 >
-                                    إدارة الخطط
+                                    الحضور
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
-                                    href={route('admin.plan-upgrade-requests.index')}
-                                    active={route().current('admin.plan-upgrade-requests.*')}
+                                    href={route('payments.index')}
+                                    active={route().current('payments.*')}
                                 >
-                                    طلبات ترقية الخطط
+                                    المدفوعات
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
-                                    href={route('admin.reports.governorates')}
-                                    active={route().current('admin.reports.*')}
+                                    href={route('assistants.index')}
+                                    active={route().current('assistants.*')}
                                 >
-                                    التقارير الإدارية
+                                    المساعدين
                                 </ResponsiveNavLink>
-                                <ResponsiveNavLink
-                                    href={route('admin.feedback.index')}
-                                    active={route().current('admin.feedback.*')}
-                                >
-                                    إدارة التواصل والاقتراحات
-                                </ResponsiveNavLink>
+                                {/* Center management links for center admins */}
+                                {user.center_id && (
+                                    <>
+                                        <ResponsiveNavLink
+                                            href={route('center.manage.index')}
+                                            active={route().current('center.manage.*')}
+                                        >
+                                            إدارة المركز
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('plans.index')}
+                                            active={route().current('plans.*')}
+                                        >
+                                            الخطط
+                                        </ResponsiveNavLink>
+                                    </>
+                                )}
+                                {/* System admin links for global admins */}
+                                {!user.center_id && (
+                                    <>
+                                        <ResponsiveNavLink
+                                            href={route('admin.users')}
+                                            active={route().current('admin.users')}
+                                        >
+                                            موافقات المعلمين
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('admin.teachers.index')}
+                                            active={route().current('admin.teachers.*')}
+                                        >
+                                            إدارة المعلمين
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('admin.plans.index')}
+                                            active={route().current('admin.plans.*')}
+                                        >
+                                            إدارة الخطط
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('admin.plan-upgrade-requests.index')}
+                                            active={route().current('admin.plan-upgrade-requests.*')}
+                                        >
+                                            طلبات ترقية الخطط
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('admin.reports.governorates')}
+                                            active={route().current('admin.reports.*')}
+                                        >
+                                            التقارير الإدارية
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('admin.feedback.index')}
+                                            active={route().current('admin.feedback.*')}
+                                        >
+                                            إدارة التواصل والاقتراحات
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route('center.manage.index')}
+                                            active={route().current('center.manage.*')}
+                                        >
+                                            إدارة المركز
+                                        </ResponsiveNavLink>
+                                    </>
+                                )}
                             </>
                         )}
                     </div>

@@ -6,7 +6,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { CheckCircle, Users, Star, Crown, Gift, Shield } from 'lucide-react';
 
-export default function Register({ governorates = [], plans = [], selectedPlan = null }) {
+export default function Register({ governorates = [], plans = [], selectedPlan = null, centerTypes = [] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -232,8 +232,11 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
                                     onChange={(e) => setData('center_type', e.target.value)}
                                     required
                                 >
-                                    <option value="individual">معلم فردي</option>
-                                    <option value="organization">مؤسسة تعليمية</option>
+                                    {centerTypes.map(type => (
+                                        <option key={type.value} value={type.value}>
+                                            {type.label}
+                                        </option>
+                                    ))}
                                 </select>
                                 <InputError message={errors.center_type} className="mt-2" />
                             </div>

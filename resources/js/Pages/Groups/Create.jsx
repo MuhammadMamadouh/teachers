@@ -2,19 +2,35 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Create({ academicYears }) {
+export default function Create({ academicYears, teachers, defaultTeacherId }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        subject: '',
+        level: '',
         description: '',
         max_students: 10,
         is_active: true,
         payment_type: 'monthly',
         student_price: 0,
         academic_year_id: '',
+        teacher_id: defaultTeacherId || '',
         schedules: []
     });
 
     const [selectedDays, setSelectedDays] = useState({});
+    const [filteredAcademicYears, setFilteredAcademicYears] = useState([]);
+
+    // Handle level change and filter academic years
+    const handleLevelChange = (level) => {
+        setData('level', level);
+        setData('academic_year_id', ''); // Reset academic year selection
+        
+        if (level && academicYears && academicYears[level]) {
+            setFilteredAcademicYears(academicYears[level]);
+        } else {
+            setFilteredAcademicYears([]);
+        }
+    };
 
     const days = [
         { value: 0, label: 'الأحد' },
@@ -88,6 +104,81 @@ export default function Create({ academicYears }) {
                                     {errors.name && <div className="text-red-600 text-sm mt-1 text-right">{errors.name}</div>}
                                 </div>
 
+                                {/* Subject */}
+                                <div>
+                                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 text-right">
+                                        المادة
+                                    </label>
+                                    <input
+                                        id="subject"
+                                        type="text"
+                                        value={data.subject}
+                                        onChange={(e) => setData('subject', e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
+                                        placeholder="مثال: الرياضيات، العلوم، اللغة العربية"
+                                    />
+                                    {errors.subject && <div className="text-red-600 text-sm mt-1 text-right">{errors.subject}</div>}
+                                </div>
+
+                                {/* Level */}
+                                <div>
+                                    <label htmlFor="level" className="block text-sm font-medium text-gray-700 text-right">
+                                        المستوى التعليمي *
+                                    </label>
+                                    <select
+                                        id="level"
+                                        value={data.level}
+                                        onChange={(e) => handleLevelChange(e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
+                                        required
+                                    >
+                                        <option value="">اختر المستوى</option>
+                                        <option value="ابتدائي">ابتدائي</option>
+                                        <option value="إعدادي">إعدادي</option>
+                                        <option value="ثانوي">ثانوي</option>
+                                        <option value="جامعي">جامعي</option>
+                                    </select>
+                                    {errors.level && <div className="text-red-600 text-sm mt-1 text-right">{errors.level}</div>}
+                                </div>
+
+                                {/* Teacher Selection */}
+                                <div>
+                                    <label htmlFor="teacher_id" className="block text-sm font-medium text-gray-700 text-right">
+                                        المعلم المسؤول *
+                                    </label>
+                                    
+                                    {teachers && teachers.length > 1 ? (
+                                        <select
+                                            id="teacher_id"
+                                            value={data.teacher_id}
+                                            onChange={(e) => setData('teacher_id', e.target.value)}
+                                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
+                                            required
+                                        >
+                                            <option value="">اختر المعلم</option>
+                                            {teachers.map((teacher) => (
+                                                <option key={teacher.id} value={teacher.id}>
+                                                    {teacher.name} {teacher.subject ? `- ${teacher.subject}` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : teachers && teachers.length === 1 ? (
+                                        <div className="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200">
+                                            <p className="text-sm text-gray-900 text-right">
+                                                {teachers[0].name} {teachers[0].subject ? `- ${teachers[0].subject}` : ''}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="mt-1 p-3 bg-red-50 rounded-md border border-red-200">
+                                            <p className="text-sm text-red-900 text-right">
+                                                لا يوجد معلمين متاحين
+                                            </p>
+                                        </div>
+                                    )}
+                                    
+                                    {errors.teacher_id && <div className="text-red-600 text-sm mt-1 text-right">{errors.teacher_id}</div>}
+                                </div>
+
                                 {/* Description */}
                                 <div>
                                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 text-right">
@@ -114,15 +205,23 @@ export default function Create({ academicYears }) {
                                         onChange={(e) => setData('academic_year_id', e.target.value)}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
                                         required
+                                        disabled={!data.level}
                                     >
-                                        <option value="">اختر الصف الدراسي</option>
-                                        {academicYears && academicYears.map((year) => (
+                                        <option value="">
+                                            {data.level ? 'اختر الصف الدراسي' : 'اختر المستوى التعليمي أولاً'}
+                                        </option>
+                                        {filteredAcademicYears.map((year) => (
                                             <option key={year.id} value={year.id}>
                                                 {year.name_ar}
                                             </option>
                                         ))}
                                     </select>
                                     {errors.academic_year_id && <div className="text-red-600 text-sm mt-1 text-right">{errors.academic_year_id}</div>}
+                                    {data.level && filteredAcademicYears.length === 0 && (
+                                        <div className="text-amber-600 text-sm mt-1 text-right">
+                                            لا توجد صفوف دراسية متاحة لهذا المستوى
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Max Students */}

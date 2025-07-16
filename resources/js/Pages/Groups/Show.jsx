@@ -141,6 +141,40 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                                 </span>
                                             </p>
                                         )}
+                                        
+                                        {/* Teacher Information */}
+                                        {group.teacher && (
+                                            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                <div className="flex items-center space-x-3 space-x-reverse">
+                                                    <div className="flex-shrink-0">
+                                                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-gray-900">المعلم المسؤول</p>
+                                                        <p className="text-sm text-gray-600">{group.teacher.name}</p>
+                                                        {group.teacher.subject && (
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                                التخصص: {group.teacher.subject}
+                                                            </p>
+                                                        )}
+                                                        {group.teacher.email && (
+                                                            <p className="text-xs text-gray-500">
+                                                                البريد الإلكتروني: {group.teacher.email}
+                                                            </p>
+                                                        )}
+                                                        {group.teacher.phone && (
+                                                            <p className="text-xs text-gray-500">
+                                                                الهاتف: {group.teacher.phone}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <span className={`px-3 py-1 text-sm font-medium rounded-full ${
                                         group.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -151,6 +185,22 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                 
                                 {group.description && (
                                     <p className="text-gray-600 mb-4">{group.description}</p>
+                                )}
+                                
+                                {/* Subject and Level Information */}
+                                {(group.subject || group.level) && (
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {group.subject && (
+                                            <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                                                المادة: {group.subject}
+                                            </span>
+                                        )}
+                                        {group.level && (
+                                            <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
+                                                المستوى: {group.level}
+                                            </span>
+                                        )}
+                                    </div>
                                 )}
                                 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">

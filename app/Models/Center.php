@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CenterType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,6 +36,7 @@ class Center extends Model
      */
     protected $casts = [
         'is_active' => 'boolean',
+        'type' => CenterType::class,
     ];
 
     /**
@@ -98,7 +100,7 @@ class Center extends Model
      */
     public function isIndividual(): bool
     {
-        return $this->type === 'individual';
+        return $this->type === CenterType::INDIVIDUAL;
     }
 
     /**
@@ -106,7 +108,15 @@ class Center extends Model
      */
     public function isOrganization(): bool
     {
-        return $this->type === 'organization';
+        return $this->type === CenterType::ORGANIZATION;
+    }
+
+    /**
+     * Get the center type label in Arabic.
+     */
+    public function getTypeLabel(): string
+    {
+        return $this->type->label();
     }
 
     /**

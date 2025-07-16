@@ -73,9 +73,49 @@ class StudentController extends Controller
             $query->where('academic_year_id', $request->input('academic_year_id'));
         }
 
+        // Filter by teacher (through group)
+        if ($request->filled('teacher_id')) {
+            $query->whereHas('group', function ($q) use ($request) {
+                $q->where('user_id', $request->input('teacher_id'));
+            });
+        }
+
         $students = $query->orderBy('name')->get();
         $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
-        $academicYears = \App\Models\AcademicYear::all();
+        $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
+
+        // Get teachers for the filter
+        $teachers = collect();
+        if ($user->center_id) {
+            $center = $user->center;
+            
+            if ($center->type === 'individual') {
+                // For individual centers, only show the owner
+                $teachers = collect([
+                    [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'subject' => $user->subject,
+                        'email' => $user->email,
+                    ]
+                ]);
+            } else {
+                // For multi-teacher centers, get all teachers
+                $teachers = $center->users()
+                    ->whereHas('roles', function ($query) {
+                        $query->where('name', 'teacher');
+                    })
+                    ->get()
+                    ->map(function ($teacher) {
+                        return [
+                            'id' => $teacher->id,
+                            'name' => $teacher->name,
+                            'subject' => $teacher->subject,
+                            'email' => $teacher->email,
+                        ];
+                    });
+            }
+        }
 
         $subscriptionLimits = $user->getSubscriptionLimits();
         $currentStudentCount = $user->getStudentCount();
@@ -84,6 +124,7 @@ class StudentController extends Controller
             'students' => $students,
             'groups' => $groups,
             'academicYears' => $academicYears,
+            'teachers' => $teachers,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
@@ -91,6 +132,7 @@ class StudentController extends Controller
                 'search' => $request->input('search', ''),
                 'group_id' => $request->input('group_id', ''),
                 'academic_year_id' => $request->input('academic_year_id', ''),
+                'teacher_id' => $request->input('teacher_id', ''),
             ],
         ]);
     }
@@ -111,13 +153,21 @@ class StudentController extends Controller
         $groups = Group::where('user_id', $user->id)
                       ->where('center_id', $user->center_id)
                       ->where('is_active', true)
-                      ->with('academicYear')
+                      ->with(['academicYear', 'teacher'])
                       ->get();
-        $academicYears = \App\Models\AcademicYear::all();
+        $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
+        
+        // Get teachers for the center
+        $teachers = User::where('center_id', $user->center_id)
+                       ->where('type', 'teacher')
+                    //    ->where('is_active', true)
+                       ->select('id', 'name')
+                       ->get();
 
         return Inertia::render('Students/Create', [
             'groups' => $groups,
             'academicYears' => $academicYears,
+            'teachers' => $teachers,
             'canAddStudents' => $canAdd,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
@@ -190,7 +240,7 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $student->load(['group', 'academicYear', 'payments.group']);
+        $student->load(['group.teacher', 'academicYear', 'payments.group']);
 
         // Get recent payments (last 6 months)
         $recentPayments = $student->payments()
@@ -232,13 +282,21 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $groups = Group::where('user_id', Auth::id())->where('is_active', true)->with('academicYear')->get();
-        $academicYears = \App\Models\AcademicYear::all();
+        $groups = Group::where('user_id', Auth::id())->where('is_active', true)->with(['academicYear', 'teacher'])->get();
+        $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
+        
+        // Get teachers for the center
+        $teachers = User::where('center_id', Auth::user()->center_id)
+                       ->where('type', 'teacher')
+                       ->where('is_active', true)
+                       ->select('id', 'name')
+                       ->get();
 
         return Inertia::render('Students/Edit', [
             'student' => $student->load('academicYear'),
             'groups' => $groups,
             'academicYears' => $academicYears,
+            'teachers' => $teachers,
         ]);
     }
 

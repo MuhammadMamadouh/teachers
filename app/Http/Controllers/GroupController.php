@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CenterType;
 use App\Http\Requests\AssignStudentsRequest;
 use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\StoreSpecialSessionRequest;
@@ -29,22 +30,31 @@ class GroupController extends Controller
         }
 
         // Determine which groups to show based on user role and permissions
-        if ($user->hasRole('admin')) {
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
+        $isTeacher = in_array('teacher', $userRoles) || $user->type === 'teacher';
+        $isAssistant = in_array('assistant', $userRoles) || $user->type === 'assistant';
+
+        if ($isAdmin) {
             // Admins can see all groups in their center
-            $query = Group::where('center_id', $user->center_id);
-        } elseif ($user->hasRole('teacher')) {
+            $query = Group::where('center_id', $user->center_id)
+                ->with(['user']); // Load teacher info
+        } elseif ($isTeacher) {
             // Teachers can only see their own groups
             $query = Group::where('user_id', $user->id)
-                          ->where('center_id', $user->center_id);
-        } elseif ($user->hasRole('assistant')) {
+                ->where('center_id', $user->center_id)
+                ->with(['user']); // Load teacher info
+        } elseif ($isAssistant) {
             // Assistants can see their teacher's groups
             $teacherId = $user->teacher_id;
             $query = Group::where('user_id', $teacherId)
-                          ->where('center_id', $user->center_id);
+                ->where('center_id', $user->center_id)
+                ->with(['user']); // Load teacher info
         } else {
             // Fallback for legacy users
             $query = Group::where('user_id', $user->id)
-                          ->where('center_id', $user->center_id);
+                ->where('center_id', $user->center_id)
+                ->with(['user']); // Load teacher info
         }
 
         $query->with(['schedules', 'assignedStudents', 'academicYear']);
@@ -59,21 +69,67 @@ class GroupController extends Controller
             $query->where('academic_year_id', $request->academic_year_id);
         }
 
+        // Apply teacher filter
+        if ($request->filled('teacher_id')) {
+            $query->where('user_id', $request->teacher_id);
+        }
+
         $groups = $query->get();
 
         // Transform the data to ensure consistency
         $transformedGroups = $groups->map(function ($group) {
             return array_merge($group->toArray(), [
                 'assigned_students' => $group->assignedStudents->toArray(),
+                'schedules' => $group->schedules->toArray(),
+                'teacher' => $group->user ? [
+                    'id' => $group->user->id,
+                    'name' => $group->user->name,
+                    'subject' => $group->user->subject,
+                    'email' => $group->user->email,
+                ] : null,
             ]);
         });
 
-        $academicYears = \App\Models\AcademicYear::all();
+        $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
+
+        // Get teachers for the filter
+        $teachers = collect();
+        if ($user->center_id) {
+            $center = $user->center;
+
+            if ($center->type === CenterType::INDIVIDUAL) {
+                // For individual centers, only show the owner
+                $teachers = collect([
+                    [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'subject' => $user->subject,
+                        'email' => $user->email,
+                    ]
+                ]);
+            } else {
+                // For multi-teacher centers, get all teachers
+                $teachers = $center->users()
+                    ->whereHas('roles', function ($query) {
+                        $query->where('name', 'teacher');
+                    })
+                    ->get()
+                    ->map(function ($teacher) {
+                        return [
+                            'id' => $teacher->id,
+                            'name' => $teacher->name,
+                            'subject' => $teacher->subject,
+                            'email' => $teacher->email,
+                        ];
+                    });
+            }
+        }
 
         return Inertia::render('Groups/Index', [
             'groups' => $transformedGroups,
             'academicYears' => $academicYears,
-            'filters' => $request->only(['search', 'academic_year_id']),
+            'teachers' => $teachers,
+            'filters' => $request->only(['search', 'academic_year_id', 'teacher_id']),
         ]);
     }
 
@@ -82,10 +138,55 @@ class GroupController extends Controller
      */
     public function create()
     {
-        $academicYears = \App\Models\AcademicYear::all();
+        $user = Auth::user();
+        $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
+
+        // Get available teachers for the center
+        $teachers = collect();
+        $defaultTeacherId = null;
+
+
+        $center = $user->center;
+
+        if ($center->type === CenterType::INDIVIDUAL) {
+            // For individual centers, the admin is the default teacher
+            $defaultTeacherId = $user->id;
+            $teachers = collect([
+                [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'subject' => $user->subject,
+                    'email' => $user->email,
+                ]
+            ]);
+        } else {
+            // For multi-teacher centers, get all teachers (including admin if they're also a teacher)
+            $teachers = $center->users()
+                ->where(function ($query) {
+                    $query->where('type', 'teacher')
+                        ->orWhere('is_admin', true);
+                })
+                ->get()
+                ->map(function ($teacher) {
+                    return [
+                        'id' => $teacher->id,
+                        'name' => $teacher->name,
+                        'subject' => $teacher->subject,
+                        'email' => $teacher->email,
+                    ];
+                });
+
+            // Set default teacher ID to current user if they're a teacher
+            if ($user->type === 'teacher' || $user->is_admin) {
+                $defaultTeacherId = $user->id;
+            }
+        }
 
         return Inertia::render('Groups/Create', [
             'academicYears' => $academicYears,
+            'teachers' => $teachers,
+            'defaultTeacherId' => $defaultTeacherId,
+            'centerType' => $user->center->type ?? 'individual',
         ]);
     }
 
@@ -96,10 +197,35 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
+        // Determine teacher ID based on center type and user role
+        $teacherId = $request->input('teacher_id');
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
+
+        if ($isAdmin) {
+            // Admin can assign group to any teacher in their center
+            if (!$teacherId) {
+                if ($user->center->type === CenterType::INDIVIDUAL) {
+                    $teacherId = $user->id;
+                } else {
+                    return back()->withErrors(['teacher_id' => 'يجب اختيار معلم للمجموعة']);
+                }
+            }
+        } else {
+            // Teachers can only create groups for themselves
+            $teacherId = $user->id;
+        }
+
+        // Validate teacher belongs to the same center
+        $teacher = \App\Models\User::find($teacherId);
+        if (!$teacher || $teacher->center_id !== $user->center_id) {
+            return back()->withErrors(['teacher_id' => 'المعلم المحدد غير موجود في المركز']);
+        }
+
         $group = Group::create(array_merge(
-            $request->only(['name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id']),
+            $request->only(['name', 'subject', 'level', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id']),
             [
-                'user_id' => $user->id,
+                'user_id' => $teacherId,
                 'center_id' => $user->center_id,
             ]
         ));
@@ -120,25 +246,34 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
+        // dd($group->center_id, $user->center_id);
         // Ensure the group belongs to the user's center
         if ($group->center_id !== $user->center_id) {
             abort(403);
         }
 
         // Additional role-based authorization
-        if ($user->hasRole('teacher') && $group->user_id !== $user->id) {
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
+        $isTeacher = in_array('teacher', $userRoles) || $user->type === 'teacher';
+        $isAssistant = in_array('assistant', $userRoles) || $user->type === 'assistant';
+
+
+        if (!$isAdmin && $isTeacher && $group->user_id !== $user->id) {
             abort(403);
-        } elseif ($user->hasRole('assistant') && $group->user_id !== $user->teacher_id) {
+        } elseif ($isAssistant && $group->user_id !== $user->teacher_id) {
             abort(403);
-        } elseif (!$user->hasRole(['admin', 'teacher', 'assistant'])) {
+        } elseif (!$isAdmin && !$isTeacher && !$isAssistant) {
             // Legacy check for users without roles
-            if ($group->user_id !== $user->id &&
-                ($user->type !== 'assistant' || $group->user_id !== $user->teacher_id)) {
+            if (
+                $group->user_id !== $user->id &&
+                ($user->type !== 'assistant' || $group->user_id !== $user->teacher_id)
+            ) {
                 abort(403);
             }
         }
 
-        $group->load(['schedules', 'assignedStudents', 'specialSessions', 'academicYear']);
+        $group->load(['schedules', 'assignedStudents', 'specialSessions', 'academicYear', 'user']);
 
         // Get only students that are not assigned to any group and have matching academic year
         $availableStudents = Student::where('user_id', Auth::id())
@@ -181,6 +316,15 @@ class GroupController extends Controller
                 'expected_monthly_income' => $group->getExpectedMonthlyIncome(),
                 'expected_income_per_session' => $group->getExpectedIncomePerSession(),
                 'payment_type_label' => $group->getPaymentTypeLabel(),
+                'teacher' => $group->user ? [
+                    'id' => $group->user->id,
+                    'name' => $group->user->name,
+                    'email' => $group->user->email,
+                    'phone' => $group->user->phone,
+                    'subject' => $group->user->subject,
+                    'bio' => $group->user->bio,
+                    'profile_photo' => $group->user->profile_photo_path,
+                ] : null,
             ]),
             'availableStudents' => $availableStudents,
             'paymentSummary' => $paymentSummary,
@@ -192,17 +336,67 @@ class GroupController extends Controller
      */
     public function edit(Group $group)
     {
-        // Ensure the group belongs to the authenticated user
-        if ($group->user_id !== Auth::id()) {
+        $user = Auth::user();
+
+        // Ensure the group belongs to the user's center
+        if ($group->center_id !== $user->center_id) {
             abort(403);
         }
 
-        $group->load(['schedules', 'academicYear']);
-        $academicYears = \App\Models\AcademicYear::all();
+        // Additional role-based authorization
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
+        $isTeacher = in_array('teacher', $userRoles) || $user->type === 'teacher';
+        $isAssistant = in_array('assistant', $userRoles) || $user->type === 'assistant';
+
+        if (!$isAdmin && $group->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $group->load(['schedules', 'academicYear', 'user']);
+        $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
+
+        // Get available teachers for the center
+        $teachers = collect();
+        $defaultTeacherId = $group->user_id;
+
+        if ($user->center_id) {
+            $center = $user->center;
+
+            if ($center->type === CenterType::INDIVIDUAL) {
+                // For individual centers, only show the owner
+                $teachers = collect([
+                    [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'subject' => $user->subject,
+                        'email' => $user->email,
+                    ]
+                ]);
+            } else {
+                // For multi-teacher centers, get all teachers
+                $teachers = $center->users()
+                    ->whereHas('roles', function ($query) {
+                        $query->where('name', 'teacher');
+                    })
+                    ->get()
+                    ->map(function ($teacher) {
+                        return [
+                            'id' => $teacher->id,
+                            'name' => $teacher->name,
+                            'subject' => $teacher->subject,
+                            'email' => $teacher->email,
+                        ];
+                    });
+            }
+        }
 
         return Inertia::render('Groups/Edit', [
             'group' => $group,
             'academicYears' => $academicYears,
+            'teachers' => $teachers,
+            'defaultTeacherId' => $defaultTeacherId,
+            'centerType' => $user->center->type ?? 'individual',
         ]);
     }
 
@@ -211,19 +405,59 @@ class GroupController extends Controller
      */
     public function update(UpdateGroupRequest $request, Group $group)
     {
-        // Ensure the group belongs to the authenticated user
-        if ($group->user_id !== Auth::id()) {
+        $user = Auth::user();
+
+        // Ensure the group belongs to the user's center
+        if ($group->center_id !== $user->center_id) {
             abort(403);
         }
 
-        $group->update($request->only([
-            'name', 'description', 'max_students', 'is_active', 'payment_type', 'student_price', 'academic_year_id',
-        ]));
+        // Additional role-based authorization
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
+
+        if (!$isAdmin && $group->user_id !== $user->id) {
+            abort(403);
+        }
+
+        // Determine teacher ID based on center type and user role
+        $teacherId = $request->input('teacher_id', $group->user_id);
+
+        if ($isAdmin) {
+            // Admin can assign group to any teacher in their center
+            if ($teacherId !== $group->user_id) {
+                // Validate teacher belongs to the same center
+                $teacher = \App\Models\User::find($teacherId);
+                if (!$teacher || $teacher->center_id !== $user->center_id) {
+                    return back()->withErrors(['teacher_id' => 'المعلم المحدد غير موجود في المركز']);
+                }
+            }
+        } else {
+            // Teachers can only update their own groups
+            $teacherId = $group->user_id;
+        }
+
+        $group->update(array_merge(
+            $request->only([
+                'name',
+                'subject',
+                'level',
+                'description',
+                'max_students',
+                'is_active',
+                'payment_type',
+                'student_price',
+                'academic_year_id',
+            ]),
+            ['user_id' => $teacherId]
+        ));
 
         // Delete existing schedules and create new ones
         $group->schedules()->delete();
         foreach ($request->schedules as $schedule) {
-            $group->schedules()->create($schedule);
+            $group->schedules()->create(array_merge($schedule, [
+                'center_id' => $user->center_id,
+            ]));
         }
 
         return redirect()->route('groups.index')->with('success', 'تم تحديث المجموعة بنجاح');
@@ -424,7 +658,10 @@ class GroupController extends Controller
         }
 
         $specialSession = $group->specialSessions()->create($request->only([
-            'date', 'start_time', 'end_time', 'description',
+            'date',
+            'start_time',
+            'end_time',
+            'description',
         ]));
 
         return response()->json([
@@ -445,7 +682,10 @@ class GroupController extends Controller
         }
 
         $specialSession->update($request->only([
-            'date', 'start_time', 'end_time', 'description',
+            'date',
+            'start_time',
+            'end_time',
+            'description',
         ]));
 
         return response()->json([

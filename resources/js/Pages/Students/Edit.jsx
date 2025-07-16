@@ -5,19 +5,22 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ student, groups, academicYears }) {
+export default function Edit({ student, groups, academicYears, teachers }) {
     const { data, setData, put, processing, errors } = useForm({
         name: student.name,
         phone: student.phone,
         guardian_phone: student.guardian_phone,
         academic_year_id: student.academic_year_id || '',
+        teacher_id: student.group?.user_id || '',
         group_id: student.group_id || '',
     });
 
-    // Filter groups based on selected academic year
-    const filteredGroups = groups ? groups.filter(group => 
-        !data.academic_year_id || group.academic_year_id == data.academic_year_id
-    ) : [];
+    // Filter groups based on selected academic year and teacher
+    const filteredGroups = groups ? groups.filter(group => {
+        const academicYearMatch = !data.academic_year_id || group.academic_year_id == data.academic_year_id;
+        const teacherMatch = !data.teacher_id || group.user_id == data.teacher_id;
+        return academicYearMatch && teacherMatch;
+    }) : [];
 
     const submit = (e) => {
         e.preventDefault();
@@ -97,13 +100,42 @@ export default function Edit({ student, groups, academicYears }) {
                                             required
                                         >
                                             <option value="">اختر الصف الدراسي</option>
-                                            {academicYears && academicYears.map((year) => (
-                                                <option key={year.id} value={year.id}>
-                                                    {year.name_ar}
-                                                </option>
+                                            {academicYears && Object.entries(academicYears).map(([level, years]) => (
+                                                <optgroup key={level} label={level}>
+                                                    {years.map((year) => (
+                                                        <option key={year.id} value={year.id}>
+                                                            {year.name_ar}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
                                             ))}
                                         </select>
                                         <InputError message={errors.academic_year_id} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="teacher_id" value="المعلم" />
+                                        <select
+                                            id="teacher_id"
+                                            name="teacher_id"
+                                            value={data.teacher_id}
+                                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            onChange={(e) => {
+                                                setData('teacher_id', e.target.value);
+                                                // Reset group selection when teacher changes
+                                                if (data.group_id) {
+                                                    setData('group_id', '');
+                                                }
+                                            }}
+                                        >
+                                            <option value="">اختر المعلم (اختياري)</option>
+                                            {teachers && teachers.map((teacher) => (
+                                                <option key={teacher.id} value={teacher.id}>
+                                                    {teacher.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError message={errors.teacher_id} className="mt-2" />
                                     </div>
 
                                     <div>
@@ -121,6 +153,7 @@ export default function Edit({ student, groups, academicYears }) {
                                                 <option key={group.id} value={group.id}>
                                                     {group.name}
                                                     {group.academic_year && ` - ${group.academic_year.name_ar}`}
+                                                    {group.teacher && ` - ${group.teacher.name}`}
                                                 </option>
                                             ))}
                                         </select>
@@ -128,6 +161,11 @@ export default function Edit({ student, groups, academicYears }) {
                                         {!data.academic_year_id && (
                                             <p className="mt-1 text-sm text-gray-500">
                                                 يرجى اختيار الصف الدراسي أولاً
+                                            </p>
+                                        )}
+                                        {filteredGroups.length === 0 && data.academic_year_id && (
+                                            <p className="mt-1 text-sm text-gray-500">
+                                                لا توجد مجموعات متاحة للصف الدراسي {data.teacher_id ? 'والمعلم ' : ''}المحدد
                                             </p>
                                         )}
                                     </div>

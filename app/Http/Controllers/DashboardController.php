@@ -31,7 +31,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Ensure user belongs to a center
-        if (!$user->center_id) {
+        if (!$user->center_id && !$user->is_admin) {
             return redirect()->route('center.setup');
         }
 
@@ -39,7 +39,13 @@ class DashboardController extends Controller
         $userModel = User::find($user->id);
 
         // Determine dashboard type based on user role
+        // Priority: admin role > center admin > assistant > teacher
         if ($userModel->hasRole('admin')) {
+            return $this->adminDashboard($userModel);
+        }
+
+        // Check if user is a center admin (is_admin = true)
+        if ($user->is_admin) {
             return $this->adminDashboard($userModel);
         }
 

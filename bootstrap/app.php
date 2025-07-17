@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'manage-assistants' => \App\Http\Middleware\EnsureUserCanManageAssistants::class,
             'assistant-ownership' => \App\Http\Middleware\EnsureAssistantOwnership::class,
             'assistant-limit' => \App\Http\Middleware\CheckAssistantLimit::class,
+            'center-owner' => \App\Http\Middleware\EnsureCenterOwner::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

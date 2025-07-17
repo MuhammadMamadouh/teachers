@@ -34,7 +34,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user() ? [
-                    ...$request->user()->toArray(),
+                    ...$request->user()->load('center')->toArray(),
                     'is_center_owner' => $request->user()->isCenterOwner(),
                     'is_teacher' => $request->user()->isTeacher(),
                 ] : null,

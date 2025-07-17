@@ -231,6 +231,19 @@ Route::middleware('auth')->group(function () {
         });
         Route::post('/center/subscription/upgrade', [CenterController::class, 'processSubscriptionUpgrade'])->name('center.subscription.upgrade.process');
 
+        // Center Owner Dashboard Routes (for center owners with enhanced dashboard)
+        Route::prefix('center/owner')->name('center.owner.')->middleware(['center-owner'])->group(function () {
+            Route::get('/dashboard', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'index'])->name('dashboard');
+            Route::get('/overview', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'overview'])->name('overview');
+            Route::get('/teachers', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'teachers'])->name('teachers');
+            Route::get('/students', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'students'])->name('students');
+            Route::get('/groups', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'groups'])->name('groups');
+            Route::get('/reports', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'reports'])->name('reports');
+            Route::get('/financial', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'financial'])->name('financial');
+            Route::get('/subscription', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'subscription'])->name('subscription');
+            Route::get('/settings', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'settings'])->name('settings');
+        });
+
         // Feedback routes (for teachers to submit feedback)
         Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
         Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');

@@ -60,7 +60,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
                                 
                                 {/* Dashboard switcher for users who are both center owners and teachers */}
-                                {user.is_center_owner && user.is_teacher && (
+                                {user.is_center_owner && (
                                     <div className="relative">
                                         <Dropdown>
                                             <Dropdown.Trigger>
@@ -72,11 +72,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 </button>
                                             </Dropdown.Trigger>
                                             <Dropdown.Content>
-                                                <Dropdown.Link href={route('dashboard')}>
-                                                    لوحة تحكم المعلم
-                                                </Dropdown.Link>
-                                                <Dropdown.Link href={route('center.dashboard')}>
-                                                    لوحة تحكم المركز
+                                                {user.is_teacher && (
+                                                    <Dropdown.Link href={route('dashboard')}>
+                                                        لوحة تحكم المعلم
+                                                    </Dropdown.Link>
+                                                )}
+                                                <Dropdown.Link href={route('center.owner.dashboard')}>
+                                                    لوحة تحكم مالك المركز
                                                 </Dropdown.Link>
                                             </Dropdown.Content>
                                         </Dropdown>
@@ -339,22 +341,24 @@ export default function AuthenticatedLayout({ header, children }) {
                         </ResponsiveNavLink>
                         
                         {/* Dashboard switcher for users who are both center owners and teachers */}
-                        {user.is_center_owner && user.is_teacher && (
+                        {user.is_center_owner && (
                             <div className="border-t border-gray-200 pt-2">
                                 <div className="px-4 py-2">
                                     <div className="text-sm font-medium text-gray-400">تبديل لوحة التحكم</div>
                                 </div>
+                                {user.is_teacher && (
+                                    <ResponsiveNavLink
+                                        href={route('dashboard')}
+                                        active={route().current('dashboard')}
+                                    >
+                                        لوحة تحكم المعلم
+                                    </ResponsiveNavLink>
+                                )}
                                 <ResponsiveNavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                    href={route('center.owner.dashboard')}
+                                    active={route().current('center.owner.dashboard')}
                                 >
-                                    لوحة تحكم المعلم
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink
-                                    href={route('center.dashboard')}
-                                    active={route().current('center.dashboard')}
-                                >
-                                    لوحة تحكم المركز
+                                    لوحة تحكم مالك المركز
                                 </ResponsiveNavLink>
                             </div>
                         )}

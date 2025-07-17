@@ -72,7 +72,7 @@ class CenterController extends Controller
     /**
      * Display the center dashboard.
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
         $userModel = User::find($user->id);
@@ -84,7 +84,7 @@ class CenterController extends Controller
 
         // For admins, redirect to the comprehensive center dashboard
         if ($userModel->hasRole('admin')) {
-            return app(\App\Http\Controllers\Center\CenterDashboardController::class)->index();
+            return app(\App\Http\Controllers\Center\CenterDashboardController::class)->index($request);
         }
 
         // For non-admins, show a simplified view
@@ -103,7 +103,7 @@ class CenterController extends Controller
                 'monthly_growth' => 0,
             ],
             'users' => [],
-            'students' => $userModel->students()->with('group')->get(),
+            'students' => $userModel->students()->with('group')->paginate(20, ['*'], 'page', $request->get('page', 1)),
             'groups' => $userModel->groups()->with('students')->get(),
             'subscription' => $center->activeSubscription,
             'subscriptionLimits' => $subscriptionLimits,

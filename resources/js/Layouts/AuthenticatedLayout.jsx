@@ -58,6 +58,30 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     لوحة التحكم
                                 </NavLink>
+                                
+                                {/* Dashboard switcher for users who are both center owners and teachers */}
+                                {user.is_center_owner && user.is_teacher && (
+                                    <div className="relative">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                                    تبديل لوحة التحكم
+                                                    <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </Dropdown.Trigger>
+                                            <Dropdown.Content>
+                                                <Dropdown.Link href={route('dashboard')}>
+                                                    لوحة تحكم المعلم
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href={route('center.dashboard')}>
+                                                    لوحة تحكم المركز
+                                                </Dropdown.Link>
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
+                                )}
                                 {/* Show teacher navigation for non-admin users */}
                                 {!user.is_admin && (
                                     <>
@@ -313,6 +337,27 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             لوحة التحكم
                         </ResponsiveNavLink>
+                        
+                        {/* Dashboard switcher for users who are both center owners and teachers */}
+                        {user.is_center_owner && user.is_teacher && (
+                            <div className="border-t border-gray-200 pt-2">
+                                <div className="px-4 py-2">
+                                    <div className="text-sm font-medium text-gray-400">تبديل لوحة التحكم</div>
+                                </div>
+                                <ResponsiveNavLink
+                                    href={route('dashboard')}
+                                    active={route().current('dashboard')}
+                                >
+                                    لوحة تحكم المعلم
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('center.dashboard')}
+                                    active={route().current('center.dashboard')}
+                                >
+                                    لوحة تحكم المركز
+                                </ResponsiveNavLink>
+                            </div>
+                        )}
                         {/* Show teacher navigation for non-admin users */}
                         {!user.is_admin && (
                             <>

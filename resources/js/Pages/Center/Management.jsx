@@ -18,6 +18,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
+import Pagination from '@/Components/Pagination';
 
 export default function CenterManagement({ 
     center = {}, 
@@ -206,6 +207,13 @@ export default function CenterManagement({
         if (confirm(`هل أنت متأكد من حذف المجموعة ${group.name}؟`)) {
             router.delete(route('center.manage.groups.delete', group.id));
         }
+    };
+
+    const handleStudentPageChange = (page) => {
+        router.get(route('center.manage.index'), { page }, {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     const StatCard = ({ icon: Icon, title, value, subtitle, color = 'blue' }) => (
@@ -482,12 +490,13 @@ export default function CenterManagement({
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {students.map((student) => (
-                                            <tr key={student.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {student.name}
-                                                    </div>
+                                        {students.data && students.data.length > 0 ? (
+                                            students.data.map((student) => (
+                                                <tr key={student.id}>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {student.name}
+                                                        </div>
                                                     <div className="text-sm text-gray-500">
                                                         {student.phone}
                                                     </div>
@@ -527,10 +536,28 @@ export default function CenterManagement({
                                                     />
                                                 </td>
                                             </tr>
-                                        ))}
+                                        ))) : (
+                                            <tr>
+                                                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                                                    لا توجد طلاب
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            {/* Students Pagination */}
+                            {students.last_page > 1 && (
+                                <Pagination
+                                    currentPage={students.current_page}
+                                    lastPage={students.last_page}
+                                    onPageChange={handleStudentPageChange}
+                                    showingFrom={students.from}
+                                    showingTo={students.to}
+                                    total={students.total}
+                                />
+                            )}
                         </div>
                     )}
 
@@ -640,7 +667,7 @@ export default function CenterManagement({
                                             <h4 className="font-medium text-gray-900 mb-2">الخطة الحالية</h4>
                                             <p className="text-2xl font-bold text-blue-600">{subscription.plan?.name}</p>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                {subscription.plan?.price} ر.س / شهر
+                                                {subscription.plan?.price}ج. م/ شهر
                                             </p>
                                         </div>
                                         <div>

@@ -8,6 +8,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
+import Pagination from '@/Components/Pagination';
 
 export default function CenterDashboard({ 
     auth, 
@@ -47,6 +48,13 @@ export default function CenterDashboard({
         if (confirm(`هل أنت متأكد من حذف المستخدم ${user.name}؟`)) {
             router.delete(route('center.users.delete', user.id));
         }
+    };
+
+    const handleStudentPageChange = (page) => {
+        router.get(route('center.dashboard'), { page }, {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     const StatCard = ({ icon: Icon, title, value, subtitle, color = 'blue' }) => (
@@ -161,57 +169,78 @@ export default function CenterDashboard({
         </div>
     );
 
-    const StudentsTable = ({ students }) => (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            اسم الطالب
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            رقم الهاتف
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            المعلم
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            المجموعة
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            السنة الدراسية
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            تاريخ التسجيل
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {students.map((student) => (
-                        <tr key={student.id}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                                <div className="text-sm text-gray-500">{student.guardian_phone}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {student.phone}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {student.teacher?.name || 'غير محدد'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {student.group?.name || 'غير محدد'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {student.academic_year || 'غير محدد'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(student.created_at).toLocaleDateString('ar-SA')}
-                            </td>
+    const StudentsTable = ({ students, onPageChange }) => (
+        <div>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                اسم الطالب
+                            </th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                رقم الهاتف
+                            </th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                المعلم
+                            </th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                المجموعة
+                            </th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                السنة الدراسية
+                            </th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                تاريخ التسجيل
+                            </th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {students.data && students.data.length > 0 ? (
+                            students.data.map((student) => (
+                                <tr key={student.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                                        <div className="text-sm text-gray-500">{student.guardian_phone}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {student.phone}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {student.teacher?.name || 'غير محدد'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {student.group?.name || 'غير محدد'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {student.academic_year || 'غير محدد'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {new Date(student.created_at).toLocaleDateString('ar-SA')}
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                                    لا توجد طلاب
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+            
+            {students.last_page > 1 && (
+                <Pagination
+                    currentPage={students.current_page}
+                    lastPage={students.last_page}
+                    onPageChange={onPageChange}
+                    showingFrom={students.from}
+                    showingTo={students.to}
+                    total={students.total}
+                />
+            )}
         </div>
     );
 
@@ -419,7 +448,7 @@ export default function CenterDashboard({
                             {activeTab === 'students' && (
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">الطلاب</h3>
-                                    <StudentsTable students={students} />
+                                    <StudentsTable students={students} onPageChange={handleStudentPageChange} />
                                 </div>
                             )}
 

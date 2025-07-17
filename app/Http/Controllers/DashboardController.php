@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Prometheus\Facades\Prometheus;
 
 class DashboardController extends Controller
 {
@@ -29,6 +30,8 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+
 
         // Ensure user belongs to a center
         if (!$user->center_id && !$user->is_admin) {
@@ -54,6 +57,8 @@ class DashboardController extends Controller
         }
 
         return $this->teacherDashboard($userModel);
+
+
     }
 
     /**

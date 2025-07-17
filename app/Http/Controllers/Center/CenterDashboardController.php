@@ -20,7 +20,7 @@ class CenterDashboardController extends Controller
     /**
      * Display the center dashboard with full control panel.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $userModel = User::find($user->id);
@@ -44,7 +44,7 @@ class CenterDashboardController extends Controller
         $teachers = $this->getCenterTeachers($center);
         
         // Get all students with their groups
-        $students = $this->getCenterStudents($center);
+        $students = $this->getCenterStudents($center, $request);
         
         // Get all groups with their students count
         $groups = $this->getCenterGroups($center);
@@ -54,7 +54,7 @@ class CenterDashboardController extends Controller
         $subscriptionLimits = $this->getSubscriptionLimits($subscription);
         
         // Get available plans for upgrade
-        $availablePlans = $this->getAvailablePlans($center->type);
+        $availablePlans = $this->getAvailablePlans($center->type->value);
 
         return Inertia::render('Center/Management', [
             'center' => $center,
@@ -140,11 +140,38 @@ class CenterDashboardController extends Controller
     /**
      * Get all center students with their groups and teacher info.
      */
-    private function getCenterStudents(Center $center)
+    private function getCenterStudents(Center $center, Request $request = null)
     {
-        return $center->students()
-            ->with(['user', 'group', 'academicYear'])
-            ->get()
+        $query = $center->students()
+            ->with(['user', 'group', 'academicYear']);
+        
+        if ($request) {
+            $paginated = $query->paginate(20, ['*'], 'page', $request->get('page', 1));
+            $paginated->getCollection()->transform(function ($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'phone' => $student->phone,
+                    'guardian_phone' => $student->guardian_phone,
+                    'level' => $student->level,
+                    'teacher' => $student->user ? [
+                        'id' => $student->user->id,
+                        'name' => $student->user->name,
+                        'subject' => $student->user->subject,
+                    ] : null,
+                    'group' => $student->group ? [
+                        'id' => $student->group->id,
+                        'name' => $student->group->name,
+                        'subject' => $student->group->subject,
+                    ] : null,
+                    'academic_year' => $student->academicYear ? $student->academicYear->name : null,
+                    'created_at' => $student->created_at,
+                ];
+            });
+            return $paginated;
+        }
+        
+        return $query->get()
             ->map(function ($student) {
                 return [
                     'id' => $student->id,

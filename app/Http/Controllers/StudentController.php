@@ -48,7 +48,7 @@ class StudentController extends Controller
                            ->where('center_id', $user->center_id);
         }
 
-        $query->with(['group', 'academicYear']);
+        $query->with(['group.teacher', 'academicYear']);
 
         // Search by name
         if ($request->filled('search')) {
@@ -88,7 +88,7 @@ class StudentController extends Controller
 
         // Apply pagination with 20 students per page
         $students = $query->orderBy('name')->paginate(20)->withQueryString();
-        $groups = Group::where('user_id', $user->id)->select('id', 'name')->get();
+        $groups = Group::with(['academicYear', 'teacher'])->where('user_id', $user->id)->select('id', 'name')->get();
         $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
 
         // Get teachers for the filter
@@ -168,7 +168,7 @@ class StudentController extends Controller
         // Get teachers for the center
         $teachers = User::where('center_id', $user->center_id)
                        ->where('type', 'teacher')
-                    //    ->where('is_active', true)
+                       ->where('is_active', true)
                        ->select('id', 'name')
                        ->get();
 
@@ -291,7 +291,7 @@ class StudentController extends Controller
             abort(403);
         }
 
-        $groups = Group::where('user_id', Auth::id())->where('is_active', true)->with(['academicYear', 'teacher'])->get();
+        $groups = Group::where('is_active', true)->with(['academicYear', 'teacher'])->get();
         $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
         
         // Get teachers for the center
@@ -302,7 +302,7 @@ class StudentController extends Controller
                        ->get();
 
         return Inertia::render('Students/Edit', [
-            'student' => $student->load('academicYear'),
+            'student' => $student->load(['academicYear', 'group.teacher']),
             'groups' => $groups,
             'academicYears' => $academicYears,
             'teachers' => $teachers,

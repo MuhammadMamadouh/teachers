@@ -12,7 +12,7 @@ export default function Edit({ student, groups, academicYears, teachers }) {
         guardian_phone: student.guardian_phone,
         level: student.level || '',
         academic_year_id: student.academic_year_id || '',
-        teacher_id: student.group?.user_id || '',
+        teacher_id: student.group?.teacher?.id || '',
         group_id: student.group_id || '',
     });
 

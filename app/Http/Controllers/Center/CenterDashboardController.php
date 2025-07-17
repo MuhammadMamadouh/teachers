@@ -105,6 +105,7 @@ class CenterDashboardController extends Controller
                     'type' => $user->type,
                     'subject' => $user->subject,
                     'is_approved' => $user->is_approved,
+                    'is_active' => $user->is_active,
                     'roles' => $user->roles->pluck('name'),
                     'students_count' => $user->students ? $user->students->count() : 0,
                     'groups_count' => $user->groups ? $user->groups->count() : 0,
@@ -123,6 +124,7 @@ class CenterDashboardController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'teacher');
             })
+            ->where('is_active', true)
             ->get()
             ->map(function ($user) {
                 return [
@@ -375,9 +377,10 @@ class CenterDashboardController extends Controller
             'phone' => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:255',
             'is_approved' => 'boolean',
+            'is_active' => 'boolean',
         ]);
 
-        $userToUpdate->update($request->only(['name', 'email', 'phone', 'subject', 'is_approved']));
+        $userToUpdate->update($request->only(['name', 'email', 'phone', 'subject', 'is_approved', 'is_active']));
 
         return redirect()->back()->with('success', 'User updated successfully');
     }
@@ -401,6 +404,45 @@ class CenterDashboardController extends Controller
         $userToDelete->delete();
 
         return redirect()->back()->with('success', 'User deleted successfully');
+    }
+
+    /**
+     * Activate a user.
+     */
+    public function activateUser(User $userToActivate)
+    {
+        $user = Auth::user();
+        $userModel = User::find($user->id);
+        
+        if (!$userModel->hasRole('admin') || $user->center_id !== $userToActivate->center_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $userToActivate->update(['is_active' => true]);
+
+        return redirect()->back()->with('success', 'User activated successfully');
+    }
+
+    /**
+     * Deactivate a user.
+     */
+    public function deactivateUser(User $userToDeactivate)
+    {
+        $user = Auth::user();
+        $userModel = User::find($user->id);
+        
+        if (!$userModel->hasRole('admin') || $user->center_id !== $userToDeactivate->center_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Prevent admin from deactivating themselves
+        if ($user->id === $userToDeactivate->id) {
+            abort(403, 'Cannot deactivate yourself');
+        }
+
+        $userToDeactivate->update(['is_active' => false]);
+
+        return redirect()->back()->with('success', 'User deactivated successfully');
     }
 
     /**

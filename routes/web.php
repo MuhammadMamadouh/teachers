@@ -212,6 +212,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/users', [App\Http\Controllers\Center\CenterDashboardController::class, 'createUser'])->name('users.create');
             Route::post('/users/invite', [App\Http\Controllers\Center\CenterDashboardController::class, 'inviteUser'])->name('users.invite');
             Route::put('/users/{user}', [App\Http\Controllers\Center\CenterDashboardController::class, 'updateUser'])->name('users.update');
+            Route::patch('/users/{user}/activate', [App\Http\Controllers\Center\CenterDashboardController::class, 'activateUser'])->name('users.activate');
+            Route::patch('/users/{user}/deactivate', [App\Http\Controllers\Center\CenterDashboardController::class, 'deactivateUser'])->name('users.deactivate');
             Route::delete('/users/{user}', [App\Http\Controllers\Center\CenterDashboardController::class, 'deleteUser'])->name('users.delete');
             Route::get('/students', [App\Http\Controllers\Center\CenterDashboardController::class, 'students'])->name('students');
             Route::post('/students', [App\Http\Controllers\Center\CenterDashboardController::class, 'createStudent'])->name('students.create');

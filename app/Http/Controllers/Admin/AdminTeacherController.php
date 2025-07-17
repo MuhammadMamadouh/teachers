@@ -29,13 +29,17 @@ class AdminTeacherController extends Controller
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
             if ($request->status === 'approved') {
-                $query->where('is_approved', true);
+                $query->where('is_approved', true)->where('is_active', true);
             } elseif ($request->status === 'pending') {
                 $query->where('is_approved', false);
             } elseif ($request->status === 'active') {
-                $query->where('is_approved', true)->whereHas('activeSubscription');
+                $query->where('is_approved', true)->where('is_active', true)->whereHas('activeSubscription');
             } elseif ($request->status === 'inactive') {
-                $query->where('is_approved', false)->orWhereDoesntHave('activeSubscription');
+                $query->where(function ($q) {
+                    $q->where('is_approved', false)
+                      ->orWhere('is_active', false)
+                      ->orWhereDoesntHave('activeSubscription');
+                });
             }
         }
 
@@ -69,9 +73,14 @@ class AdminTeacherController extends Controller
             'filters' => $request->only(['status', 'search', 'sort_by', 'sort_order']),
             'stats' => [
                 'total' => User::where('is_admin', false)->where('type', 'teacher')->count(),
-                'approved' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->count(),
+                'approved' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->where('is_active', true)->count(),
                 'pending' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', false)->count(),
-                'active' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->whereHas('activeSubscription')->count(),
+                'active' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->where('is_active', true)->whereHas('activeSubscription')->count(),
+                'inactive' => User::where('is_admin', false)->where('type', 'teacher')->where(function ($q) {
+                    $q->where('is_approved', false)
+                      ->orWhere('is_active', false)
+                      ->orWhereDoesntHave('activeSubscription');
+                })->count(),
             ],
         ]);
     }
@@ -309,6 +318,7 @@ class AdminTeacherController extends Controller
     {
         $teacher->update([
             'is_approved' => true,
+            'is_active' => true,
             'approved_at' => now(),
         ]);
 
@@ -333,6 +343,7 @@ class AdminTeacherController extends Controller
     {
         $teacher->update([
             'is_approved' => false,
+            'is_active' => false,
             'approved_at' => null,
         ]);
 
@@ -364,6 +375,7 @@ class AdminTeacherController extends Controller
                     case 'activate':
                         $teacher->update([
                             'is_approved' => true,
+                            'is_active' => true,
                             'approved_at' => now(),
                         ]);
                         if (!$teacher->activeSubscription) {
@@ -381,6 +393,7 @@ class AdminTeacherController extends Controller
                     case 'deactivate':
                         $teacher->update([
                             'is_approved' => false,
+                            'is_active' => false,
                             'approved_at' => null,
                         ]);
                         $teacher->subscriptions()->update(['is_active' => false]);

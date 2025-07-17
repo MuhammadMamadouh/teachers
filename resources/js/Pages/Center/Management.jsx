@@ -10,7 +10,9 @@ import {
     PencilIcon,
     TrashIcon,
     EyeIcon,
-    EnvelopeIcon
+    EnvelopeIcon,
+    XCircleIcon,
+    CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -197,6 +199,18 @@ export default function CenterManagement({
         }
     };
 
+    const handleActivateUser = (user) => {
+        if (confirm(`هل أنت متأكد من تفعيل المستخدم ${user.name}؟`)) {
+            router.patch(route('center.manage.users.activate', user.id));
+        }
+    };
+
+    const handleDeactivateUser = (user) => {
+        if (confirm(`هل أنت متأكد من إلغاء تفعيل المستخدم ${user.name}؟`)) {
+            router.patch(route('center.manage.users.deactivate', user.id));
+        }
+    };
+
     const handleDeleteStudent = (student) => {
         if (confirm(`هل أنت متأكد من حذف الطالب ${student.name}؟`)) {
             router.delete(route('center.manage.students.delete', student.id));
@@ -249,7 +263,9 @@ export default function CenterManagement({
         const variantClasses = {
             primary: "bg-blue-600 text-white hover:bg-blue-700",
             secondary: "bg-gray-200 text-gray-700 hover:bg-gray-300",
-            danger: "bg-red-600 text-white hover:bg-red-700"
+            danger: "bg-red-600 text-white hover:bg-red-700",
+            warning: "bg-yellow-600 text-white hover:bg-yellow-700",
+            success: "bg-green-600 text-white hover:bg-green-700"
         };
 
         return (
@@ -406,6 +422,9 @@ export default function CenterManagement({
                                                 الطلاب
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                الحالة
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 الإجراءات
                                             </th>
                                         </tr>
@@ -435,6 +454,13 @@ export default function CenterManagement({
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                     {user.students_count || 0}
                                                 </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                        user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {user.is_active ? 'نشط' : 'غير نشط'}
+                                                    </span>
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                                     <ActionButton
                                                         onClick={() => handleEditUser(user)}
@@ -442,6 +468,21 @@ export default function CenterManagement({
                                                         label="تعديل"
                                                         variant="secondary"
                                                     />
+                                                    {user.is_active ? (
+                                                        <ActionButton
+                                                            onClick={() => handleDeactivateUser(user)}
+                                                            icon={XCircleIcon}
+                                                            label="إلغاء التفعيل"
+                                                            variant="warning"
+                                                        />
+                                                    ) : (
+                                                        <ActionButton
+                                                            onClick={() => handleActivateUser(user)}
+                                                            icon={CheckCircleIcon}
+                                                            label="تفعيل"
+                                                            variant="success"
+                                                        />
+                                                    )}
                                                     <ActionButton
                                                         onClick={() => handleDeleteUser(user)}
                                                         icon={TrashIcon}

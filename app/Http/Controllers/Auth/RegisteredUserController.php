@@ -55,17 +55,25 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // dd($request->all()); // Debugging line to inspect request data
+        // Auto-set teacher status for individual centers
+        if ($request->center_type === CenterType::INDIVIDUAL->value) {
+            $request->merge(['is_teacher' => true]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'required|string|max:20',
-            'subject' => 'required|string|max:255',
+            'subject' => 'required_if:is_teacher,true|string|max:255',
             'governorate_id' => 'required|exists:governorates,id',
             'plan_id' => 'nullable|exists:plans,id',
             'center_name' => 'required|string|max:255',
             'center_type' => 'required|in:' . implode(',', array_column(CenterType::cases(), 'value')),
             'center_address' => 'nullable|string|max:255',
+            'is_teacher' => 'boolean',
+        ], [
+            'subject.required_if' => 'المادة مطلوبة إذا كنت معلماً',
         ]);
 
         // Create center first
@@ -75,6 +83,7 @@ class RegisteredUserController extends Controller
             'address' => $request->center_address,
             'phone' => $request->phone,
             'email' => $request->email,
+            'governorate_id' => $request->governorate_id,
             'is_active' => true,
         ]);
 
@@ -83,19 +92,20 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'subject' => $request->subject,
-            'governorate_id' => $request->governorate_id,
+            'subject' => $request->is_teacher ? $request->subject : null,
             'center_id' => $center->id,
-            'type' => 'teacher',
+            'type' => $request->is_teacher ? 'teacher' : 'center_owner',
             'is_approved' => false,
         ]);
 
         // Update center with owner
         $center->update(['owner_id' => $user->id]);
 
-        // Assign roles
-        $user->assignRole('admin');
-        if ($request->center_type === CenterType::INDIVIDUAL->value) {
+        // Assign roles - All registered users are center owners by default
+        $user->assignRole('admin'); // Center admin role
+        
+        // If user specified they are also a teacher, assign teacher role
+        if ($request->is_teacher) {
             $user->assignRole('teacher');
         }
 

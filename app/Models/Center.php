@@ -26,6 +26,7 @@ class Center extends Model
         'email',
         'description',
         'owner_id',
+        'governorate_id',
         'is_active',
     ];
 
@@ -117,6 +118,14 @@ class Center extends Model
     public function getTypeLabel(): string
     {
         return $this->type->label();
+    }
+
+    /**
+     * Get the governorate for this center.
+     */
+    public function governorate(): BelongsTo
+    {
+        return $this->belongsTo(Governorate::class, 'governorate_id');
     }
 
     /**

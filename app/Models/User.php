@@ -305,6 +305,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor for is_teacher attribute for frontend compatibility.
+     */
+    public function getIsTeacherAttribute(): bool
+    {
+        return $this->isTeacher();
+    }
+
+    /**
+     * Accessor for is_center_owner attribute for frontend compatibility.
+     */
+    public function getIsCenterOwnerAttribute(): bool
+    {
+        return $this->isCenterOwner();
+    }
+
+    /**
      * Get the main teacher (if this user is an assistant, return the teacher; if teacher, return self).
      */
     public function getMainTeacher(): User

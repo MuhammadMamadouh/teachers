@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ student, groups, academicYears, teachers }) {
+export default function Edit({ student, groups, academicYears, teachers, educationLevels }) {
     const { data, setData, put, processing, errors } = useForm({
         name: student.name,
         phone: student.phone,
@@ -108,10 +108,11 @@ export default function Edit({ student, groups, academicYears, teachers }) {
                                             required
                                         >
                                             <option value="">اختر المستوى</option>
-                                            <option value="ابتدائي">ابتدائي</option>
-                                            <option value="إعدادي">إعدادي</option>
-                                            <option value="ثانوي">ثانوي</option>
-                                            <option value="جامعي">جامعي</option>
+                                            {educationLevels?.map((level) => (
+                                                <option key={level.value} value={level.value}>
+                                                    {level.label}
+                                                </option>
+                                            ))}
                                         </select>
                                         <InputError message={errors.level} className="mt-2" />
                                     </div>

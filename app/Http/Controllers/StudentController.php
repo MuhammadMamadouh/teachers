@@ -132,6 +132,7 @@ class StudentController extends Controller
             'groups' => $groups,
             'academicYears' => $academicYears,
             'teachers' => $teachers,
+            'educationLevels' => EducationLevel::forFrontend(),
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
@@ -176,6 +177,7 @@ class StudentController extends Controller
             'groups' => $groups,
             'academicYears' => $academicYears,
             'teachers' => $teachers,
+            'educationLevels' => EducationLevel::forFrontend(),
             'canAddStudents' => $canAdd,
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
@@ -306,6 +308,7 @@ class StudentController extends Controller
             'groups' => $groups,
             'academicYears' => $academicYears,
             'teachers' => $teachers,
+            'educationLevels' => EducationLevel::forFrontend(),
         ]);
     }
 

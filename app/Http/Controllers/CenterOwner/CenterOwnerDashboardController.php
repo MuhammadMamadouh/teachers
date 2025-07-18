@@ -14,7 +14,6 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -33,11 +32,8 @@ class CenterOwnerDashboardController extends Controller
         }
 
         $center = $user->center;
-        if (!$center) {
-            return redirect()->route('center.setup');
-        }
-
-        // Get comprehensive dashboard statistics
+        
+        // Get dashboard statistics
         $statistics = $this->getDashboardStatistics($center);
         
         // Get recent activity
@@ -59,7 +55,7 @@ class CenterOwnerDashboardController extends Controller
     }
 
     /**
-     * Show center overview page.
+     * Show overview page.
      */
     public function overview()
     {
@@ -70,265 +66,18 @@ class CenterOwnerDashboardController extends Controller
         }
 
         $center = $user->center;
-        $statistics = $this->getDashboardStatistics($center);
         
-        // Get detailed breakdown by teacher
-        $teacherStats = $this->getTeacherStatistics($center);
-        
-        // Get monthly trends
-        $monthlyTrends = $this->getMonthlyTrends($center);
+        // Get comprehensive overview data
+        $overviewData = [
+            'statistics' => $this->getDashboardStatistics($center),
+            'charts' => $this->getChartData($center),
+            'trends' => $this->getTrendData($center),
+            'alerts' => $this->getAlerts($center),
+        ];
 
         return Inertia::render('CenterOwner/Overview', [
             'center' => $center,
-            'statistics' => $statistics,
-            'teacherStats' => $teacherStats,
-            'monthlyTrends' => $monthlyTrends,
-        ]);
-    }
-
-    /**
-     * Show teachers management page.
-     */
-    public function teachers()
-    {
-        $user = Auth::user();
-        
-        if (!$user->center || $user->center->owner_id !== $user->id) {
-            abort(403, 'Unauthorized - Center Owner access required');
-        }
-
-        $center = $user->center;
-        
-        // Get all teachers with their statistics
-        $teachers = $center->teachers()
-            ->with(['students', 'groups', 'roles'])
-            ->withCount(['students', 'groups'])
-            ->get()
-            ->map(function ($teacher) {
-                return [
-                    'id' => $teacher->id,
-                    'name' => $teacher->name,
-                    'email' => $teacher->email,
-                    'phone' => $teacher->phone,
-                    'subject' => $teacher->subject,
-                    'students_count' => $teacher->students_count,
-                    'groups_count' => $teacher->groups_count,
-                    'is_active' => $teacher->is_active,
-                    'is_approved' => $teacher->is_approved,
-                    'created_at' => $teacher->created_at,
-                    'last_login' => $teacher->last_login_at ?? null,
-                    'total_revenue' => $this->getTeacherRevenue($teacher),
-                    'attendance_rate' => $this->getTeacherAttendanceRate($teacher),
-                ];
-            });
-
-        return Inertia::render('CenterOwner/Teachers', [
-            'center' => $center,
-            'teachers' => $teachers,
-        ]);
-    }
-
-    /**
-     * Create a new teacher for the center.
-     */
-    public function createTeacher(Request $request)
-    {
-        $user = Auth::user();
-        
-        if (!$user->center || $user->center->owner_id !== $user->id) {
-            abort(403, 'Unauthorized - Center Owner access required');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string|max:20',
-            'subject' => 'nullable|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $center = $user->center;
-        $subscription = $center->activeSubscription;
-        
-        // Check subscription limits for teachers
-        if ($subscription) {
-            $currentTeachers = $center->teachers()->count();
-            if ($currentTeachers >= $subscription->plan->max_teachers) {
-                return back()->withErrors(['error' => 'تم الوصول للحد الأقصى من المعلمين في خطة الاشتراك الحالية']);
-            }
-        }
-
-        try {
-            DB::transaction(function () use ($request, $center) {
-                $teacher = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'subject' => $request->subject,
-                    'password' => Hash::make($request->password),
-                    'center_id' => $center->id,
-                    'type' => 'teacher',
-                    'is_approved' => true,
-                    'is_active' => true,
-                    'approved_at' => now(),
-                ]);
-
-                $teacher->assignRole('teacher');
-            });
-
-            return redirect()->back()->with('success', 'تم إضافة المعلم بنجاح');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء إضافة المعلم: ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Update a teacher for the center.
-     */
-    public function updateTeacher(Request $request, User $teacher)
-    {
-        $user = Auth::user();
-        
-        if (!$user->center || $user->center->owner_id !== $user->id) {
-            abort(403, 'Unauthorized - Center Owner access required');
-        }
-
-        // Ensure teacher belongs to this center
-        if ($teacher->center_id !== $user->center_id) {
-            abort(403, 'Teacher does not belong to your center');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $teacher->id,
-            'phone' => 'nullable|string|max:20',
-            'subject' => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:8|confirmed',
-            'is_active' => 'boolean',
-        ]);
-
-        try {
-            DB::transaction(function () use ($request, $teacher) {
-                $updateData = [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'subject' => $request->subject,
-                    'is_active' => $request->boolean('is_active', true),
-                ];
-
-                if ($request->filled('password')) {
-                    $updateData['password'] = Hash::make($request->password);
-                }
-
-                $teacher->update($updateData);
-            });
-
-            return redirect()->back()->with('success', 'تم تحديث بيانات المعلم بنجاح');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء تحديث المعلم: ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Delete a teacher from the center.
-     */
-    public function deleteTeacher(User $teacher)
-    {
-        $user = Auth::user();
-        
-        if (!$user->center || $user->center->owner_id !== $user->id) {
-            abort(403, 'Unauthorized - Center Owner access required');
-        }
-
-        // Ensure teacher belongs to this center
-        if ($teacher->center_id !== $user->center_id) {
-            abort(403, 'Teacher does not belong to your center');
-        }
-
-        // Prevent deletion if teacher has students or groups
-        $hasStudents = $teacher->students()->count() > 0;
-        $hasGroups = $teacher->groups()->count() > 0;
-
-        if ($hasStudents || $hasGroups) {
-            return redirect()->back()->withErrors([
-                'error' => 'لا يمكن حذف المعلم لأنه مرتبط بطلاب أو مجموعات. يرجى نقل الطلاب والمجموعات إلى معلم آخر أولاً.'
-            ]);
-        }
-
-        try {
-            DB::transaction(function () use ($teacher) {
-                // Remove role assignments
-                $teacher->roles()->detach();
-                
-                // Soft delete the teacher
-                $teacher->delete();
-            });
-
-            return redirect()->back()->with('success', 'تم حذف المعلم بنجاح');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء حذف المعلم: ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Show students management page.
-     */
-    public function students()
-    {
-        $user = Auth::user();
-        
-        if (!$user->center || $user->center->owner_id !== $user->id) {
-            abort(403, 'Unauthorized - Center Owner access required');
-        }
-
-        $center = $user->center;
-        
-        // Get all students with their details
-        $students = $center->students()
-            ->with(['user', 'group', 'payments'])
-            ->withCount('payments')
-            ->paginate(20);
-
-        // Transform students data to include additional metrics
-        $students->getCollection()->transform(function ($student) {
-            $totalPaid = $student->payments()->where('is_paid', true)->sum('amount');
-            $totalDue = $student->payments()->where('is_paid', false)->sum('amount');
-            
-            return [
-                'id' => $student->id,
-                'name' => $student->name,
-                'phone' => $student->phone,
-                'guardian_phone' => $student->guardian_phone,
-                'teacher' => $student->user ? [
-                    'id' => $student->user->id,
-                    'name' => $student->user->name,
-                ] : null,
-                'group' => $student->group ? [
-                    'id' => $student->group->id,
-                    'name' => $student->group->name,
-                    'subject' => $student->group->subject,
-                ] : null,
-                'total_paid' => $totalPaid,
-                'total_due' => $totalDue,
-                'payments_count' => $student->payments_count,
-                'academic_year' => $student->academic_year,
-                'created_at' => $student->created_at,
-                'attendance_rate' => $this->getStudentAttendanceRate($student),
-            ];
-        });
-
-        return Inertia::render('CenterOwner/Students', [
-            'center' => $center,
-            'students' => $students,
-            'summary' => [
-                'total_students' => $center->students()->count(),
-                'active_students' => $center->students()->whereHas('group')->count(),
-                'total_revenue' => $center->students()->join('payments', 'students.id', '=', 'payments.student_id')
-                    ->where('payments.is_paid', true)->sum('payments.amount'),
-                'pending_payments' => $center->students()->join('payments', 'students.id', '=', 'payments.student_id')
-                    ->where('payments.is_paid', false)->sum('payments.amount'),
-            ],
+            'overview' => $overviewData,
         ]);
     }
 
@@ -347,8 +96,9 @@ class CenterOwnerDashboardController extends Controller
         
         // Get all groups with their details
         $groups = $center->groups()
-            ->with(['user', 'students'])
+            ->with(['user:id,name,subject', 'students'])
             ->withCount('students')
+            ->orderBy('name')
             ->get()
             ->map(function ($group) {
                 $totalRevenue = $group->students()->join('payments', 'students.id', '=', 'payments.student_id')
@@ -386,40 +136,6 @@ class CenterOwnerDashboardController extends Controller
                     ? round(($groups->sum('students_count') / $groups->sum('max_students')) * 100, 1) 
                     : 0,
             ],
-        ]);
-    }
-
-    /**
-     * Show assistants management page.
-     */
-    public function assistants()
-    {
-        $user = Auth::user();
-        
-        if (!$user->center || $user->center->owner_id !== $user->id) {
-            abort(403, 'Unauthorized - Center Owner access required');
-        }
-
-        $center = $user->center;
-        
-        // Get all assistants for this center
-        $assistants = $center->assistants()
-            ->select(['id', 'name', 'email', 'phone', 'is_active', 'created_at'])
-            ->orderBy('name')
-            ->get();
-
-        // Get subscription details to check assistant limits
-        $subscription = $center->activeSubscription()->with('plan')->first();
-        $maxAssistants = $subscription && $subscription->plan ? $subscription->plan->max_assistants : 0;
-        $currentAssistants = $assistants->count();
-        $canAddMore = !$subscription || $currentAssistants < $maxAssistants;
-
-        return Inertia::render('CenterOwner/Assistants', [
-            'center' => $center,
-            'assistants' => $assistants,
-            'assistantCount' => $assistants->count(),
-            'maxAssistants' => $maxAssistants,
-            'canAddMore' => $canAddMore,
         ]);
     }
 
@@ -499,9 +215,11 @@ class CenterOwnerDashboardController extends Controller
             'current_teachers' => $center->teachers()->count(),
             'current_students' => $center->students()->count(),
             'current_groups' => $center->groups()->count(),
+            'current_assistants' => $center->assistants()->count(),
             'max_teachers' => $subscription ? $subscription->plan->max_teachers : 0,
             'max_students' => $subscription ? $subscription->plan->max_students : 0,
             'max_groups' => $subscription ? $subscription->plan->max_groups : 0,
+            'max_assistants' => $subscription ? $subscription->plan->max_assistants : 0,
         ];
 
         return Inertia::render('CenterOwner/Subscription', [
@@ -539,7 +257,9 @@ class CenterOwnerDashboardController extends Controller
             'total_teachers' => $center->teachers()->count(),
             'total_students' => $center->students()->count(),
             'total_groups' => $center->groups()->count(),
+            'total_assistants' => $center->assistants()->count(),
             'active_groups' => $center->groups()->where('is_active', true)->count(),
+            'active_students' => $center->students()->count(),
             'total_revenue' => $center->students()->join('payments', 'students.id', '=', 'payments.student_id')
                 ->where('payments.is_paid', true)->sum('payments.amount'),
             'pending_payments' => $center->students()->join('payments', 'students.id', '=', 'payments.student_id')
@@ -637,52 +357,283 @@ class CenterOwnerDashboardController extends Controller
     }
 
     /**
-     * Helper methods for calculations
+     * Calculate teacher efficiency.
      */
-    private function getTeacherRevenue(User $teacher)
-    {
-        return $teacher->students()->join('payments', 'students.id', '=', 'payments.student_id')
-            ->where('payments.is_paid', true)->sum('payments.amount');
-    }
-
-    private function getTeacherAttendanceRate(User $teacher)
-    {
-        // Implementation depends on your attendance tracking system
-        return 85; // Placeholder
-    }
-
-    private function getStudentAttendanceRate(Student $student)
-    {
-        // Implementation depends on your attendance tracking system
-        return 90; // Placeholder
-    }
-
     private function calculateTeacherEfficiency(Center $center)
     {
-        // Calculate based on students per teacher ratio
         $totalTeachers = $center->teachers()->count();
         $totalStudents = $center->students()->count();
         
         return $totalTeachers > 0 ? round($totalStudents / $totalTeachers, 1) : 0;
     }
 
+    /**
+     * Calculate student retention.
+     */
     private function calculateStudentRetention(Center $center)
     {
-        // Calculate student retention rate (placeholder implementation)
-        return 95; // Placeholder - implement based on your business logic
+        // Placeholder implementation - calculate based on business logic
+        return 95;
     }
 
-    // Additional report methods would be implemented here
-    private function getTeacherStatistics(Center $center) { return []; }
-    private function getMonthlyTrends(Center $center) { return []; }
-    private function getEnrollmentReport(Center $center) { return []; }
-    private function getAttendanceReport(Center $center) { return []; }
-    private function getPerformanceReport(Center $center) { return []; }
-    private function getTeacherPerformanceReport(Center $center) { return []; }
-    private function getGrowthReport(Center $center) { return []; }
-    private function getRevenueReport(Center $center) { return []; }
-    private function getPaymentsReport(Center $center) { return []; }
-    private function getOutstandingPaymentsReport(Center $center) { return []; }
-    private function getTeacherEarningsReport(Center $center) { return []; }
-    private function getRevenueProjections(Center $center) { return []; }
+    /**
+     * Get chart data for overview.
+     */
+    private function getChartData(Center $center)
+    {
+        return [
+            'revenue_chart' => $this->getRevenueChartData($center),
+            'enrollment_chart' => $this->getEnrollmentChartData($center),
+            'attendance_chart' => $this->getAttendanceChartData($center),
+        ];
+    }
+
+    /**
+     * Get trend data.
+     */
+    private function getTrendData(Center $center)
+    {
+        return [
+            'student_growth' => $this->calculateStudentGrowth($center),
+            'revenue_growth' => $this->getFinancialOverview($center)['revenue_growth'],
+            'attendance_trend' => $this->getAttendanceTrend($center),
+        ];
+    }
+
+    /**
+     * Get alerts for dashboard.
+     */
+    private function getAlerts(Center $center)
+    {
+        $alerts = [];
+        
+        // Check for overdue payments
+        $overduePayments = $center->students()
+            ->join('payments', 'students.id', '=', 'payments.student_id')
+            ->where('payments.is_paid', false)
+            ->where('payments.paid_at', '<', Carbon::now())
+            ->count();
+        
+        if ($overduePayments > 0) {
+            $alerts[] = [
+                'type' => 'warning',
+                'message' => "يوجد {$overduePayments} دفعة متأخرة",
+                'action' => 'متابعة المدفوعات المستحقة',
+            ];
+        }
+        
+        return $alerts;
+    }
+
+    // Report generation methods
+    private function getEnrollmentReport(Center $center)
+    {
+        return [
+            'total_enrolled' => $center->students()->count(),
+            'monthly_enrollment' => $center->students()
+                ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+                ->whereYear('created_at', Carbon::now()->year)
+                ->groupBy('month')
+                ->get(),
+        ];
+    }
+
+    private function getAttendanceReport(Center $center)
+    {
+        return [
+            'overall_rate' => $this->calculateOverallAttendanceRate($center),
+            'by_group' => $this->getGroupAttendanceRates($center),
+        ];
+    }
+
+    private function getPerformanceReport(Center $center)
+    {
+        return [
+            'metrics' => $this->getPerformanceMetrics($center),
+            'teacher_stats' => $this->getTeacherStats($center),
+        ];
+    }
+
+    private function getTeacherPerformanceReport(Center $center)
+    {
+        return $center->teachers()
+            ->with(['students.payments'])
+            ->get()
+            ->map(function ($teacher) {
+                return [
+                    'name' => $teacher->name,
+                    'subject' => $teacher->subject,
+                    'students_count' => $teacher->students->count(),
+                    'total_revenue' => $teacher->students->sum(function ($student) {
+                        return $student->payments->where('is_paid', true)->sum('amount');
+                    }),
+                ];
+            });
+    }
+
+    private function getGrowthReport(Center $center)
+    {
+        $months = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = [
+                'month' => $date->format('M Y'),
+                'students' => $center->students()
+                    ->whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)
+                    ->count(),
+                'revenue' => $center->students()
+                    ->join('payments', 'students.id', '=', 'payments.student_id')
+                    ->where('payments.is_paid', true)
+                    ->whereMonth('payments.paid_at', $date->month)
+                    ->whereYear('payments.paid_at', $date->year)
+                    ->sum('payments.amount'),
+            ];
+        }
+        
+        return $months;
+    }
+
+    private function getRevenueReport(Center $center)
+    {
+        return [
+            'total_revenue' => $center->students()
+                ->join('payments', 'students.id', '=', 'payments.student_id')
+                ->where('payments.is_paid', true)
+                ->sum('payments.amount'),
+            'monthly_breakdown' => $this->getGrowthReport($center),
+        ];
+    }
+
+    private function getPaymentsReport(Center $center)
+    {
+        return [
+            'total_collected' => $center->students()
+                ->join('payments', 'students.id', '=', 'payments.student_id')
+                ->where('payments.is_paid', true)
+                ->sum('payments.amount'),
+            'total_pending' => $center->students()
+                ->join('payments', 'students.id', '=', 'payments.student_id')
+                ->where('payments.is_paid', false)
+                ->sum('payments.amount'),
+        ];
+    }
+
+    private function getOutstandingPaymentsReport(Center $center)
+    {
+        return $center->students()
+            ->join('payments', 'students.id', '=', 'payments.student_id')
+            ->where('payments.is_paid', false)
+            ->get(['students.name', 'payments.amount', 'payments.paid_at'])
+            ->groupBy('name')
+            ->map(function ($payments, $studentName) {
+                return [
+                    'student_name' => $studentName,
+                    'total_outstanding' => $payments->sum('amount'),
+                    'overdue_count' => $payments->where('paid_at', '<', Carbon::now())->count(),
+                ];
+            });
+    }
+
+    private function getTeacherEarningsReport(Center $center)
+    {
+        return $center->teachers()
+            ->with(['students.payments'])
+            ->get()
+            ->map(function ($teacher) {
+                $totalEarnings = $teacher->students->sum(function ($student) {
+                    return $student->payments->where('is_paid', true)->sum('amount');
+                });
+                
+                return [
+                    'name' => $teacher->name,
+                    'subject' => $teacher->subject,
+                    'total_earnings' => $totalEarnings,
+                    'commission' => $totalEarnings * 0.7, // 70% commission
+                ];
+            });
+    }
+
+    private function getRevenueProjections(Center $center)
+    {
+        // Placeholder for revenue projections
+        return [
+            'next_month_projection' => $this->getFinancialOverview($center)['current_month_revenue'] * 1.1,
+            'quarterly_projection' => $this->getFinancialOverview($center)['current_month_revenue'] * 3.2,
+        ];
+    }
+
+    // Additional helper methods
+    private function getRevenueChartData(Center $center)
+    {
+        return $this->getGrowthReport($center);
+    }
+
+    private function getEnrollmentChartData(Center $center)
+    {
+        return $this->getEnrollmentReport($center)['monthly_enrollment'];
+    }
+
+    private function getAttendanceChartData(Center $center)
+    {
+        return $this->getGroupAttendanceRates($center);
+    }
+
+    private function calculateStudentGrowth(Center $center)
+    {
+        $thisMonth = Carbon::now();
+        $lastMonth = Carbon::now()->subMonth();
+        
+        $thisMonthStudents = $center->students()
+            ->whereMonth('created_at', $thisMonth->month)
+            ->whereYear('created_at', $thisMonth->year)
+            ->count();
+        
+        $lastMonthStudents = $center->students()
+            ->whereMonth('created_at', $lastMonth->month)
+            ->whereYear('created_at', $lastMonth->year)
+            ->count();
+        
+        return $lastMonthStudents > 0 
+            ? round((($thisMonthStudents - $lastMonthStudents) / $lastMonthStudents) * 100, 1)
+            : 0;
+    }
+
+    private function getAttendanceTrend(Center $center)
+    {
+        // Placeholder for attendance trend calculation
+        return 85;
+    }
+
+    private function calculateOverallAttendanceRate(Center $center)
+    {
+        // Placeholder for overall attendance rate
+        return 88;
+    }
+
+    private function getGroupAttendanceRates(Center $center)
+    {
+        return $center->groups()
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'group_name' => $group->name,
+                    'attendance_rate' => 90, // Placeholder
+                ];
+            });
+    }
+
+    private function getTeacherStats(Center $center)
+    {
+        return $center->teachers()
+            ->with(['students'])
+            ->get()
+            ->map(function ($teacher) {
+                return [
+                    'name' => $teacher->name,
+                    'student_count' => $teacher->students->count(),
+                    'efficiency' => $teacher->students->count() > 0 ? 85 : 0, // Placeholder
+                ];
+            });
+    }
 }

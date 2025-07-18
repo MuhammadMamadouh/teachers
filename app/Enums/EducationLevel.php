@@ -48,4 +48,17 @@ enum EducationLevel: string
             self::UNIVERSITY->value,
         ];
     }
+
+    /**
+     * Get education levels formatted for frontend components
+     */
+    public static function forFrontend(): array
+    {
+        return [
+            ['value' => self::PRIMARY->value, 'label' => self::PRIMARY->label()],
+            ['value' => self::MIDDLE->value, 'label' => self::MIDDLE->label()],
+            ['value' => self::SECONDARY->value, 'label' => self::SECONDARY->label()],
+            ['value' => self::UNIVERSITY->value, 'label' => self::UNIVERSITY->label()],
+        ];
+    }
 }

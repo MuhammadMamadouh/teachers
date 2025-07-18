@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Create({ groups, academicYears, teachers, lastStudent }) {
+export default function Create({ groups, academicYears, teachers, educationLevels, lastStudent }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         phone: '',
@@ -171,10 +171,11 @@ export default function Create({ groups, academicYears, teachers, lastStudent })
                                             required
                                         >
                                             <option value="">اختر المستوى</option>
-                                            <option value="ابتدائي">ابتدائي</option>
-                                            <option value="إعدادي">إعدادي</option>
-                                            <option value="ثانوي">ثانوي</option>
-                                            <option value="جامعي">جامعي</option>
+                                            {educationLevels?.map((level) => (
+                                                <option key={level.value} value={level.value}>
+                                                    {level.label}
+                                                </option>
+                                            ))}
                                         </select>
                                         <InputError message={errors.level} className="mt-2" />
                                     </div>

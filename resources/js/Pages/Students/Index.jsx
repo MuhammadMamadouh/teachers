@@ -9,7 +9,7 @@ import {
     UsersIcon
 } from '@heroicons/react/24/outline';
 
-export default function Index({ students, groups, academicYears, teachers, subscriptionLimits, currentStudentCount, canAddStudents, filters }) {
+export default function Index({ students, groups, academicYears, teachers, educationLevels, subscriptionLimits, currentStudentCount, canAddStudents, filters }) {
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [selectedGroup, setSelectedGroup] = useState(filters?.group_id || '');
     const [selectedAcademicYear, setSelectedAcademicYear] = useState(filters?.academic_year_id || '');
@@ -224,10 +224,11 @@ export default function Index({ students, groups, academicYears, teachers, subsc
                                     onChange={(e) => handleLevelChange(e.target.value)}
                                 >
                                     <option value="">جميع المستويات</option>
-                                    <option value="ابتدائي">ابتدائي</option>
-                                    <option value="إعدادي">إعدادي</option>
-                                    <option value="ثانوي">ثانوي</option>
-                                    <option value="جامعي">جامعي</option>
+                                    {educationLevels?.map((level) => (
+                                        <option key={level.value} value={level.value}>
+                                            {level.label}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 

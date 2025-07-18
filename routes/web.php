@@ -235,13 +235,27 @@ Route::middleware('auth')->group(function () {
         Route::prefix('center/owner')->name('center.owner.')->middleware(['center-owner'])->group(function () {
             Route::get('/dashboard', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'index'])->name('dashboard');
             Route::get('/overview', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'overview'])->name('overview');
-            Route::get('/teachers', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'teachers'])->name('teachers');
-            Route::post('/teachers', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'createTeacher'])->name('teachers.create');
-            Route::put('/teachers/{teacher}', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'updateTeacher'])->name('teachers.update');
-            Route::delete('/teachers/{teacher}', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'deleteTeacher'])->name('teachers.delete');
-            Route::get('/students', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'students'])->name('students');
+            
+            // Teacher management routes
+            Route::get('/teachers', [App\Http\Controllers\CenterOwner\TeacherController::class, 'teachers'])->name('teachers');
+            Route::post('/teachers', [App\Http\Controllers\CenterOwner\TeacherController::class, 'createTeacher'])->name('teachers.create');
+            Route::put('/teachers/{teacher}', [App\Http\Controllers\CenterOwner\TeacherController::class, 'updateTeacher'])->name('teachers.update');
+            Route::delete('/teachers/{teacher}', [App\Http\Controllers\CenterOwner\TeacherController::class, 'deleteTeacher'])->name('teachers.delete');
+            
+            // Student management routes
+            Route::get('/students', [App\Http\Controllers\CenterOwner\StudentController::class, 'students'])->name('students');
+            Route::post('/students', [App\Http\Controllers\CenterOwner\StudentController::class, 'createStudent'])->name('students.create');
+            Route::put('/students/{student}', [App\Http\Controllers\CenterOwner\StudentController::class, 'updateStudent'])->name('students.update');
+            Route::delete('/students/{student}', [App\Http\Controllers\CenterOwner\StudentController::class, 'deleteStudent'])->name('students.delete');
+            
+            // Assistant management routes
+            Route::get('/assistants', [App\Http\Controllers\CenterOwner\AssistantController::class, 'assistants'])->name('assistants');
+            Route::post('/assistants', [App\Http\Controllers\CenterOwner\AssistantController::class, 'createAssistant'])->name('assistants.create');
+            Route::put('/assistants/{assistant}', [App\Http\Controllers\CenterOwner\AssistantController::class, 'updateAssistant'])->name('assistants.update');
+            Route::delete('/assistants/{assistant}', [App\Http\Controllers\CenterOwner\AssistantController::class, 'deleteAssistant'])->name('assistants.delete');
+            
+            // Other dashboard routes
             Route::get('/groups', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'groups'])->name('groups');
-            Route::get('/assistants', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'assistants'])->name('assistants');
             Route::get('/reports', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'reports'])->name('reports');
             Route::get('/financial', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'financial'])->name('financial');
             Route::get('/subscription', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'subscription'])->name('subscription');

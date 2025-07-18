@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Create({ academicYears, teachers, defaultTeacherId }) {
+export default function Create({ academicYears, teachers, educationLevels, defaultTeacherId }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         subject: '',
@@ -133,10 +133,11 @@ export default function Create({ academicYears, teachers, defaultTeacherId }) {
                                         required
                                     >
                                         <option value="">اختر المستوى</option>
-                                        <option value="ابتدائي">ابتدائي</option>
-                                        <option value="إعدادي">إعدادي</option>
-                                        <option value="ثانوي">ثانوي</option>
-                                        <option value="جامعي">جامعي</option>
+                                        {educationLevels?.map((level) => (
+                                            <option key={level.value} value={level.value}>
+                                                {level.label}
+                                            </option>
+                                        ))}
                                     </select>
                                     {errors.level && <div className="text-red-600 text-sm mt-1 text-right">{errors.level}</div>}
                                 </div>

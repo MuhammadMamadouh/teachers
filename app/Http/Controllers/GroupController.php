@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\CenterType;
+use App\Enums\EducationLevel;
 use App\Http\Requests\AssignStudentsRequest;
 use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\StoreSpecialSessionRequest;
@@ -185,6 +186,7 @@ class GroupController extends Controller
         return Inertia::render('Groups/Create', [
             'academicYears' => $academicYears,
             'teachers' => $teachers,
+            'educationLevels' => EducationLevel::forFrontend(),
             'defaultTeacherId' => $defaultTeacherId,
             'centerType' => $user->center->type ?? 'individual',
         ]);
@@ -395,6 +397,7 @@ class GroupController extends Controller
             'group' => $group,
             'academicYears' => $academicYears,
             'teachers' => $teachers,
+            'educationLevels' => EducationLevel::forFrontend(),
             'defaultTeacherId' => $defaultTeacherId,
             'centerType' => $user->center->type ?? 'individual',
         ]);

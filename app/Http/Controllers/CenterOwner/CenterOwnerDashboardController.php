@@ -246,6 +246,39 @@ class CenterOwnerDashboardController extends Controller
     }
 
     /**
+     * Show assistants management page.
+     */
+    public function assistants()
+    {
+        $user = Auth::user();
+        
+        if (!$user->center || $user->center->owner_id !== $user->id) {
+            abort(403, 'Unauthorized - Center Owner access required');
+        }
+
+        $center = $user->center;
+        
+        // Get all assistants for this center
+        $assistants = $center->assistants()
+            ->select(['id', 'name', 'email', 'phone', 'is_active', 'created_at'])
+            ->orderBy('name')
+            ->get();
+
+        // Get subscription details to check assistant limits
+        $subscription = $user->activeSubscription()->with('plan')->first();
+        $maxAssistants = $subscription && $subscription->plan ? $subscription->plan->max_assistants : 0;
+        $canAddMore = $user->canAddAssistants();
+
+        return Inertia::render('CenterOwner/Assistants', [
+            'center' => $center,
+            'assistants' => $assistants,
+            'assistantCount' => $assistants->count(),
+            'maxAssistants' => $maxAssistants,
+            'canAddMore' => $canAddMore,
+        ]);
+    }
+
+    /**
      * Show reports page.
      */
     public function reports()

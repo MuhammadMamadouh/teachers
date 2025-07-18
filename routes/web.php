@@ -238,6 +238,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/teachers', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'teachers'])->name('teachers');
             Route::get('/students', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'students'])->name('students');
             Route::get('/groups', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'groups'])->name('groups');
+            Route::get('/assistants', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'assistants'])->name('assistants');
             Route::get('/reports', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'reports'])->name('reports');
             Route::get('/financial', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'financial'])->name('financial');
             Route::get('/subscription', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'subscription'])->name('subscription');

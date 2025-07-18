@@ -88,6 +88,13 @@ export default function CenterOwnerLayout({ header, children }) {
                                 </NavLink>
 
                                 <NavLink
+                                    href={route('center.owner.assistants')}
+                                    active={route().current('center.owner.assistants')}
+                                >
+                                    إدارة المساعدين
+                                </NavLink>
+
+                                <NavLink
                                     href={route('center.owner.reports')}
                                     active={route().current('center.owner.reports')}
                                 >
@@ -283,6 +290,13 @@ export default function CenterOwnerLayout({ header, children }) {
                             active={route().current('center.owner.groups')}
                         >
                             إدارة المجموعات
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            href={route('center.owner.assistants')}
+                            active={route().current('center.owner.assistants')}
+                        >
+                            إدارة المساعدين
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink

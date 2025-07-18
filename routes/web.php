@@ -236,6 +236,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/dashboard', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'index'])->name('dashboard');
             Route::get('/overview', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'overview'])->name('overview');
             Route::get('/teachers', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'teachers'])->name('teachers');
+            Route::post('/teachers', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'createTeacher'])->name('teachers.create');
+            Route::put('/teachers/{teacher}', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'updateTeacher'])->name('teachers.update');
+            Route::delete('/teachers/{teacher}', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'deleteTeacher'])->name('teachers.delete');
             Route::get('/students', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'students'])->name('students');
             Route::get('/groups', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'groups'])->name('groups');
             Route::get('/assistants', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'assistants'])->name('assistants');

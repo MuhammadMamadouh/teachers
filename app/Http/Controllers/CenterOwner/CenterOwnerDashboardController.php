@@ -14,6 +14,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -125,6 +126,149 @@ class CenterOwnerDashboardController extends Controller
             'center' => $center,
             'teachers' => $teachers,
         ]);
+    }
+
+    /**
+     * Create a new teacher for the center.
+     */
+    public function createTeacher(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user->center || $user->center->owner_id !== $user->id) {
+            abort(403, 'Unauthorized - Center Owner access required');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string|max:20',
+            'subject' => 'nullable|string|max:255',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $center = $user->center;
+        $subscription = $center->activeSubscription;
+        
+        // Check subscription limits for teachers
+        if ($subscription) {
+            $currentTeachers = $center->teachers()->count();
+            if ($currentTeachers >= $subscription->plan->max_teachers) {
+                return back()->withErrors(['error' => 'تم الوصول للحد الأقصى من المعلمين في خطة الاشتراك الحالية']);
+            }
+        }
+
+        try {
+            DB::transaction(function () use ($request, $center) {
+                $teacher = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'subject' => $request->subject,
+                    'password' => Hash::make($request->password),
+                    'center_id' => $center->id,
+                    'type' => 'teacher',
+                    'is_approved' => true,
+                    'is_active' => true,
+                    'approved_at' => now(),
+                ]);
+
+                $teacher->assignRole('teacher');
+            });
+
+            return redirect()->back()->with('success', 'تم إضافة المعلم بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء إضافة المعلم: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update a teacher for the center.
+     */
+    public function updateTeacher(Request $request, User $teacher)
+    {
+        $user = Auth::user();
+        
+        if (!$user->center || $user->center->owner_id !== $user->id) {
+            abort(403, 'Unauthorized - Center Owner access required');
+        }
+
+        // Ensure teacher belongs to this center
+        if ($teacher->center_id !== $user->center_id) {
+            abort(403, 'Teacher does not belong to your center');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $teacher->id,
+            'phone' => 'nullable|string|max:20',
+            'subject' => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+            'is_active' => 'boolean',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request, $teacher) {
+                $updateData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'subject' => $request->subject,
+                    'is_active' => $request->boolean('is_active', true),
+                ];
+
+                if ($request->filled('password')) {
+                    $updateData['password'] = Hash::make($request->password);
+                }
+
+                $teacher->update($updateData);
+            });
+
+            return redirect()->back()->with('success', 'تم تحديث بيانات المعلم بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء تحديث المعلم: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete a teacher from the center.
+     */
+    public function deleteTeacher(User $teacher)
+    {
+        $user = Auth::user();
+        
+        if (!$user->center || $user->center->owner_id !== $user->id) {
+            abort(403, 'Unauthorized - Center Owner access required');
+        }
+
+        // Ensure teacher belongs to this center
+        if ($teacher->center_id !== $user->center_id) {
+            abort(403, 'Teacher does not belong to your center');
+        }
+
+        // Prevent deletion if teacher has students or groups
+        $hasStudents = $teacher->students()->count() > 0;
+        $hasGroups = $teacher->groups()->count() > 0;
+
+        if ($hasStudents || $hasGroups) {
+            return redirect()->back()->withErrors([
+                'error' => 'لا يمكن حذف المعلم لأنه مرتبط بطلاب أو مجموعات. يرجى نقل الطلاب والمجموعات إلى معلم آخر أولاً.'
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($teacher) {
+                // Remove role assignments
+                $teacher->roles()->detach();
+                
+                // Soft delete the teacher
+                $teacher->delete();
+            });
+
+            return redirect()->back()->with('success', 'تم حذف المعلم بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء حذف المعلم: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -265,9 +409,10 @@ class CenterOwnerDashboardController extends Controller
             ->get();
 
         // Get subscription details to check assistant limits
-        $subscription = $user->activeSubscription()->with('plan')->first();
+        $subscription = $center->activeSubscription()->with('plan')->first();
         $maxAssistants = $subscription && $subscription->plan ? $subscription->plan->max_assistants : 0;
-        $canAddMore = $user->canAddAssistants();
+        $currentAssistants = $assistants->count();
+        $canAddMore = !$subscription || $currentAssistants < $maxAssistants;
 
         return Inertia::render('CenterOwner/Assistants', [
             'center' => $center,

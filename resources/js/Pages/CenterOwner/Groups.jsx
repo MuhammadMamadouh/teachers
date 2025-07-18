@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import CenterOwnerLayout from '@/Layouts/CenterOwnerLayout';
 import { 
     UserGroupIcon, 
@@ -86,10 +86,10 @@ export default function Groups({ center, groups }) {
                         </p>
                     </div>
                     <div className="flex space-x-2 space-x-reverse">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center">
+                        <Link href={route('center.owner.groups.create')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center">
                             <PlusIcon className="h-4 w-4 ml-1" />
                             إضافة مجموعة جديدة
-                        </button>
+                        </Link>
                     </div>
                 </div>
             }
@@ -146,10 +146,10 @@ export default function Groups({ center, groups }) {
                                         ابدأ بإضافة مجموعات جديدة إلى المركز.
                                     </p>
                                     <div className="mt-6">
-                                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center mx-auto">
+                                        <Link href={route('center.owner.groups.create')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center mx-auto">
                                             <PlusIcon className="h-4 w-4 ml-1" />
                                             إضافة مجموعة جديدة
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                             )}

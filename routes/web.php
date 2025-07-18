@@ -254,8 +254,18 @@ Route::middleware('auth')->group(function () {
             Route::put('/assistants/{assistant}', [App\Http\Controllers\CenterOwner\AssistantController::class, 'updateAssistant'])->name('assistants.update');
             Route::delete('/assistants/{assistant}', [App\Http\Controllers\CenterOwner\AssistantController::class, 'deleteAssistant'])->name('assistants.delete');
             
+            // Group management routes
+            Route::get('/groups', [App\Http\Controllers\CenterOwner\GroupController::class, 'index'])->name('groups.index');
+            Route::get('/groups/create', [App\Http\Controllers\CenterOwner\GroupController::class, 'create'])->name('groups.create');
+            Route::post('/groups', [App\Http\Controllers\CenterOwner\GroupController::class, 'store'])->name('groups.store');
+            Route::get('/groups/{group}', [App\Http\Controllers\CenterOwner\GroupController::class, 'show'])->name('groups.show');
+            Route::get('/groups/{group}/edit', [App\Http\Controllers\CenterOwner\GroupController::class, 'edit'])->name('groups.edit');
+            Route::put('/groups/{group}', [App\Http\Controllers\CenterOwner\GroupController::class, 'update'])->name('groups.update');
+            Route::delete('/groups/{group}', [App\Http\Controllers\CenterOwner\GroupController::class, 'destroy'])->name('groups.destroy');
+            Route::post('/groups/{group}/assign-students', [App\Http\Controllers\CenterOwner\GroupController::class, 'assignStudents'])->name('groups.assign-students');
+            Route::delete('/groups/{group}/remove-student/{student}', [App\Http\Controllers\CenterOwner\GroupController::class, 'removeStudent'])->name('groups.remove-student');
+            
             // Other dashboard routes
-            Route::get('/groups', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'groups'])->name('groups');
             Route::get('/reports', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'reports'])->name('reports');
             Route::get('/financial', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'financial'])->name('financial');
             Route::get('/subscription', [App\Http\Controllers\CenterOwner\CenterOwnerDashboardController::class, 'subscription'])->name('subscription');

@@ -80,14 +80,12 @@ export default function CenterOwnerLayout({ header, children }) {
                                     إدارة الطلاب
                                 </NavLink>
 
-                                <NavLink
-                                    href={route('center.owner.groups')}
-                                    active={route().current('center.owner.groups')}
-                                >
-                                    إدارة المجموعات
-                                </NavLink>
-
-                                <NavLink
+                        <NavLink
+                            href={route('center.owner.groups.index')}
+                            active={route().current('center.owner.groups.*')}
+                        >
+                            إدارة المجموعات
+                        </NavLink>                                <NavLink
                                     href={route('center.owner.assistants')}
                                     active={route().current('center.owner.assistants')}
                                 >
@@ -286,8 +284,8 @@ export default function CenterOwnerLayout({ header, children }) {
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
-                            href={route('center.owner.groups')}
-                            active={route().current('center.owner.groups')}
+                            href={route('center.owner.groups.index')}
+                            active={route().current('center.owner.groups.*')}
                         >
                             إدارة المجموعات
                         </ResponsiveNavLink>

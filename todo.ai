@@ -1,285 +1,155 @@
 
-Update this SaaS platform for managing educational centers. The system should handle two types of clients:
+Project Goal:
+This is a SaaS platform for educational centers where every account in the system is represented as a "center" (organization).
+The center can be:
 
-Individual teacher (acts as an educational center with a single teacher who is also the owner/admin).
+A real educational center with multiple teachers and assistants.
 
-Educational center (with multiple teachers, assistants, and an owner/admin).
+An individual teacher, who operates as a "center" with just himself/herself. known as individual center.
 
-All clients in the system are represented as "centers".
+The system must support both scenarios seamlessly, allowing for easy upgrades from individual to multi-teacher setups without data migration.
 
-Every user (teacher, assistant, admin) belongs to one center only.
-Centers can have multiple users, but each user is linked to a single center.
-Centers can have multiple branches or locations, but the core data model is centered around the concept of a single center.
+Scenario 1: Educational Center with Multiple Teachers & Assistants
+Entities:
 
-All educational data (students, groups, sessions, payments, etc.) is always linked to a center, and usually also to a specific teacher within the center.
+Center: Main account (organization).
 
-Entities and Relationships:
-centers table:
+Admin: The owner/manager of the center. Full access to all data.
 
-Represents the main account for every client (either an individual teacher or an educational center).
+Teachers: Each teacher manages their own students, groups, and sessions.
 
-Fields: id, name, address, subscription info, etc.
+Assistants: Linked to either the center as a whole or to a specific teacher. Their permissions are set by the admin.
 
-Each center has an "owner" (admin user).
+Students/Groups/Sessions: Always linked to a teacher and the center.
 
-users table:
+Requirements:
 
-Every user belongs to a center (center_id foreign key).
+Admin can:
 
-Fields: id, center_id, name, email, role (admin, teacher, assistant), password, etc.
+Add/edit/delete any teacher, assistant, student, or group in the center.
 
-A center can have multiple users. Roles:
+Assign assistants to specific teachers or give general assistant permissions.
 
-admin: owner/manager of the center. Can see and manage all data in the center.
+See all data, analytics, and reports for the entire center.
 
-teacher: can only see/manage their own students, groups, sessions.
+Control the subscription/plan and see current usage (number of teachers, assistants, students).
 
-assistant: has limited permissions (defined by the admin).
+Teacher can:
 
+Add/edit/delete their own students and groups only.
 
-Admin can add, edit, or remove other teachers and assistants within their center.
+View and manage their sessions, attendance, and payments for their own students.
 
-students table:
+Cannot access or modify data for other teachers.
 
-Each student belongs to a specific teacher (teacher_id) and a center (center_id for easier filtering).
+Assistant can (as set by admin):
 
-Fields: id, center_id, teacher_id, name, academic_year, etc.
+Add/edit students and groups for a specific teacher or the whole center (if permission granted).
 
-groups table:
+Register attendance and payments.
 
-Each group will be owned by a specific teacher and center.
+Permissions must be dynamic and configurable (using roles/permissions system).
 
-Fields: id, center_id, teacher_id, name, academic_year, etc.
+Subscription Plans:
 
-sessions table:
+Each plan limits the number of teachers, assistants, and students per center.
 
-Represents class sessions. Each session belongs to a group and a teacher.
+When center reaches limit, show upgrade prompt.
 
-Fields: id, group_id, teacher_id, center_id, date, session_type, etc.
+Data Filtering:
 
-assistants will be filter by center_id and can have customizable permissions.
+Every action and API must be filtered by center_id.
 
-Features/Requirements:
-Authentication & Authorization:
+Teachers and assistants see only data relevant to their assignment (their own or as permitted by admin).
 
-Users only access data within their center.
+Scenario 2: Individual Teacher (Single-User Center)
+Entities:
 
-admin sees all teachers, students, groups, reports, and can manage users.
+Center: Created automatically for the teacher, using their name.
 
-teacher sees only their groups, students, and sessions.
+Admin/Teacher: The same user (has both roles).
 
-assistant can have customizable permissions (e.g., view attendance, edit students).
+No assistants by default, unless teacher upgrades plan and invites others.
 
-Registration/Onboarding:
+Requirements:
 
-New user signs up as a center.
+The individual teacher sees and manages all their own data as the only user in the center.
 
-If the user is an individual teacher, the center name can default to their name.
+No other teachers exist in this center (unless teacher decides to upgrade or add more users later).
 
-The first user is always admin and can also be a teacher (dual role if needed).
+System must work smoothly for single-teacher scenario, without adding unnecessary steps or complexity.
 
-Subscription/Billing:
+Teacher can still invite assistants if their plan allows, and can give them permissions just like in scenario 1.
 
-Subscriptions are linked to centers.
+All data linked to the center and the teacher as the only user.
 
-Center can upgrade plan to allow more teachers, assistants, or students.
+Upgrade Path:
 
-Multi-tenancy:
+If the teacher wants to grow (add more teachers/assistants), they can simply invite new users, and the system automatically adapts to scenario 1.
 
-All data is isolated per center (soft multi-tenancy using center_id).
+General System Rules:
+Every user (admin, teacher, assistant) is always linked to a center.
 
-Data Migration (if there is legacy data):
+All students, groups, sessions, and related data must always be linked to both a center and a teacher.
 
-For current teachers in the system: create a new center for each, link all their data to this center, and make them admin and teacher for their own center.
+Role & permissions system is essential:
 
-Database Schema Example (Laravel Migrations):
-php
-Copy
-Edit
-// centers table
-Schema::create('centers', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->foreignId('owner_id')->constrained('users'); // owner/admin user
-    $table->string('address')->nullable();
-    $table->timestamps();
-});
+Must be flexible (admin can set what assistants can/can’t do).
 
+Teachers can only see/manage their own data.
 
+Admins have full visibility and control.
 
-Business Rules / Scenarios:
-A center (organization) can have one or more teachers, assistants, and an admin.
+UI Flows:
 
-If the center has only one teacher (the owner), the system works exactly like the "single teacher" scenario.
+On registration: User creates a center. If individual, center name is the user’s name.
 
-Admins can invite other users to join the center (teachers or assistants).
+Admin dashboard: Manage users (teachers/assistants), students, groups, sessions, and plan.
 
-All access to data must be filtered by center_id.
+Teacher dashboard: Manage only own students, groups, sessions, attendance, payments.
 
-Teachers cannot see other teachers’ students/groups/sessions unless they have an admin role.
+Assistant dashboard: Show only the views and actions permitted by their role/assigned permissions.
 
-UI/UX Notes:
-Registration page should clearly state that the account is for a center or for an individual teacher.
+Subscription management:
 
-Dashboard for admins shows full center analytics and management.
+Each plan includes limits for teachers, assistants, students, etc.
 
-Dashboard for teachers is limited to their own data.
+Enforce limits and prompt upgrade as needed.
 
-Option to add/invite new teachers or assistants from the admin panel.
+All database queries and business logic must always enforce center-based isolation and teacher-based filtering for data access.
 
-Extra Instructions:
-Implement permissions using Spatie Laravel-Permission.
 
-Prepare seeders/factories for sample data for both single-teacher and multi-teacher centers.
+Business Scenarios:
+Admin  invites a new teacher or assistant or Add them manually with emails and default password:
 
-All endpoints and resources must always check center_id for security.
+Invitation is sent by email; invited user joins center with specified role.
 
-Start building this new architecture now. Make sure your code and migrations follow the above pattern.
-Document any special business logic or decisions you make.
-Start with the models and migrations, then the authentication/authorization logic.
-Don’t forget to seed example data for both types of centers (individual teacher, and multi-teacher center).
+System checks plan limits before adding.
 
+Teacher adds a new student or group:
 
+Student/group linked only to that teacher and their center.
 
+Assistant marks attendance for a group:
 
+Only for the groups/teachers they have permissions for.
 
+Teacher wants to add another teacher:
 
-Backend Changes (Laravel)
-1. User & Teacher Management
-All users belong to a center (center_id).
+System checks if allowed by current plan; if not, prompt upgrade.
 
-Every user has a role: admin, teacher, or assistant.
+Teacher working solo:
 
+Everything works as before, but under the center structure.
 
+Notes:
+The design must ensure seamless upgrade from single-teacher to multi-teacher with zero data migration needed.
 
-API Endpoints:
-GET /api/center/users
-List all users (teachers, assistants) in the center. Only accessible by admin.
+Permissions/roles must be highly configurable.
 
-POST /api/center/users
-Add new teacher/assistant (input: name, email, role). Send invitation email if needed.
+Every view/action in the UI should always respect the user's center, role, and assigned permissions.
 
-PUT /api/center/users/{id}
-Edit user info or change role.
-
-DELETE /api/center/users/{id}
-Remove a user (except admin).
-
-2. Students & Groups Filtering
-Each student and group has both center_id and teacher_id.
-
-API endpoints for students/groups must:
-
-Filter data by both center_id (always!) and teacher_id:
-
-For teachers: show only their own students and groups.
-
-For admins: show all, with ability to filter by teacher.
-
-API Endpoints:
-GET /api/students?teacher_id=xx
-List students for a specific teacher (admin only). Teachers auto-filtered.
-
-GET /api/groups?teacher_id=xx
-Same for groups.
-
-All create/update endpoints require valid center_id and teacher_id in payload.
-
-3. Subscription Plans (Plans Table)
-Update subscription logic to include:
-
-max_teachers (number of teachers allowed in plan)
-
-max_assistants
-
-max_students
-
-When adding new teachers/assistants, enforce these limits.
-
-API returns an error if the center exceeds its allowed users.
-
-Sample Plan Table Structure:
-id	name	price	max_teachers	max_assistants	max_students	features
-
-4. Authorization & Security
-All API access must be scoped by center_id.
-
-Only admins can manage other users.
-
-Teachers only see their own data.
-
-Add policies or middleware for fine-grained permissions.
-
-Frontend Changes (React/Blade/Other SPA)
-1. User Management UI (Admin Only)
-Add a "Users" or "Staff" section in the center admin dashboard.
-
-List all teachers and assistants, with roles and current status.
-
-Button to "Add Teacher/Assistant" (opens modal/form to input data).
-
-Option to edit or remove users.
-
-Show a counter: "3/5 teachers used" based on current plan.
-
-If max reached, show upgrade prompt.
-
-2. Students & Groups Pages
-For teachers:
-
-Show only their students/groups.
-
-For admins:
-
-Ability to filter by teacher (dropdown/select at top).
-
-Show all students/groups with teacher name column.
-
-3. Plan/Subscription Management UI
-In the billing/subscription page:
-
-Show how many teachers, assistants, students are allowed by current plan.
-
-Show current usage (e.g., "You have 3 teachers of 5 allowed in your plan").
-
-If the admin tries to add more than allowed, show clear upgrade/paywall message.
-
-Display available plans and allow plan upgrades.
-
-4. Invitations/Onboarding
-When admin adds a new teacher/assistant, send an invitation email with a registration link.
-
-Show status: "Pending invite", "Active", "Suspended", etc.
-
-5. Filtering and Navigation
-In all lists (students, groups, sessions, reports):
-
-Add teacher filter (for admin).
-
-Always scope data to the center of the logged-in user.
-
-Database Schema Adjustments
-Ensure center_id exists on all main entities.
-
-Add teacher_id where applicable (students, groups, sessions).
-
-Update seeder/factory logic to create realistic multi-teacher and single-teacher centers.
-
-Business Logic / Rules
-Only admin can invite/manage users in a center.
-
-Enforce plan limits on teachers, assistants, and students.
-
-Data is always filtered by center_id, and, for teachers, also by teacher_id.
-
-Upgrading plan unlocks higher limits.
-
-Optional Extras
-Audit log for user management actions (added/removed teachers).
-
-Role management can be extended with Spatie Laravel Permission if needed.
-
-Start implementing these changes.
-Document any edge cases and keep API and UI in sync with the above requirements.
-Provide seeders/factories for easy testing of centers with varying numbers of teachers and students.
+Build the backend and frontend architecture to fully support both scenarios out-of-the-box.
+Document special logic for permissions, user management, and plan enforcement.
+All endpoints, queries, and UI screens must always reflect the correct scenario for each logged-in user.
 

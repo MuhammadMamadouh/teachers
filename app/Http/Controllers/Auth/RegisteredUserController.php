@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\CenterType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Center;
 use App\Models\Governorate;
 use App\Models\Plan;
@@ -52,29 +53,9 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
-        // dd($request->all()); // Debugging line to inspect request data
-        // Auto-set teacher status for individual centers
-        if ($request->center_type === CenterType::INDIVIDUAL->value) {
-            $request->merge(['is_teacher' => true]);
-        }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'phone' => 'required|string|max:20',
-            'subject' => 'required_if:is_teacher,true|string|max:255',
-            'governorate_id' => 'required|exists:governorates,id',
-            'plan_id' => 'nullable|exists:plans,id',
-            'center_name' => 'required|string|max:255',
-            'center_type' => 'required|in:' . implode(',', array_column(CenterType::cases(), 'value')),
-            'center_address' => 'nullable|string|max:255',
-            'is_teacher' => 'boolean',
-        ], [
-            'subject.required_if' => 'المادة مطلوبة إذا كنت معلماً',
-        ]);
 
         // Create center first
         $center = Center::create([
@@ -101,8 +82,8 @@ class RegisteredUserController extends Controller
         // Update center with owner
         $center->update(['owner_id' => $user->id]);
 
-        // Assign roles - All registered users are center owners by default
-        $user->assignRole('admin'); // Center admin role
+        // Assign roles - Center owners get center-admin role, not system admin
+        $user->assignRole('center-admin'); // Center admin role (not system admin)
         
         // If user specified they are also a teacher, assign teacher role
         if ($request->is_teacher) {
@@ -135,7 +116,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Redirect new users to onboarding
-        return redirect(route('onboarding.show', absolute: false));
+        // Redirect new users to pending approval page since they need approval first
+        return redirect(route('pending-approval', absolute: false));
     }
 }

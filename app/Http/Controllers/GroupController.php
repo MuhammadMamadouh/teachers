@@ -248,7 +248,6 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
-        // dd($group->center_id, $user->center_id);
         // Ensure the group belongs to the user's center
         if ($group->center_id !== $user->center_id) {
             abort(403);

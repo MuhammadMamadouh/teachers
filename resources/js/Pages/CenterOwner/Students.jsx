@@ -183,6 +183,7 @@ export default function Students({
     const hasStudents = studentsArray && studentsArray.length > 0;
     
     const StudentCard = ({ student }) => (
+        
         <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
@@ -225,7 +226,7 @@ export default function Students({
             <div className="space-y-2 mb-4">
                 <div className="flex items-center">
                     <UserIcon className="h-4 w-4 text-gray-400 ml-2" />
-                    <span className="text-sm text-gray-600">المعلم: {student.teacher?.name || 'غير محدد'}</span>
+                    <span className="text-sm text-gray-600">المعلم: {student.user?.name || 'غير محدد'}</span>
                 </div>
                 <div className="flex items-center">
                     <UserGroupIcon className="h-4 w-4 text-gray-400 ml-2" />
@@ -242,21 +243,6 @@ export default function Students({
                     <span className="text-sm text-gray-600">
                         تاريخ التسجيل: {student.created_at ? new Date(student.created_at).toLocaleDateString('ar-EG') : 'غير محدد'}
                     </span>
-                </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-                <div className="text-center">
-                    <div className="text-lg font-semibold text-blue-600">{student.attendance_rate || 0}%</div>
-                    <div className="text-xs text-gray-500">معدل الحضور</div>
-                </div>
-                <div className="text-center">
-                    <div className={`text-lg font-semibold ${
-                        student.payment_status === 'paid' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                        {student.payment_status === 'paid' ? 'مدفوع' : 'غير مدفوع'}
-                    </div>
-                    <div className="text-xs text-gray-500">حالة الدفع</div>
                 </div>
             </div>
         </div>
@@ -421,33 +407,7 @@ export default function Students({
                         </div>
                     </div>
 
-                    {/* Statistics */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <StatCard
-                            icon={AcademicCapIcon}
-                            title="إجمالي الطلاب"
-                            value={studentCount || 0}
-                            color="blue"
-                        />
-                        <StatCard
-                            icon={AcademicCapIcon}
-                            title="الطلاب النشطين"
-                            value={studentsArray?.filter(s => s.is_active)?.length || 0}
-                            color="green"
-                        />
-                        <StatCard
-                            icon={CurrencyDollarIcon}
-                            title="الطلاب المدفوعين"
-                            value={studentsArray?.filter(s => s.payment_status === 'paid')?.length || 0}
-                            color="purple"
-                        />
-                        <StatCard
-                            icon={UserGroupIcon}
-                            title="الحد الأقصى"
-                            value={maxStudents || 'غير محدود'}
-                            color="yellow"
-                        />
-                    </div>
+                   
 
                     {/* Students List */}
                     <div className="bg-white rounded-lg shadow">

@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'approved' => \App\Http\Middleware\EnsureUserIsApproved::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'system-admin' => \App\Http\Middleware\EnsureUserIsSystemAdmin::class,
             'not-admin' => \App\Http\Middleware\EnsureUserIsNotAdmin::class,
             'teacher-or-admin' => \App\Http\Middleware\EnsureUserIsTeacherOrAdmin::class,
             'scope-by-teacher' => \App\Http\Middleware\ScopeResourcesByTeacher::class,

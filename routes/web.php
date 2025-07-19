@@ -3,7 +3,10 @@
 use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\Admin\AdminTeacherController;
+use App\Http\Controllers\Admin\CenterAdminController;
+use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\UpgradeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CenterController;
@@ -102,38 +105,59 @@ Route::get('/pending-approval', [PendingApprovalController::class, 'index'])
     ->middleware('auth')
     ->name('pending-approval');
 
-// Admin routes
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+// Admin routes - System Admin only
+Route::middleware(['auth', 'system-admin'])->prefix('admin')->group(function () {
     Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
     Route::post('/users/{user}/approve', [AdminController::class, 'approveUser'])->name('admin.users.approve');
     Route::delete('/users/{user}/reject', [AdminController::class, 'rejectUser'])->name('admin.users.reject');
 
-    // Admin teacher management
+    // Admin teacher management - Only for system admins
     Route::resource('teachers', AdminTeacherController::class, ['as' => 'admin']);
     Route::post('/teachers/{teacher}/activate', [AdminTeacherController::class, 'activate'])->name('admin.teachers.activate');
     Route::post('/teachers/{teacher}/deactivate', [AdminTeacherController::class, 'deactivate'])->name('admin.teachers.deactivate');
     Route::post('/teachers/bulk-action', [AdminTeacherController::class, 'bulkAction'])->name('admin.teachers.bulk-action');
 
-    // Admin plan management
+    // Admin plan management - Only for system admins
     Route::resource('plans', AdminPlanController::class, ['as' => 'admin']);
     Route::post('/plans/{plan}/set-default', [AdminPlanController::class, 'setDefault'])->name('admin.plans.set-default');
 
-    // Plan upgrade request management
+    // Plan upgrade request management - Only for system admins
     Route::get('/plan-upgrade-requests', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'index'])->name('admin.plan-upgrade-requests.index');
     Route::get('/plan-upgrade-requests/{planUpgradeRequest}', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'show'])->name('admin.plan-upgrade-requests.show');
     Route::post('/plan-upgrade-requests/{planUpgradeRequest}/approve', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'approve'])->name('admin.plan-upgrade-requests.approve');
     Route::post('/plan-upgrade-requests/{planUpgradeRequest}/reject', [App\Http\Controllers\Admin\PlanUpgradeRequestController::class, 'reject'])->name('admin.plan-upgrade-requests.reject');
 
-    // Reports
+    // Reports - Only for system admins
     Route::get('/reports/governorates', [ReportsController::class, 'governorates'])->name('admin.reports.governorates');
 
-    // Admin feedback management
+    // Admin feedback management - Only for system admins
     Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
     Route::get('/feedback/{feedback}', [AdminFeedbackController::class, 'show'])->name('admin.feedback.show');
     Route::patch('/feedback/{feedback}/status', [AdminFeedbackController::class, 'updateStatus'])->name('admin.feedback.update-status');
     Route::patch('/feedback/{feedback}/reply', [AdminFeedbackController::class, 'reply'])->name('admin.feedback.reply');
     Route::delete('/feedback/{feedback}', [AdminFeedbackController::class, 'destroy'])->name('admin.feedback.destroy');
     Route::patch('/feedback/bulk-status', [AdminFeedbackController::class, 'bulkUpdateStatus'])->name('admin.feedback.bulk-status');
+});
+
+// Center Admin routes - For center admins only
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    // Center admin routes - These should be accessible to center admins
+    Route::get('/centers/{center}/dashboard', [CenterAdminController::class, 'dashboard'])->name('admin.centers.dashboard');
+    Route::get('/centers/{center}/users', [CenterAdminController::class, 'manageUsers'])->name('admin.centers.users');
+    Route::post('/centers/{center}/users', [CenterAdminController::class, 'createUser'])->name('admin.centers.users.store');
+    Route::patch('/centers/{center}/users/{user}', [CenterAdminController::class, 'updateUser'])->name('admin.centers.users.update');
+    Route::delete('/centers/{center}/users/{user}', [CenterAdminController::class, 'deleteUser'])->name('admin.centers.users.destroy');
+    
+    // Permission management - For center admins
+    Route::post('/permissions/assign-assistant', [PermissionController::class, 'assignAssistantToTeacher'])->name('admin.permissions.assign-assistant');
+    Route::post('/permissions/apply-template', [PermissionController::class, 'applyPermissionTemplate'])->name('admin.permissions.apply-template');
+    Route::get('/permissions/user/{user}', [PermissionController::class, 'getUserPermissions'])->name('admin.permissions.user');
+    Route::post('/permissions/user/{user}', [PermissionController::class, 'updateUserPermissions'])->name('admin.permissions.user.update');
+    
+    // Upgrade management - For center admins
+    Route::get('/upgrade/check-limits', [UpgradeController::class, 'checkActionLimits'])->name('admin.upgrade.check-limits');
+    Route::post('/upgrade/request', [UpgradeController::class, 'requestUpgrade'])->name('admin.upgrade.request');
+    Route::get('/upgrade/suggestions', [UpgradeController::class, 'getUpgradeSuggestions'])->name('admin.upgrade.suggestions');
 });
 
 Route::middleware('auth')->group(function () {

@@ -21,9 +21,8 @@ class GroupController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
 
-       
+        $user = Auth::user();
 
         // Get all groups in the center
         $query = Group::where('center_id', $user->center_id)
@@ -120,10 +119,7 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
-        // Ensure user is a center owner
-        if (!$user->center_id || !$user->is_admin) {
-            return redirect()->route('dashboard');
-        }
+        
 
         $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
 
@@ -183,11 +179,7 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
-        // Ensure user is a center owner
-        if (!$user->center_id || !$user->is_admin) {
-            return redirect()->route('dashboard');
-        }
-
+       
         // Determine teacher ID
         $teacherId = $request->input('teacher_id');
 

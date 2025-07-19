@@ -45,7 +45,6 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('pending-approval');
         }
 
-        // dd($user->isCenterOwner());
         // Redirect center owners to center dashboard
         if ($user->isCenterOwner()) {
             return redirect()->intended(route('center.dashboard', absolute: false));

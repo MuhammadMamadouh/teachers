@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureUserIsAdmin
+class EnsureUserIsSystemAdmin
 {
     /**
      * Handle an incoming request.
@@ -22,9 +22,9 @@ class EnsureUserIsAdmin
             abort(403, 'Unauthorized access');
         }
 
-        // Check if user is either a system admin or center admin
-        if (!$user->hasRole('system-admin') && !$user->hasRole('center-admin')) {
-            abort(403, 'Admin access required');
+        // Check if user is a system admin (has the 'system-admin' role)
+        if (!$user->hasRole('system-admin')) {
+            abort(403, 'Only system administrators can access this resource');
         }
 
         return $next($request);

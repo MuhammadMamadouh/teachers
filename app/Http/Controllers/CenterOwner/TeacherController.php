@@ -21,8 +21,32 @@ class TeacherController extends Controller
         $center = $user->center;
         $teachers = $center->teachers()
             ->select(['id', 'name', 'email', 'phone', 'subject', 'is_active', 'created_at'])
+            ->withCount(['students', 'groups'])
+            ->with([
+                'students' => function($query) {
+                    $query->select('id', 'user_id');
+                },
+                'groups' => function($query) {
+                    $query->select('id', 'user_id');
+                }
+            ])
             ->orderBy('name')
             ->get();
+
+        // Calculate total revenue for each teacher
+        $teachers->each(function ($teacher) {
+            // Calculate revenue from students' payments
+            $studentRevenue = \App\Models\Payment::whereHas('student', function($query) use ($teacher) {
+                $query->where('user_id', $teacher->id);
+            })->where('is_paid', true)->sum('amount');
+            
+            // Calculate revenue from groups' payments
+            $groupRevenue = \App\Models\Payment::whereHas('group', function($query) use ($teacher) {
+                $query->where('user_id', $teacher->id);
+            })->where('is_paid', true)->sum('amount');
+            
+            $teacher->total_revenue = $studentRevenue + $groupRevenue;
+        });
 
         // Get subscription details to check teacher limits
         $subscription = $center->activeSubscription()->with('plan')->first();
@@ -51,6 +75,7 @@ class TeacherController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:100',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         $center = $user->center;
@@ -74,6 +99,7 @@ class TeacherController extends Controller
                     'role' => 'teacher',
                     'is_active' => true,
                     'password' => bcrypt('password'), // Default password
+                    'is_approved' => true, // Automatically approve new teachers
                 ]);
 
                 // Send welcome email with login credentials
@@ -103,6 +129,7 @@ class TeacherController extends Controller
             'phone' => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:100',
             'is_active' => 'boolean',
+
         ]);
         
         try {
@@ -135,9 +162,9 @@ class TeacherController extends Controller
         
         try {
             DB::transaction(function () use ($teacher) {
-                // Delete related records first
-                $teacher->students()->delete();
-                $teacher->groups()->delete();
+                // Set related records first
+                $teacher->students()->update(['teacher_id' => null]);
+                $teacher->groups()->update(['teacher_id' => null]);
                 $teacher->delete();
             });
             

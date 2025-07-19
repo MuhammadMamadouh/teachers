@@ -169,7 +169,7 @@ class RegistrationWorkflowTest extends TestCase
     }
 
     /** @test */
-    public function registered_user_redirects_to_onboarding()
+    public function registered_user_redirects_to_pending_approval()
     {
         $response = $this->post('/register', [
             'name' => 'سارة أحمد',
@@ -183,6 +183,6 @@ class RegistrationWorkflowTest extends TestCase
             'center_type' => 'individual',
         ]);
 
-        $response->assertRedirect(route('onboarding.show'));
+        $response->assertRedirect(route('pending-approval'));
     }
 }

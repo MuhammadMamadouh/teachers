@@ -163,7 +163,8 @@ class StudentController extends Controller
                       ->where('is_active', true)
                       ->with(['academicYear', 'teacher'])
                       ->get();
-                    //   dd($groups->toArray());
+
+                      
         $academicYears = \App\Models\AcademicYear::getGroupedByLevel();
         
         // Get teachers for the center
@@ -276,7 +277,7 @@ class StudentController extends Controller
                 ];
             });
 
-        // dd($student->toArray());
+
         return Inertia::render('Students/Show', [
             'student' => $student,
             'recentPayments' => $recentPayments,

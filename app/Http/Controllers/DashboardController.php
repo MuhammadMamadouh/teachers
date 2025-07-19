@@ -22,16 +22,9 @@ class DashboardController extends Controller
     public const ASSISTANT = 'assistant';
 
 
-
-
-    /**
-     * Display the dashboard.
-     */
     public function index()
     {
         $user = Auth::user();
-
-
 
         // Ensure user belongs to a center
         if (!$user->center_id && !$user->is_admin) {
@@ -42,9 +35,14 @@ class DashboardController extends Controller
         $userModel = User::find($user->id);
 
         // Determine dashboard type based on user role
-        // Priority: admin role > center admin > assistant > teacher
-        if ($userModel->hasRole('admin')) {
+        // Priority: system admin > center owner > center admin > assistant > teacher
+        if ($userModel->hasRole('system-admin')) {
             return $this->adminDashboard($userModel);
+        }
+
+        // Check if user is a center owner - redirect to center owner dashboard
+        if ($userModel->isCenterOwner()) {
+            return redirect()->route('center.owner.dashboard');
         }
 
         // Check if user is a center admin (is_admin = true)

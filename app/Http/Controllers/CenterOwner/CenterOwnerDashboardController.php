@@ -24,6 +24,7 @@ class CenterOwnerDashboardController extends Controller
      */
     public function index()
     {
+
         $user = Auth::user();
         
         // Ensure user is a center owner
@@ -67,17 +68,20 @@ class CenterOwnerDashboardController extends Controller
 
         $center = $user->center;
         
-        // Get comprehensive overview data
-        $overviewData = [
-            'statistics' => $this->getDashboardStatistics($center),
-            'charts' => $this->getChartData($center),
-            'trends' => $this->getTrendData($center),
-            'alerts' => $this->getAlerts($center),
-        ];
+        // Get comprehensive statistics
+        $statistics = $this->getDashboardStatistics($center);
+        
+        // Get teacher performance stats
+        $teacherStats = $this->getTeacherPerformanceStats($center);
+        
+        // Get monthly trends
+        $monthlyTrends = $this->getMonthlyTrends($center);
 
         return Inertia::render('CenterOwner/Overview', [
             'center' => $center,
-            'overview' => $overviewData,
+            'statistics' => $statistics,
+            'teacherStats' => $teacherStats,
+            'monthlyTrends' => $monthlyTrends,
         ]);
     }
 
@@ -635,5 +639,97 @@ class CenterOwnerDashboardController extends Controller
                     'efficiency' => $teacher->students->count() > 0 ? 85 : 0, // Placeholder
                 ];
             });
+    }
+
+    /**
+     * Get teacher performance statistics for overview page.
+     */
+    private function getTeacherPerformanceStats(Center $center)
+    {
+        return $center->teachers()
+            ->withCount(['students', 'groups'])
+            ->get()
+            ->map(function ($teacher) {
+                // Calculate total revenue for this teacher
+                $totalRevenue = Payment::whereHas('student', function ($query) use ($teacher) {
+                    $query->where('user_id', $teacher->id);
+                })
+                ->where('is_paid', true)
+                ->sum('amount');
+
+                // Calculate attendance rate
+                $attendanceRate = 0;
+                if ($teacher->groups_count > 0) {
+                    $totalAttendances = Attendance::whereHas('group', function ($query) use ($teacher) {
+                        $query->where('user_id', $teacher->id);
+                    })->count();
+                    
+                    $presentAttendances = Attendance::whereHas('group', function ($query) use ($teacher) {
+                        $query->where('user_id', $teacher->id);
+                    })->where('is_present', true)->count();
+                    
+                    $attendanceRate = $totalAttendances > 0 ? round(($presentAttendances / $totalAttendances) * 100, 1) : 0;
+                }
+
+                return [
+                    'name' => $teacher->name,
+                    'subject' => $teacher->subject,
+                    'students_count' => $teacher->students_count,
+                    'groups_count' => $teacher->groups_count,
+                    'total_revenue' => $totalRevenue,
+                    'attendance_rate' => $attendanceRate,
+                ];
+            });
+    }
+
+    /**
+     * Get monthly trends data.
+     */
+    private function getMonthlyTrends(Center $center)
+    {
+        $trends = [];
+        
+        // Get data for the last 6 months
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            
+            $studentsCount = $center->students()
+                ->whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->count();
+            
+            $revenue = Payment::whereHas('student', function ($query) use ($center) {
+                $query->where('center_id', $center->id);
+            })
+            ->where('is_paid', true)
+            ->whereMonth('paid_at', $date->month)
+            ->whereYear('paid_at', $date->year)
+            ->sum('amount');
+            
+            // Calculate growth compared to previous month
+            $growth = 0;
+            if ($i < 5) {
+                $prevMonthRevenue = Payment::whereHas('student', function ($query) use ($center) {
+                    $query->where('center_id', $center->id);
+                })
+                ->where('is_paid', true)
+                ->whereMonth('paid_at', $date->copy()->subMonth()->month)
+                ->whereYear('paid_at', $date->copy()->subMonth()->year)
+                ->sum('amount');
+                
+                if ($prevMonthRevenue > 0) {
+                    $growth = round((($revenue - $prevMonthRevenue) / $prevMonthRevenue) * 100, 1);
+                }
+            }
+            
+            $trends[] = [
+                'month' => $date->format('M Y'),
+                'students' => $studentsCount,
+                'revenue' => $revenue,
+                'growth' => $growth,
+            ];
+        }
+        
+        return $trends;
     }
 }

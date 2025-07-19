@@ -143,4 +143,12 @@ class Center extends Model
     {
         return $this->hasMany(Subscription::class);
     }
+
+    /**
+     * Get all payments for this center through its users.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

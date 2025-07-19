@@ -167,17 +167,33 @@ class User extends Authenticatable
      */
     public function getSubscriptionLimits(): array
     {
-        // For assistants, use the teacher's subscription
-        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        $subscription = null;
 
-        if (!$userToCheck) {
-            return [
-                'max_students' => 0,
-                'has_active_subscription' => false,
-            ];
+        // For assistants, check teacher's subscription
+        if ($this->isAssistant()) {
+            $userToCheck = $this->teacher;
+            if (!$userToCheck) {
+                return [
+                    'max_students' => 0,
+                    'has_active_subscription' => false,
+                ];
+            }
+            
+            // If teacher belongs to a center, use center's subscription
+            if ($userToCheck->center_id && $userToCheck->center) {
+                $subscription = $userToCheck->center->activeSubscription()->with('plan')->first();
+            } else {
+                $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+            }
+        } 
+        // For teachers belonging to a center, use center's subscription
+        else if ($this->center_id && $this->center && $this->type === 'teacher') {
+            $subscription = $this->center->activeSubscription()->with('plan')->first();
         }
-
-        $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+        // For everyone else, use their own subscription
+        else {
+            $subscription = $this->activeSubscription()->with('plan')->first();
+        }
 
         if (!$subscription || !$subscription->isCurrentlyActive()) {
             return [
@@ -397,14 +413,31 @@ class User extends Authenticatable
     public function hasActiveSubscription(): bool
     {
         // For assistants, check the teacher's subscription
-        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-
-        if (!$userToCheck) {
-            return false;
+        if ($this->isAssistant()) {
+            $userToCheck = $this->teacher;
+            if (!$userToCheck) {
+                return false;
+            }
+            
+            // If the teacher belongs to a center, check center's subscription
+            if ($userToCheck->center_id && $userToCheck->center) {
+                $subscription = $userToCheck->center->activeSubscription()->first();
+                return $subscription && $subscription->isCurrentlyActive();
+            }
+            
+            // Otherwise check teacher's own subscription
+            $subscription = $userToCheck->activeSubscription()->first();
+            return $subscription && $subscription->isCurrentlyActive();
         }
 
-        $subscription = $userToCheck->activeSubscription()->first();
+        // For teachers belonging to a center, check center's subscription
+        if ($this->center_id && $this->center && $this->type === 'teacher') {
+            $subscription = $this->center->activeSubscription()->first();
+            return $subscription && $subscription->isCurrentlyActive();
+        }
 
+        // For independent teachers and center owners, check their own subscription
+        $subscription = $this->activeSubscription()->first();
         return $subscription && $subscription->isCurrentlyActive();
     }
 
@@ -414,14 +447,31 @@ class User extends Authenticatable
     public function getCurrentPlan()
     {
         // For assistants, get the teacher's plan
-        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-
-        if (!$userToCheck) {
-            return null;
+        if ($this->isAssistant()) {
+            $userToCheck = $this->teacher;
+            if (!$userToCheck) {
+                return null;
+            }
+            
+            // If the teacher belongs to a center, get center's plan
+            if ($userToCheck->center_id && $userToCheck->center) {
+                $subscription = $userToCheck->center->activeSubscription()->with('plan')->first();
+                return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
+            }
+            
+            // Otherwise get teacher's own plan
+            $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+            return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
         }
 
-        $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+        // For teachers belonging to a center, get center's plan
+        if ($this->center_id && $this->center && $this->type === 'teacher') {
+            $subscription = $this->center->activeSubscription()->with('plan')->first();
+            return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
+        }
 
+        // For independent teachers and center owners, get their own plan
+        $subscription = $this->activeSubscription()->with('plan')->first();
         return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
     }
 }

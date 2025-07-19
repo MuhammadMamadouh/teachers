@@ -211,26 +211,64 @@ class CenterOwnerDashboardController extends Controller
         }
 
         $center = $user->center;
-        $subscription = $center->activeSubscription;
-        $availablePlans = Plan::where('is_active', true)->orderBy('max_students')->get();
         
-        // Get subscription usage statistics
-        $usage = [
-            'current_teachers' => $center->teachers()->count(),
-            'current_students' => $center->students()->count(),
-            'current_groups' => $center->groups()->count(),
-            'current_assistants' => $center->assistants()->count(),
-            'max_teachers' => $subscription ? $subscription->plan->max_teachers : 0,
-            'max_students' => $subscription ? $subscription->plan->max_students : 0,
-            'max_groups' => $subscription ? $subscription->plan->max_groups : 0,
-            'max_assistants' => $subscription ? $subscription->plan->max_assistants : 0,
-        ];
+        // Get subscription with plan details
+        $subscription = $center->activeSubscription()->with('plan')->first();
+        
+        // Get available plans
+        $plans = Plan::orderBy('max_students')->get()->map(function ($plan) {
+            return [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'description' => $plan->target_audience ?? 'خطة اشتراك متقدمة',
+                'price' => $plan->price,
+                'max_students' => $plan->max_students,
+                'max_teachers' => $plan->max_teachers ?? 0,
+                'max_groups' => $plan->max_students ?? 0, // Use max_students as groups limit
+                'max_assistants' => $plan->max_assistants ?? 0,
+                'features' => $plan->features ?? [
+                    'إدارة الطلاب والمجموعات',
+                    'تتبع الحضور والغياب',
+                    'إدارة المدفوعات',
+                    'التقارير والإحصائيات'
+                ],
+                'is_recommended' => $plan->is_featured ?? false,
+            ];
+        });
+        
+        // Process subscription data
+        if ($subscription) {
+            $subscription->days_remaining = $subscription->getDaysRemainingAttribute();
+            $subscription->expires_at = $subscription->end_date;
+            
+            // Determine subscription status
+            if (!$subscription->is_active) {
+                $subscription->status = 'expired';
+            } elseif ($subscription->isExpired()) {
+                $subscription->status = 'expired';
+                // Mark subscription as expired
+                $subscription->update(['is_active' => false]);
+            } elseif ($subscription->days_remaining <= 7 && $subscription->days_remaining > 0) {
+                $subscription->status = 'expiring_soon';
+            } else {
+                $subscription->status = 'active';
+            }
+        }
 
         return Inertia::render('CenterOwner/Subscription', [
-            'center' => $center,
+            'center' => $center->load('owner'),
             'subscription' => $subscription,
-            'availablePlans' => $availablePlans,
-            'usage' => $usage,
+            'plans' => $plans,
+            'usage' => [
+                'teachers' => $center->teachers()->count(),
+                'students' => $center->students()->count(),
+                'groups' => $center->groups()->count(),
+                'assistants' => $center->assistants()->count(),
+                'max_teachers' => $subscription && $subscription->plan ? $subscription->plan->max_teachers : 0,
+                'max_students' => $subscription && $subscription->plan ? $subscription->plan->max_students : 0,
+                'max_groups' => $subscription && $subscription->plan ? $subscription->plan->max_students : 0,
+                'max_assistants' => $subscription && $subscription->plan ? $subscription->plan->max_assistants : 0,
+            ],
         ]);
     }
 
@@ -246,6 +284,10 @@ class CenterOwnerDashboardController extends Controller
         }
 
         $center = $user->center;
+
+        $center->load('owner');
+
+        // dd($center->toArray());
 
         return Inertia::render('CenterOwner/Settings', [
             'center' => $center,

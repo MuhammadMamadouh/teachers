@@ -63,17 +63,17 @@ export default function Settings({ center }) {
                                 <InfoField 
                                     label="اسم المركز" 
                                     value={center?.name} 
-                                    editable={true}
+                                    editable={false}
                                 />
                                 <InfoField 
                                     label="نوع المركز" 
                                     value={center?.type === 'individual' ? 'فردي' : 'مؤسسة'} 
-                                    editable={true}
+                                    editable={false}
                                 />
                                 <InfoField 
                                     label="الوصف" 
                                     value={center?.description} 
-                                    editable={true}
+                                    editable={false}
                                 />
                                 <InfoField 
                                     label="تاريخ التأسيس" 
@@ -88,22 +88,22 @@ export default function Settings({ center }) {
                                 <InfoField 
                                     label="البريد الإلكتروني" 
                                     value={center?.email} 
-                                    editable={true}
+                                    editable={false}
                                 />
                                 <InfoField 
                                     label="رقم الهاتف" 
                                     value={center?.phone} 
-                                    editable={true}
+                                    editable={false}
                                 />
                                 <InfoField 
                                     label="العنوان" 
                                     value={center?.address} 
-                                    editable={true}
+                                    editable={false}
                                 />
                                 <InfoField 
                                     label="الموقع الإلكتروني" 
                                     value={center?.website} 
-                                    editable={true}
+                                    editable={false}
                                 />
                             </div>
                         </SettingCard>
@@ -126,7 +126,7 @@ export default function Settings({ center }) {
                             </div>
                         </SettingCard>
 
-                        {/* System Settings */}
+                        {/* System Settings
                         <SettingCard icon={CogIcon} title="إعدادات النظام" color="orange">
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
@@ -162,7 +162,7 @@ export default function Settings({ center }) {
                                 </div>
                             </div>
                         </SettingCard>
-
+ */}
                         {/* Action Buttons */}
                         <div className="flex justify-end space-x-3 space-x-reverse">
                             <button className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">

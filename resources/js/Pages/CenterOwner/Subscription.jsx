@@ -9,7 +9,7 @@ import {
     ArrowUpIcon
 } from '@heroicons/react/24/outline';
 
-export default function Subscription({ center, subscription, plans }) {
+export default function Subscription({ center, subscription, plans, usage }) {
     const PlanCard = ({ plan, isCurrent = false, isUpgrade = false }) => (
         <div className={`bg-white rounded-lg shadow p-6 relative ${
             isCurrent ? 'ring-2 ring-green-500' : isUpgrade ? 'ring-2 ring-blue-500' : ''
@@ -75,9 +75,13 @@ export default function Subscription({ center, subscription, plans }) {
                         <div className={`text-sm mt-1 ${
                             status === 'active' ? 'text-green-600' : 
                             status === 'expired' ? 'text-red-600' : 
-                            'text-yellow-600'
+                            status === 'expiring_soon' ? 'text-yellow-600' : 
+                            'text-gray-600'
                         }`}>
-                            {status === 'active' ? 'نشط' : status === 'expired' ? 'منتهي الصلاحية' : 'معلق'}
+                            {status === 'active' ? 'نشط' : 
+                             status === 'expired' ? 'منتهي الصلاحية' : 
+                             status === 'expiring_soon' ? 'ينتهي قريباً' : 
+                             'معلق'}
                         </div>
                     )}
                 </div>
@@ -140,7 +144,7 @@ export default function Subscription({ center, subscription, plans }) {
                         </div>
                     )}
 
-                    {subscription?.days_remaining <= 7 && subscription?.status === 'active' && (
+                    {subscription?.days_remaining <= 7 && (subscription?.status === 'active' || subscription?.status === 'expiring_soon') && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
                             <div className="flex items-center">
                                 <ClockIcon className="h-5 w-5 text-yellow-600 ml-2" />
@@ -149,6 +153,47 @@ export default function Subscription({ center, subscription, plans }) {
                                     <p className="text-sm text-yellow-700 mt-1">
                                         سينتهي اشتراكك خلال {subscription.days_remaining} أيام. يرجى التجديد قريباً.
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Usage Statistics */}
+                    {usage && (
+                        <div className="bg-white rounded-lg shadow mb-8">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <h3 className="text-lg font-medium text-gray-900">إحصائيات الاستخدام</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-blue-600">{usage.teachers}</div>
+                                        <div className="text-sm text-gray-600">المعلمين</div>
+                                        {usage.max_teachers > 0 && (
+                                            <div className="text-xs text-gray-500">من {usage.max_teachers}</div>
+                                        )}
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-green-600">{usage.students}</div>
+                                        <div className="text-sm text-gray-600">الطلاب</div>
+                                        {usage.max_students > 0 && (
+                                            <div className="text-xs text-gray-500">من {usage.max_students}</div>
+                                        )}
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-purple-600">{usage.groups}</div>
+                                        <div className="text-sm text-gray-600">المجموعات</div>
+                                        {usage.max_groups > 0 && (
+                                            <div className="text-xs text-gray-500">من {usage.max_groups}</div>
+                                        )}
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-orange-600">{usage.assistants}</div>
+                                        <div className="text-sm text-gray-600">المساعدين</div>
+                                        {usage.max_assistants > 0 && (
+                                            <div className="text-xs text-gray-500">من {usage.max_assistants}</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

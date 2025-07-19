@@ -75,7 +75,7 @@ class TeacherController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:100',
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $center = $user->center;
@@ -91,15 +91,17 @@ class TeacherController extends Controller
 
         try {
             DB::transaction(function () use ($request, $center) {
-                $teacher = $center->teachers()->create([
+                $teacher = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
                     'phone' => $request->phone,
                     'subject' => $request->subject,
-                    'role' => 'teacher',
+                    'type' => 'teacher',
+                    'center_id' => $center->id,
                     'is_active' => true,
-                    'password' => bcrypt('password'), // Default password
+                    'password' => bcrypt($request->password), // Use provided password
                     'is_approved' => true, // Automatically approve new teachers
+                    'is_admin' => false, // Ensure they're not admin
                 ]);
 
                 // Send welcome email with login credentials

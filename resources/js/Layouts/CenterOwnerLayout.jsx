@@ -113,12 +113,12 @@ export default function CenterOwnerLayout({ header, children }) {
                                     إدارة الاشتراك
                                 </NavLink>
 
-                                <NavLink
+                                {/* <NavLink
                                     href={route('center.owner.settings')}
                                     active={route().current('center.owner.settings')}
                                 >
                                     إعدادات المركز
-                                </NavLink>
+                                </NavLink> */}
 
                                 {/* Switch back to teacher dashboard if user is also a teacher */}
                                 {user.is_teacher && (
@@ -186,9 +186,9 @@ export default function CenterOwnerLayout({ header, children }) {
                                         <Dropdown.Link href={route('profile.edit')}>
                                             الملف الشخصي
                                         </Dropdown.Link>
-                                        <Dropdown.Link href={route('center.owner.settings')}>
+                                        {/* <Dropdown.Link href={route('center.owner.settings')}>
                                             إعدادات المركز
-                                        </Dropdown.Link>
+                                        </Dropdown.Link> */}
                                         <Dropdown.Link href={route('onboarding.show')}>
                                             الجولة التعريفية
                                         </Dropdown.Link>

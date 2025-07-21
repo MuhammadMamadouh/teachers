@@ -171,47 +171,54 @@ class AdminTeacherController extends Controller
     {
         $teacher->load([
             'activeSubscription.plan',
-            'students',
-            'groups.assignedStudents',
             'groups.payments' => function ($query) {
                 $query->where('is_paid', true)->orderBy('paid_at', 'desc')->limit(10);
             },
         ]);
 
+        $total_payments = DB::table('payments')
+            ->join('students', 'payments.student_id', '=', 'students.id')
+            ->where('students.user_id', $teacher->id)
+            ->where('students.group_id', '!=', null)
+            ->where('payments.is_paid', true)
+            ->sum('payments.amount');
+
+            // dd($teacher->students()->count());
+            $total_students = $teacher->students()->count();
+
+
         // Calculate statistics
         $stats = [
-            'students_count' => $teacher->students->count(),
-            'groups_count' => $teacher->groups->count(),
-            'total_revenue' => $teacher->groups->sum(function ($group) {
-                return $group->payments->sum('amount');
-            }),
+            'total_students' => $total_students,
+            'total_groups' => $teacher->groups()->count(),
+            'total_payments' => $total_payments,
             'active_subscriptions' => $teacher->activeSubscription ? 1 : 0,
         ];
 
-        // Get recent activity
-        $recentPayments = DB::table('payments')
-            ->join('students', 'payments.student_id', '=', 'students.id')
-            ->join('groups', 'payments.group_id', '=', 'groups.id')
-            ->where('students.user_id', $teacher->id)
-            ->where('payments.is_paid', true)
-            ->orderBy('payments.paid_at', 'desc')
-            ->limit(10)
-            ->select('students.name as student_name', 'groups.name as group_name', 'payments.amount', 'payments.paid_at', 'payments.related_date')
-            ->get()
-            ->map(function ($payment) {
-                return [
-                    'student_name' => $payment->student_name,
-                    'group_name' => $payment->group_name,
-                    'amount' => $payment->amount,
-                    'paid_at' => $payment->paid_at,
-                    'month_year' => \Carbon\Carbon::parse($payment->related_date)->format('F Y'),
-                ];
-            });
+        // // Get recent activity
+        // $recentPayments = DB::table('payments')
+        //     ->join('students', 'payments.student_id', '=', 'students.id')
+        //     ->join('groups', 'payments.group_id', '=', 'groups.id')
+        //     ->where('students.user_id', $teacher->id)
+        //     ->where('payments.is_paid', true)
+        //     ->orderBy('payments.paid_at', 'desc')
+        //     ->limit(10)
+        //     ->select('students.name as student_name', 'groups.name as group_name', 'payments.amount', 'payments.paid_at', 'payments.related_date')
+        //     ->get()
+        //     ->map(function ($payment) {
+        //         return [
+        //             'student_name' => $payment->student_name,
+        //             'group_name' => $payment->group_name,
+        //             'amount' => $payment->amount,
+        //             'paid_at' => $payment->paid_at,
+        //             'month_year' => \Carbon\Carbon::parse($payment->related_date)->format('F Y'),
+        //         ];
+        //     });
 
         return Inertia::render('Admin/Teachers/Show', [
             'teacher' => $teacher,
             'stats' => $stats,
-            'recentPayments' => $recentPayments,
+            // 'recentPayments' => $recentPayments,
         ]);
     }
 

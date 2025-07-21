@@ -65,7 +65,7 @@ class DashboardController extends Controller
     /**
      * Admin dashboard with center-wide reports.
      */
-    private function adminDashboard(User $user)
+    private function adminDashboard1(User $user)
     {
         $center = $user->center;
         if (!$center && !$user->is_admin) {
@@ -131,8 +131,9 @@ class DashboardController extends Controller
 
         // Get subscription limits for the admin/center
         $subscriptionLimits = $user->getSubscriptionLimits();
-        // dd($subscriptionLimits);
-        return Inertia::render('Dashboard', [
+
+        
+        return Inertia::render('Admin/Dashboard', [
             'center' => $center,
             'students' => $students,
             'groups' => $groups,
@@ -152,6 +153,72 @@ class DashboardController extends Controller
             'recentStudents' => $recentStudents,
             'recentGroups' => $recentGroups,
             'teachersWithStats' => $teachersWithStats,
+        ]);
+    }
+
+        private function adminDashboard(): Response
+    {
+        $totalTeachers = User::where('is_admin', false)
+        ->where('type', self::TEACHER) // Exclude assistants
+        ;
+        // System statistics
+        $approvedTeachers = $totalTeachers->where('is_approved', true)->count();
+        $pendingTeachers = $totalTeachers->where('is_approved', false)->count();
+       
+        
+        $totalTeachers = User::where('is_admin', false)
+        ->where('type', self::TEACHER)->count();
+        $totalStudents = Student::count();
+        
+        // Plan statistics
+        $planStats = Plan::withCount('subscriptions')
+            ->get()
+            ->map(function ($plan) {
+                return [
+                    'name'          => $plan->name,
+                    'max_students'  => $plan->max_students,
+                    'price'        => $plan->formatted_price,
+                    'subscribers'  => $plan->subscriptions_count,
+                    'is_default'   => $plan->is_default,
+                ];
+            });
+        
+        // Recent activity
+        $recentUsers = User::where('is_admin', false)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get(['id', 'name', 'email', 'is_approved', 'created_at']);
+        
+        // Usage statistics
+        $usageStats = User::where('is_admin', false)
+        // ->where('type', self::TEACHER) // Exclude assistants
+            ->where('is_approved', true)
+            ->with(['students', 'activeSubscription.plan'])
+            ->get()
+            ->map(function ($user) {
+                $subscription = $user->activeSubscription;
+                $maxStudents = $subscription && $subscription->plan ? $subscription->plan->max_students : 0;
+                return [
+                    'student_count' => $user->students->count(),
+                    'max_students' => $maxStudents,
+                    'plan_name' => $subscription && $subscription->plan ? $subscription->plan->name : 'No Plan',
+                ];
+            });
+
+        // Get comprehensive admin reports
+        $adminReports = $this->getAdminReports();
+        
+        return Inertia::render('Admin/Dashboard', [
+            'systemStats' => [
+                'total_users' => $totalTeachers,
+                'approved_users' => $approvedTeachers,
+                'pending_users' => $pendingTeachers,
+                'total_students' => $totalStudents,
+            ],
+            'planStats' => $planStats,
+            'recentUsers' => $recentUsers,
+            'usageStats' => $usageStats,
+            'adminReports' => $adminReports,
         ]);
     }
 

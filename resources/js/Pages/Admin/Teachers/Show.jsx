@@ -9,7 +9,6 @@ import {
     UserCheck, 
     UserX, 
     User, 
-    Calendar,
     CreditCard,
     Users,
     BookOpen,
@@ -19,7 +18,7 @@ import {
     XCircle
 } from 'lucide-react';
 
-export default function TeachersShow({ teacher, stats, recentPayments }) {
+export default function TeachersShow({ teacher, stats }) {
     const [loading, setLoading] = useState(false);
 
     const handleDelete = () => {
@@ -257,7 +256,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                 <div>
                                                     <dt className="text-sm font-medium text-gray-500">بداية الاشتراك</dt>
                                                     <dd className="mt-1 text-sm text-gray-900">
-                                                        {new Date(teacher.active_subscription.starts_at).toLocaleDateString('ar-EG', {
+                                                        {new Date(teacher.active_subscription.start_date).toLocaleDateString('ar-EG', {
                                                         year: 'numeric',
                                                         month: 'long',
                                                         day: 'numeric'
@@ -267,7 +266,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                 <div>
                                                     <dt className="text-sm font-medium text-gray-500">انتهاء الاشتراك</dt>
                                                     <dd className="mt-1 text-sm text-gray-900">
-                                                        {new Date(teacher.active_subscription.ends_at).toLocaleDateString('ar-EG', {
+                                                        {new Date(teacher.active_subscription.end_date).toLocaleDateString('ar-EG', {
                                                         year: 'numeric',
                                                         month: 'long',
                                                         day: 'numeric'
@@ -291,7 +290,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                 <div>
                                                     <dt className="text-sm font-medium text-gray-500">سعر الخطة</dt>
                                                     <dd className="mt-1 text-sm text-gray-900">
-                                                        {teacher.active_subscription.plan?.price} ر.س
+                                                        {teacher.active_subscription.plan?.price} ج
                                                     </dd>
                                                 </div>
                                             </div>
@@ -309,7 +308,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                             </div>
 
                             {/* Recent Payments */}
-                            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            {/* <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                                 <div className="p-6">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">
                                         <DollarSign className="inline w-5 h-5 mr-2" />
@@ -346,7 +345,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                     })}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                                {payment.amount} ر.س
+                                                                {payment.amount} ج
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                                 {payment.student?.name}
@@ -369,7 +368,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                         </div>
                                     )}
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Stats Sidebar */}
@@ -409,11 +408,11 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                                 <span className="text-sm font-medium text-gray-700">إجمالي المدفوعات</span>
                                             </div>
                                             <span className="text-lg font-bold text-gray-900">
-                                                {stats?.total_payments || 0} ر.س
+                                                {stats?.total_payments || 0} ج
                                             </span>
                                         </div>
                                         
-                                        <div className="flex items-center justify-between">
+                                        {/* <div className="flex items-center justify-between">
                                             <div className="flex items-center">
                                                 <Calendar className="h-5 w-5 text-orange-600 mr-2" />
                                                 <span className="text-sm font-medium text-gray-700">الجلسات هذا الشهر</span>
@@ -421,7 +420,7 @@ export default function TeachersShow({ teacher, stats, recentPayments }) {
                                             <span className="text-lg font-bold text-gray-900">
                                                 {stats?.sessions_this_month || 0}
                                             </span>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </div>
                             </div>

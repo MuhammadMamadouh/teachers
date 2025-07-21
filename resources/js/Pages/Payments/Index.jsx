@@ -127,7 +127,6 @@ export default function Index() {
         setSaving(true);
         try {
             const paymentsToSave = [];
-            
             paymentsData.student_payments.data.forEach(studentPayment => {
                 studentPayment.payments.forEach(payment => {
                     paymentsToSave.push({
@@ -142,6 +141,9 @@ export default function Index() {
             await axios.post('/payments/bulk-update', {
                 payments: paymentsToSave
             });
+
+            // Refresh the payments data to update stats
+            await fetchPayments(currentPage, searchQuery);
 
             successAlert({
                 title: 'تم بنجاح',
@@ -748,54 +750,57 @@ export default function Index() {
                                 </div>
 
                                 {/* Pagination Controls */}
-                                {paymentsData.student_payments.last_page > 1 && (
-                                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 p-4 bg-gray-50 rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handlePageChange(paymentsData.student_payments.current_page - 1)}
-                                                disabled={paymentsData.student_payments.current_page === 1}
-                                            >
-                                                السابق
-                                            </Button>
-                                            
-                                            <div className="flex items-center gap-1">
-                                                {/* Show page numbers */}
-                                                {Array.from({ length: Math.min(5, paymentsData.student_payments.last_page) }, (_, i) => {
-                                                    const page = Math.max(1, Math.min(
-                                                        paymentsData.student_payments.current_page - 2 + i,
-                                                        paymentsData.student_payments.last_page - 4 + i
-                                                    ));
-                                                    
-                                                    if (page <= paymentsData.student_payments.last_page) {
+                                {paymentsData.student_payments.data.length> 0 && paymentsData.student_payments.last_page > 1 && (
+                                    <div className="flex flex-col gap-3 sm:flex-row justify-between items-center mt-6 p-4 bg-gray-50 rounded-lg">
+                                        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
+                                            <div className="flex w-full sm:w-auto items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(paymentsData.student_payments.current_page - 1)}
+                                                    disabled={paymentsData.student_payments.current_page === 1}
+                                                    className="min-w-[60px]"
+                                                >
+                                                    السابق
+                                                </Button>
+                                                <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
+                                                    {/* Show page numbers, responsive scrollable */}
+                                                    {Array.from({ length: Math.min(5, paymentsData.student_payments.last_page) }, (_, i) => {
+                                                        // Improved pagination logic for correct page numbers
+                                                        const totalPages = paymentsData.student_payments.last_page;
+                                                        let startPage = Math.max(1, paymentsData.student_payments.current_page - 2);
+                                                        let endPage = startPage + 4;
+                                                        if (endPage > totalPages) {
+                                                            endPage = totalPages;
+                                                            startPage = Math.max(1, endPage - 4);
+                                                        }
+                                                        const page = startPage + i;
+                                                        if (page > endPage || page < 1) return null;
                                                         return (
                                                             <Button
                                                                 key={page}
                                                                 variant={page === paymentsData.student_payments.current_page ? "default" : "outline"}
                                                                 size="sm"
                                                                 onClick={() => handlePageChange(page)}
-                                                                className="min-w-[40px]"
+                                                                className="min-w-[36px] px-2 text-xs"
                                                             >
                                                                 {page}
                                                             </Button>
                                                         );
-                                                    }
-                                                    return null;
-                                                })}
+                                                    })}
+                                                </div>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(paymentsData.student_payments.current_page + 1)}
+                                                    disabled={paymentsData.student_payments.current_page === paymentsData.student_payments.last_page}
+                                                    className="min-w-[60px]"
+                                                >
+                                                    التالي
+                                                </Button>
                                             </div>
-                                            
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handlePageChange(paymentsData.student_payments.current_page + 1)}
-                                                disabled={paymentsData.student_payments.current_page === paymentsData.student_payments.last_page}
-                                            >
-                                                التالي
-                                            </Button>
                                         </div>
-                                        
-                                        <div className="text-sm text-gray-600">
+                                        <div className="text-xs sm:text-sm text-gray-600 text-center w-full sm:w-auto">
                                             الصفحة {paymentsData.student_payments.current_page} من {paymentsData.student_payments.last_page}
                                         </div>
                                     </div>

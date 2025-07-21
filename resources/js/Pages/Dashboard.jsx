@@ -216,6 +216,16 @@ export default function Dashboard({
                                                 </div>
                                             </div>
                                             
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-red-800">إجمالي الدخل المتوقع</p>
+                                                        <p className="text-2xl font-bold text-red-900">{reports.financial.total_income.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <TrendingUp className="h-8 w-8 text-red-600" />
+                                                </div>
+                                            </div>
+                                            
                                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                                 <div className="flex items-center justify-between">
                                                     <div>
@@ -250,11 +260,11 @@ export default function Dashboard({
                                                     <span className="text-sm font-bold text-gray-900">{reports.financial.collection_rate}%</span>
                                                 </div>
                                             </div>
-                                            
+{/*                                             
                                             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                                                 <p className="text-sm font-medium text-purple-800">متوسط سعر الطالب</p>
                                                 <p className="text-xl font-bold text-purple-900">{reports.financial.average_student_price.toLocaleString()} ج.م</p>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 
@@ -289,16 +299,16 @@ export default function Dashboard({
                                                 <p className="text-2xl font-bold text-purple-900">{reports.groups.average_students_per_group}</p>
                                             </div>
                                             
-                                            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-center">
+                                            {/* <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-center">
                                                 <Calendar className="mx-auto h-8 w-8 text-indigo-600 mb-2" />
                                                 <p className="text-sm font-medium text-indigo-800">إجمالي الجلسات هذا الشهر</p>
                                                 <p className="text-2xl font-bold text-indigo-900">{reports.attendance.total_sessions_this_month}</p>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 
                                     {/* Attendance Reports */}
-                                    <div>
+                                    {/* <div>
                                         <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
                                             <Calendar className="w-4 h-4 text-emerald-600 ml-2" />
                                             تقارير الحضور
@@ -327,10 +337,10 @@ export default function Dashboard({
                                                 <p className="text-2xl font-bold text-teal-900">{reports.attendance.average_attendance_per_session}</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> */}
 
                                     {/* Top Performing Groups */}
-                                    {reports.groups.top_groups && reports.groups.top_groups.length > 0 && (
+                                    {/* {reports.groups.top_groups && reports.groups.top_groups.length > 0 && (
                                         <div>
                                             <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
                                                 <TrendingUp className="w-4 h-4 text-yellow-600 ml-2" />
@@ -360,7 +370,7 @@ export default function Dashboard({
                                                 ))}
                                             </div>
                                         </div>
-                                    )}
+                                    )} */}
 
                                   
                                 </div>

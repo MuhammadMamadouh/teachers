@@ -247,7 +247,7 @@ class DashboardController extends Controller
         $groups = Group::where('user_id', $user->id)
             ->with(['schedules', 'specialSessions'])
             ->get();
-
+            
         return Inertia::render('Dashboard/Calendar', [
             'groups' => $groups,
         ]);
@@ -510,13 +510,15 @@ class DashboardController extends Controller
             ->count();
 
         // Financial Reports
-        $totalExpectedMonthlyIncome = $groups->sum(function ($group) {
+        $totalExpectedMonthlyIncome = $groups->where('payment_type', 'monthly')->sum(function ($group) {
             return $group->assigned_students_count * $group->student_price;
         });
 
         $totalExpectedPerSessionIncome = $groups->where('payment_type', 'per_session')->sum(function ($group) {
             return $group->assigned_students_count * $group->student_price * $group->schedules_count * 4; // 4 weaks = 1 month
         });
+
+        $totalIncome = $totalExpectedMonthlyIncome + $totalExpectedPerSessionIncome;
 
         // Get actual collected payments
         $totalCollectedPayments = DB::table('payments')
@@ -530,20 +532,22 @@ class DashboardController extends Controller
         $paidStudentsThisMonth = DB::table('payments')
             ->join('students', 'payments.student_id', '=', 'students.id')
             ->where('students.user_id', $user->id)
-            ->where('payments.payment_type', 'monthly')
+            // ->where('payments.payment_type', 'per_session')
             ->whereYear('payments.related_date', $currentYear)
             ->whereMonth('payments.related_date', $currentMonth)
             ->where('payments.is_paid', true)
             ->count();
 
-        $pendingPayments = ($totalStudentsInGroups - $paidStudentsThisMonth) *
-            ($groups->where('payment_type', 'monthly')->avg('student_price') ?: 0);
+            // dd($paidStudentsThisMonth);
+
+
+        $pendingPayments = $totalIncome - $totalCollectedPayments;
 
         // Collection rate
-        $collectionRate = $totalStudentsInGroups > 0 ? round(($paidStudentsThisMonth / $totalStudentsInGroups) * 100, 1) : 0;
+        $collectionRate = $totalStudentsInGroups > 0 ? round(($totalCollectedPayments / $totalIncome) * 100, 1) : 0;
 
         // Average student price
-        $averageStudentPrice = $groups->avg('student_price') ?: 0;
+        // $averageStudentPrice = $groups->avg('student_price') ?: 0;
 
         // Recent payments (last 10)
         $recentPayments = DB::table('payments')
@@ -570,72 +574,73 @@ class DashboardController extends Controller
             });
 
         // Attendance Reports
-        $totalSessionsThisMonth = DB::table('attendances')
-            ->join('groups', 'attendances.group_id', '=', 'groups.id')
-            ->where('groups.user_id', $user->id)
-            ->whereMonth('attendances.date', $currentMonth)
-            ->whereYear('attendances.date', $currentYear)
-            ->distinct(['attendances.date', 'attendances.group_id'])
-            ->count();
+        // $totalSessionsThisMonth = DB::table('attendances')
+        //     ->join('groups', 'attendances.group_id', '=', 'groups.id')
+        //     ->where('groups.user_id', $user->id)
+        //     ->whereMonth('attendances.date', $currentMonth)
+        //     ->whereYear('attendances.date', $currentYear)
+        //     ->distinct(['attendances.date', 'attendances.group_id'])
+        //     ->count();
 
-        $totalAttendancesThisMonth = DB::table('attendances')
-            ->join('groups', 'attendances.group_id', '=', 'groups.id')
-            ->where('groups.user_id', $user->id)
-            ->where('attendances.is_present', true)
-            ->whereMonth('attendances.date', $currentMonth)
-            ->whereYear('attendances.date', $currentYear)
-            ->count();
+        // $totalAttendancesThisMonth = DB::table('attendances')
+        //     ->join('groups', 'attendances.group_id', '=', 'groups.id')
+        //     ->where('groups.user_id', $user->id)
+        //     ->where('attendances.is_present', true)
+        //     ->whereMonth('attendances.date', $currentMonth)
+        //     ->whereYear('attendances.date', $currentYear)
+        //     ->count();
 
-        $totalPossibleAttendances = DB::table('attendances')
-            ->join('groups', 'attendances.group_id', '=', 'groups.id')
-            ->where('groups.user_id', $user->id)
-            ->whereMonth('attendances.date', $currentMonth)
-            ->whereYear('attendances.date', $currentYear)
-            ->count();
+        // $totalPossibleAttendances = DB::table('attendances')
+        //     ->join('groups', 'attendances.group_id', '=', 'groups.id')
+        //     ->where('groups.user_id', $user->id)
+        //     ->whereMonth('attendances.date', $currentMonth)
+        //     ->whereYear('attendances.date', $currentYear)
+        //     ->count();
 
-        $overallAttendanceRate = $totalPossibleAttendances > 0 ?
-            round(($totalAttendancesThisMonth / $totalPossibleAttendances) * 100, 1) : 0;
+        // $overallAttendanceRate = $totalPossibleAttendances > 0 ?
+        //     round(($totalAttendancesThisMonth / $totalPossibleAttendances) * 100, 1) : 0;
 
-        $averageAttendancePerSession = $totalSessionsThisMonth > 0 ?
-            round($totalAttendancesThisMonth / $totalSessionsThisMonth, 1) : 0;
+        // $averageAttendancePerSession = $totalSessionsThisMonth > 0 ?
+        //     round($totalAttendancesThisMonth / $totalSessionsThisMonth, 1) : 0;
 
         // Top performing groups (by attendance rate and monthly income)
-        $attendanceByGroup = DB::table('attendances')
-            ->select('group_id',
-                DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN is_present = 1 THEN 1 ELSE 0 END) as present')
-            )
-            ->whereIn('group_id', $groups->pluck('id'))
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->groupBy('group_id')
-            ->get()
-            ->keyBy('group_id');
+        // $attendanceByGroup = DB::table('attendances')
+        //     ->select('group_id',
+        //         DB::raw('COUNT(*) as total'),
+        //         DB::raw('SUM(CASE WHEN is_present = 1 THEN 1 ELSE 0 END) as present')
+        //     )
+        //     ->whereIn('group_id', $groups->pluck('id'))
+        //     ->whereMonth('date', $currentMonth)
+        //     ->whereYear('date', $currentYear)
+        //     ->groupBy('group_id')
+        //     ->get()
+        //     ->keyBy('group_id');
 
-        $topGroups = $groups->map(function ($group) use ($attendanceByGroup) {
-            $att = $attendanceByGroup[$group->id] ?? null;
-            $totalAttendances = $att ? $att->total : 0;
-            $presentAttendances = $att ? $att->present : 0;
-            $attendanceRate = $totalAttendances > 0 ? round(($presentAttendances / $totalAttendances) * 100, 1) : 0;
-            $monthlyIncome = $group->payment_type === 'monthly' ?
-                $group->assigned_students_count * $group->student_price : 0;
-            return [
-                'id' => $group->id,
-                'name' => $group->name,
-                'students_count' => $group->assigned_students_count,
-                'attendance_rate' => $attendanceRate,
-                'monthly_income' => $monthlyIncome,
-            ];
-        })->sortByDesc('attendance_rate')->take(3)->values();
+        // $topGroups = $groups->map(function ($group) use ($attendanceByGroup) {
+        //     $att = $attendanceByGroup[$group->id] ?? null;
+        //     $totalAttendances = $att ? $att->total : 0;
+        //     $presentAttendances = $att ? $att->present : 0;
+        //     $attendanceRate = $totalAttendances > 0 ? round(($presentAttendances / $totalAttendances) * 100, 1) : 0;
+        //     $monthlyIncome = $group->payment_type === 'monthly' ?
+        //         $group->assigned_students_count * $group->student_price : 0;
+        //     return [
+        //         'id' => $group->id,
+        //         'name' => $group->name,
+        //         'students_count' => $group->assigned_students_count,
+        //         'attendance_rate' => $attendanceRate,
+        //         'monthly_income' => $monthlyIncome,
+        //     ];
+        // })->sortByDesc('attendance_rate')->take(3)->values();
 
         return response()->json([
             'financial' => [
                 'total_expected_monthly_income' => $totalExpectedMonthlyIncome,
                 'total_expected_persessions_income'=>$totalExpectedPerSessionIncome,
+                'total_income' => $totalIncome,
                 'total_collected_payments' => $totalCollectedPayments,
                 'pending_payments' => $pendingPayments,
                 'collection_rate' => $collectionRate,
-                'average_student_price' => $averageStudentPrice,
+                // 'average_student_price' => $averageStudentPrice,
                 'recent_payments' => $recentPayments,
             ],
             'groups' => [
@@ -643,14 +648,14 @@ class DashboardController extends Controller
                 'total_students_in_groups' => $totalStudentsInGroups,
                 'total_students_without_group' => $totalStudentsWithoutGroup,
                 'average_students_per_group' => $averageStudentsPerGroup,
-                'top_groups' => $topGroups,
+                // 'top_groups' => $topGroups,
             ],
-            'attendance' => [
-                'total_sessions_this_month' => $totalSessionsThisMonth,
-                'total_attendances_this_month' => $totalAttendancesThisMonth,
-                'overall_attendance_rate' => $overallAttendanceRate,
-                'average_attendance_per_session' => $averageAttendancePerSession,
-            ],
+            // 'attendance' => [
+            //     'total_sessions_this_month' => $totalSessionsThisMonth,
+            //     'total_attendances_this_month' => $totalAttendancesThisMonth,
+            //     'overall_attendance_rate' => $overallAttendanceRate,
+            //     'average_attendance_per_session' => $averageAttendancePerSession,
+            // ],
         ]);
     }
 

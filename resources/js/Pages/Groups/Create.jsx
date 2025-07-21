@@ -142,6 +142,37 @@ export default function Create({ academicYears, teachers, educationLevels, defau
                                     {errors.level && <div className="text-red-600 text-sm mt-1 text-right">{errors.level}</div>}
                                 </div>
 
+                                {/* Academic Year */}
+                                <div>
+                                    <label htmlFor="academic_year_id" className="block text-sm font-medium text-gray-700 text-right">
+                                        الصف الدراسي *
+                                    </label>
+                                    <select
+                                        id="academic_year_id"
+                                        value={data.academic_year_id}
+                                        onChange={(e) => setData('academic_year_id', e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
+                                        required
+                                        disabled={!data.level}
+                                    >
+                                        <option value="">
+                                            {data.level ? 'اختر الصف الدراسي' : 'اختر المستوى التعليمي أولاً'}
+                                        </option>
+                                        {filteredAcademicYears.map((year) => (
+                                            <option key={year.id} value={year.id}>
+                                                {year.name_ar}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.academic_year_id && <div className="text-red-600 text-sm mt-1 text-right">{errors.academic_year_id}</div>}
+                                    {data.level && filteredAcademicYears.length === 0 && (
+                                        <div className="text-amber-600 text-sm mt-1 text-right">
+                                            لا توجد صفوف دراسية متاحة لهذا المستوى
+                                        </div>
+                                    )}
+                                </div>
+
+
                                 {/* Teacher Selection */}
                                 <div>
                                     <label htmlFor="teacher_id" className="block text-sm font-medium text-gray-700 text-right">
@@ -195,36 +226,7 @@ export default function Create({ academicYears, teachers, educationLevels, defau
                                     {errors.description && <div className="text-red-600 text-sm mt-1 text-right">{errors.description}</div>}
                                 </div>
 
-                                {/* Academic Year */}
-                                <div>
-                                    <label htmlFor="academic_year_id" className="block text-sm font-medium text-gray-700 text-right">
-                                        الصف الدراسي *
-                                    </label>
-                                    <select
-                                        id="academic_year_id"
-                                        value={data.academic_year_id}
-                                        onChange={(e) => setData('academic_year_id', e.target.value)}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right"
-                                        required
-                                        disabled={!data.level}
-                                    >
-                                        <option value="">
-                                            {data.level ? 'اختر الصف الدراسي' : 'اختر المستوى التعليمي أولاً'}
-                                        </option>
-                                        {filteredAcademicYears.map((year) => (
-                                            <option key={year.id} value={year.id}>
-                                                {year.name_ar}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.academic_year_id && <div className="text-red-600 text-sm mt-1 text-right">{errors.academic_year_id}</div>}
-                                    {data.level && filteredAcademicYears.length === 0 && (
-                                        <div className="text-amber-600 text-sm mt-1 text-right">
-                                            لا توجد صفوف دراسية متاحة لهذا المستوى
-                                        </div>
-                                    )}
-                                </div>
-
+                            
                                 {/* Max Students */}
                                 <div>
                                     <label htmlFor="max_students" className="block text-sm font-medium text-gray-700 text-right">
@@ -274,7 +276,7 @@ export default function Create({ academicYears, teachers, educationLevels, defau
                                             value={data.student_price}
                                             onChange={(e) => setData('student_price', parseFloat(e.target.value) || 0)}
                                             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 pr-12 text-right"
-                                            placeholder="0.00"
+                                            placeholder="أدخل سعر الطالب"
                                             required
                                         />
                                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

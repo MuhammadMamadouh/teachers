@@ -7,7 +7,7 @@ enum EducationLevel: string
     case PRIMARY = 'ابتدائي';
     case MIDDLE = 'إعدادي';
     case SECONDARY = 'ثانوي';
-    case UNIVERSITY = 'جامعي';
+    
 
     public function label(): string
     {
@@ -15,7 +15,6 @@ enum EducationLevel: string
             self::PRIMARY => 'ابتدائي',
             self::MIDDLE => 'إعدادي',
             self::SECONDARY => 'ثانوي',
-            self::UNIVERSITY => 'جامعي',
         };
     }
 
@@ -25,7 +24,6 @@ enum EducationLevel: string
             self::PRIMARY => 'Primary',
             self::MIDDLE => 'Middle',
             self::SECONDARY => 'Secondary',
-            self::UNIVERSITY => 'University',
         };
     }
 
@@ -35,7 +33,6 @@ enum EducationLevel: string
             self::PRIMARY->value => self::PRIMARY->label(),
             self::MIDDLE->value => self::MIDDLE->label(),
             self::SECONDARY->value => self::SECONDARY->label(),
-            self::UNIVERSITY->value => self::UNIVERSITY->label(),
         ];
     }
 
@@ -45,7 +42,6 @@ enum EducationLevel: string
             self::PRIMARY->value,
             self::MIDDLE->value,
             self::SECONDARY->value,
-            self::UNIVERSITY->value,
         ];
     }
 
@@ -58,7 +54,6 @@ enum EducationLevel: string
             ['value' => self::PRIMARY->value, 'label' => self::PRIMARY->label()],
             ['value' => self::MIDDLE->value, 'label' => self::MIDDLE->label()],
             ['value' => self::SECONDARY->value, 'label' => self::SECONDARY->label()],
-            ['value' => self::UNIVERSITY->value, 'label' => self::UNIVERSITY->label()],
         ];
     }
 }

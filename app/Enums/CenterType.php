@@ -5,7 +5,7 @@ namespace App\Enums;
 enum CenterType: string
 {
     case INDIVIDUAL = 'individual';
-    case ORGANIZATION = 'organization';
+    // case ORGANIZATION = 'organization';
 
     /**
      * Get the label for the center type in Arabic.
@@ -14,7 +14,7 @@ enum CenterType: string
     {
         return match ($this) {
             self::INDIVIDUAL => 'فردي',
-            self::ORGANIZATION => 'مؤسسة',
+            // self::ORGANIZATION => 'مؤسسة',
         };
     }
 
@@ -25,7 +25,7 @@ enum CenterType: string
     {
         return match ($this) {
             self::INDIVIDUAL => 'مركز فردي لمعلم واحد',
-            self::ORGANIZATION => 'مؤسسة تعليمية متعددة المعلمين',
+            // self::ORGANIZATION => 'مؤسسة تعليمية متعددة المعلمين',
         };
     }
 
@@ -36,7 +36,7 @@ enum CenterType: string
     {
         return [
             self::INDIVIDUAL->value => self::INDIVIDUAL->label(),
-            self::ORGANIZATION->value => self::ORGANIZATION->label(),
+            // self::ORGANIZATION->value => self::ORGANIZATION->label(),
         ];
     }
 
@@ -67,8 +67,8 @@ enum CenterType: string
     /**
      * Check if center type is organization.
      */
-    public function isOrganization(): bool
-    {
-        return $this === self::ORGANIZATION;
-    }
+    // public function isOrganization(): bool
+    // {
+    //     // return $this === self::ORGANIZATION;
+    // }
 }

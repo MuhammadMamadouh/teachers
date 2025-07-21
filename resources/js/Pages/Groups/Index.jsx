@@ -279,7 +279,7 @@ export default function Index({ groups = [], academicYears = {}, teachers = [], 
                                             
                                             <div className="mb-4">
                                                 <p className="text-sm text-gray-500 ">الحد الأقصى للطلاب: {group.max_students}</p>
-                                                <p className="text-sm text-gray-500  mt-1">الطلاب المسجلين: {group.assigned_students ? group.assigned_students.length : 0}</p>
+                                                <p className="text-sm text-gray-500  mt-1">الطلاب المسجلين: {group.assigned_students ? group.assigned_students : 0}</p>
                                                 {group.academic_year && (
                                                     <p className="text-sm text-gray-500  mt-1">
                                                         الصف الدراسي: 

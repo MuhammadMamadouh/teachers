@@ -52,6 +52,8 @@ Permissions must be dynamic and configurable (using roles/permissions system).
 
 Subscription Plans:
 
+Each plan has a trail period of number of days admin can set.
+
 Each plan limits the number of teachers, assistants, and students per center.
 
 When center reaches limit, show upgrade prompt.

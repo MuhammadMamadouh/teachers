@@ -31,6 +31,10 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
 
     return (
         <div dir="rtl">
+            {/* Announcement about upcoming center plans */}
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-900 text-center">
+                <strong>قريباً:</strong> سيتم إطلاق خطط جديدة للمراكز التعليمية لتناسب احتياجاتكم بشكل أفضل!
+            </div>
             <GuestLayout>
                 <Head title="إنشاء حساب جديد - انضم لمنصة المعلمين" />
 
@@ -88,7 +92,7 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
                                     onChange={(e) => {
                                         const centerType = e.target.value;
                                         setData('center_type', centerType);
-                                        
+
                                         // Auto-set teacher status based on center type
                                         if (centerType === 'individual') {
                                             setData('is_teacher', true);
@@ -110,7 +114,7 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
                                 <InputError message={errors.center_type} className="mt-2" />
                             </div>
 
-<div>
+                            <div>
                                 <InputLabel htmlFor="governorate_id" value="المحافظة" />
                                 <select
                                     id="governorate_id"
@@ -142,13 +146,13 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
                                 <InputError message={errors.center_address} className="mt-2" />
                             </div>
 
-                            
+
                         </div>
 
                         <div className="mt-4 p-3 bg-green-100 rounded-lg">
                             <p className="text-sm text-green-800">
                                 <strong>نصيحة:</strong> {' '}
-                                {data.center_type === 'individual' 
+                                {data.center_type === 'individual'
                                     ? 'للمراكز الفردية، يمكنك استخدام اسمك مع المادة (مثل: مركز أحمد للرياضيات). ستكون معلماً ومالك المركز تلقائياً.'
                                     : 'للمؤسسات التعليمية، استخدم اسم المركز أو المدرسة الرسمي. يمكنك اختيار إذا كنت ستدرس أيضاً أم ستكتفي بالإدارة فقط.'
                                 }
@@ -367,8 +371,8 @@ export default function Register({ governorates = [], plans = [], selectedPlan =
                                         <div
                                             key={plan.id}
                                             className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected
-                                                    ? 'border-indigo-500 bg-white shadow-xl ring-4 ring-indigo-100'
-                                                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
+                                                ? 'border-indigo-500 bg-white shadow-xl ring-4 ring-indigo-100'
+                                                : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
                                                 }`}
                                             onClick={() => setData('plan_id', plan.id.toString())}
                                         >

@@ -250,16 +250,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                         {(user.is_teacher || user.is_center_owner) && (
                                             <div className="border-t border-gray-100 my-1"></div>
                                         )}
-                                        {user.is_teacher && (
+                                        {/* {user.is_teacher && (
                                             <Dropdown.Link href={route('dashboard')}>
                                                 لوحة تحكم المعلم
                                             </Dropdown.Link>
-                                        )}
-                                        {user.is_center_owner && (
+                                        )} */}
+                                        {/* {user.is_center_owner && (
                                             <Dropdown.Link href={route('center.owner.dashboard')}>
                                                 لوحة تحكم مالك المركز
                                             </Dropdown.Link>
-                                        )}
+                                        )} */}
                                         
                                         <div className="border-t border-gray-100 my-1"></div>
                                         <Dropdown.Link
@@ -502,11 +502,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                     لوحة تحكم المعلم
                                 </ResponsiveNavLink>
                             )}
-                            {user.is_center_owner && (
+                            {/* {user.is_center_owner && (
                                 <ResponsiveNavLink href={route('center.owner.dashboard')}>
                                     لوحة تحكم مالك المركز
                                 </ResponsiveNavLink>
-                            )}
+                            )} */}
                             
                             <ResponsiveNavLink
                                 method="post"

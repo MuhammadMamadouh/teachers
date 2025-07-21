@@ -33,9 +33,9 @@ export default function PendingApproval() {
                             
                             <p className="mb-6 text-gray-600">
                                 حسابك بانتظار الموافقة من قبل المشرفين. 
-                                سيتم إشعارك عبر البريد الإلكتروني عند تفعيل حسابك.
                             </p>
                             <p className="mb-6 text-gray-600">
+                                يمكنك الدفع عن طريق فودافون كاش أو إنستا باي على الرقم 0123456789
                                  من فضلك أرسل الإيصال الخاص بعملية الدفع للإدارة عبر الواتساب مع ذكر الاسم 
                                 <a
                                     href="https://wa.me/+201270770613" // Replace with actual WhatsApp number

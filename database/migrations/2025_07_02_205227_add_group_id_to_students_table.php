@@ -12,6 +12,8 @@ return new class () extends Migration {
     {
         Schema::table('students', function (Blueprint $table) {
             $table->foreignId('group_id')->nullable()->constrained()->onDelete('set null');
+            // Ensure the group_id is indexed for performance
+            $table->index('group_id');
         });
     }
 

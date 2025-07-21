@@ -18,6 +18,10 @@ return new class () extends Migration {
             $table->integer('max_students')->default(10);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            // additional indexes for performance
+            $table->index('user_id');
+            $table->index('is_active');
         });
     }
 

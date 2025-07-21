@@ -46,9 +46,9 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Redirect center owners to center dashboard
-        if ($user->isCenterOwner()) {
-            return redirect()->intended(route('center.dashboard', absolute: false));
-        }
+        // if ($user->isCenterOwner()) {
+        //     return redirect()->intended(route('center.dashboard', absolute: false));
+        // }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

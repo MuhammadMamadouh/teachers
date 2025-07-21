@@ -24,7 +24,7 @@ class CenterOwnerDashboardController extends Controller
      */
     public function index()
     {
-
+return redirect()->route('dashboard');
         $user = Auth::user();
         
         // Ensure user is a center owner

@@ -25,11 +25,7 @@ class GroupController extends Controller
     {
         $user = Auth::user();
 
-        // Ensure user belongs to a center
-        if (!$user->center_id) {
-            return redirect()->route('center.setup');
-        }
-
+    //    dd($user);
         // Determine which groups to show based on user role and permissions
         $userRoles = $user->roles->pluck('name')->toArray();
         $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
@@ -58,7 +54,7 @@ class GroupController extends Controller
                 ->with(['user']); // Load teacher info
         }
 
-        $query->with(['schedules', 'assignedStudents', 'academicYear']);
+        $query->with(['schedules', 'academicYear']);
 
         // Apply search filter
         if ($request->filled('search')) {
@@ -80,7 +76,7 @@ class GroupController extends Controller
         // Transform the data to ensure consistency
         $transformedGroups = $groups->map(function ($group) {
             return array_merge($group->toArray(), [
-                'assigned_students' => $group->assignedStudents->toArray(),
+                'assigned_students' => $group->assignedStudents()->count(),
                 'schedules' => $group->schedules->toArray(),
                 'teacher' => $group->user ? [
                     'id' => $group->user->id,
@@ -126,6 +122,7 @@ class GroupController extends Controller
             }
         }
 
+        
         return Inertia::render('Groups/Index', [
             'groups' => $transformedGroups,
             'academicYears' => $academicYears,
@@ -244,9 +241,11 @@ class GroupController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Group $group)
+    public function show(Request $request, Group $group)
     {
         $user = Auth::user();
+
+        // dd($request->all());
 
         // Ensure the group belongs to the user's center
         if ($group->center_id !== $user->center_id) {
@@ -258,7 +257,6 @@ class GroupController extends Controller
         $isAdmin = in_array('admin', $userRoles) || $user->is_admin;
         $isTeacher = in_array('teacher', $userRoles) || $user->type === 'teacher';
         $isAssistant = in_array('assistant', $userRoles) || $user->type === 'assistant';
-
 
         if (!$isAdmin && $isTeacher && $group->user_id !== $user->id) {
             abort(403);
@@ -274,46 +272,55 @@ class GroupController extends Controller
             }
         }
 
-        $group->load(['schedules', 'assignedStudents', 'specialSessions', 'academicYear', 'user']);
+        // Eager load only what is needed
+        $group->load(['schedules', 'specialSessions', 'academicYear', 'user']);
+        $group->loadCount('assignedStudents');
 
-        // Get only students that are not assigned to any group and have matching academic year
+        // Paginate available students
         $availableStudents = Student::where('user_id', Auth::id())
             ->whereNull('group_id')
             ->where('academic_year_id', $group->academic_year_id)
-            ->get();
+            ->paginate(30);
 
-
-        // Get payment summary for current month
+        // Payment summary: aggregate in one query
         $currentMonth = now()->month;
         $currentYear = now()->year;
+        $monthlyPayments = $group->payments()
+            ->where('payment_type', 'monthly')
+            ->whereYear('related_date', $currentYear)
+            ->whereMonth('related_date', $currentMonth);
+
+        $paidCount = (clone $monthlyPayments)->where('is_paid', true)->count();
+        $totalAmount = (clone $monthlyPayments)->where('is_paid', true)->sum('amount');
+        $totalStudents = $group->assigned_students_count;
+        $unpaidCount = $totalStudents - $paidCount;
 
         $paymentSummary = [
-            'total_students' => $group->assignedStudents->count(),
-            'paid_students' => $group->payments()
-                ->where('payment_type', 'monthly')
-                ->whereYear('related_date', $currentYear)
-                ->whereMonth('related_date', $currentMonth)
-                ->where('is_paid', true)
-                ->count(),
-            'unpaid_students' => $group->assignedStudents->count() - $group->payments()
-                ->where('payment_type', 'monthly')
-                ->whereYear('related_date', $currentYear)
-                ->whereMonth('related_date', $currentMonth)
-                ->where('is_paid', true)
-                ->count(),
-            'total_amount' => $group->payments()
-                ->where('payment_type', 'monthly')
-                ->whereYear('related_date', $currentYear)
-                ->whereMonth('related_date', $currentMonth)
-                ->where('is_paid', true)
-                ->sum('amount'),
+            'total_students' => $totalStudents,
+            'paid_students' => $paidCount,
+            'unpaid_students' => $unpaidCount,
+            'total_amount' => $totalAmount,
             'current_month' => now()->format('F Y'),
             'current_month_arabic' => now()->locale('ar')->monthName . ' ' . now()->year,
         ];
 
+        // Paginate assigned_students (id, name, phone, guardian_phone) with server-side filters
+        $assignedStudentsQuery = $group->assignedStudents()
+            ->select('id', 'name', 'phone', 'guardian_phone');
+
+        if ($request->filled('assigned_student_name')) {
+            $assignedStudentsQuery->where('name', 'like', '%' . $request->input('assigned_student_name') . '%');
+        }
+        if ($request->filled('assigned_student_phone')) {
+            $assignedStudentsQuery->where('phone', 'like', '%' . $request->input('assigned_student_phone') . '%');
+        }
+
+        $assignedStudents = $assignedStudentsQuery->paginate(30);
+
         return Inertia::render('Groups/Show', [
             'group' => array_merge($group->toArray(), [
-                'assigned_students' => $group->assignedStudents->toArray(),
+                // assigned_students is now a paginator instance
+                'assigned_students' => $assignedStudents,
                 'expected_monthly_income' => $group->getExpectedMonthlyIncome(),
                 'expected_income_per_session' => $group->getExpectedIncomePerSession(),
                 'payment_type_label' => $group->getPaymentTypeLabel(),

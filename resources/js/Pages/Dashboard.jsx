@@ -200,10 +200,19 @@ export default function Dashboard({
                                             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm font-medium text-green-800">إجمالي الدخل المتوقع (شهرياً)</p>
+                                                        <p className="text-sm font-medium text-green-800">إجمالي الدخل المتوقع ( للمجموعات الشهرية)</p>
                                                         <p className="text-2xl font-bold text-green-900">{reports.financial.total_expected_monthly_income.toLocaleString()} ج.م</p>
                                                     </div>
                                                     <TrendingUp className="h-8 w-8 text-green-600" />
+                                                </div>
+                                            </div>
+                                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-purple-800">إجمالي الدخل المتوقع ( لمجموعات الجلسة)</p>
+                                                        <p className="text-2xl font-bold text-purple-900">{reports.financial.total_expected_persessions_income.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <TrendingUp className="h-8 w-8 text-purple-600" />
                                                 </div>
                                             </div>
                                             

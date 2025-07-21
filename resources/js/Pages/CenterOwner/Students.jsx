@@ -6,7 +6,6 @@ import {
     AcademicCapIcon, 
     UserIcon, 
     UserGroupIcon,
-    CurrencyDollarIcon,
     PlusIcon,
     PhoneIcon,
     CalendarIcon,
@@ -24,7 +23,6 @@ export default function Students({
     groups, 
     academicYears, 
     educationLevels,
-    studentCount, 
     maxStudents, 
     canAddMore, 
     filters 
@@ -199,11 +197,7 @@ export default function Students({
                     </div>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        student.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                        {student.is_active ? 'نشط' : 'غير نشط'}
-                    </div>
+                    
                     <div className="flex space-x-1 space-x-reverse">
                         <button
                             onClick={() => handleEdit(student)}
@@ -248,19 +242,7 @@ export default function Students({
         </div>
     );
 
-    const StatCard = ({ icon: Icon, title, value, color = 'blue' }) => (
-        <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-                <div className={`p-3 rounded-md bg-${color}-100`}>
-                    <Icon className={`h-6 w-6 text-${color}-600`} />
-                </div>
-                <div className="mr-4">
-                    <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-                    <div className="text-2xl font-bold text-gray-900">{value}</div>
-                </div>
-            </div>
-        </div>
-    );
+
 
     return (
         <CenterOwnerLayout
@@ -783,7 +765,7 @@ export default function Students({
                                         </option>
                                         {editData.level && getFilteredAcademicYears(editData.level).map((year) => (
                                             <option key={year.id} value={year.id}>
-                                                {year.name}
+                                                {year.name_ar}
                                             </option>
                                         ))}
                                     </select>

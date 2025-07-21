@@ -14,6 +14,9 @@ return new class extends Migration
     {
         Schema::table('students', function (Blueprint $table) {
             $table->enum('level', EducationLevel::values())->nullable()->after('guardian_phone');
+
+            // Ensure the level column is indexed for performance
+            $table->index('level');
         });
     }
 

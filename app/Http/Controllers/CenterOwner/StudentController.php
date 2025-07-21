@@ -274,6 +274,8 @@ class StudentController extends Controller
             abort(403, 'Student does not belong to your center');
         }
         
+        // TODO: see what should be done with related records
+        // For now, we will delete the student and related records
         try {
             DB::transaction(function () use ($student) {
                 // Delete related records (payments, attendance, etc.)

@@ -21,6 +21,12 @@ return new class () extends Migration {
 
             // Ensure no duplicate attendance for same student, group, and date
             $table->unique(['student_id', 'group_id', 'date']);
+
+                // additional indexes for performance
+            $table->index('student_id');
+            $table->index('group_id');
+            $table->index('date');
+            $table->index('is_present');            
         });
     }
 

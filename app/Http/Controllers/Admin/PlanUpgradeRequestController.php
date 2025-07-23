@@ -32,7 +32,6 @@ class PlanUpgradeRequestController extends Controller
     {
         $planUpgradeRequest->load(['user', 'currentPlan', 'requestedPlan', 'approvedBy']);
 
-        // dd($planUpgradeRequest->currentPlan);
         return Inertia::render('Admin/PlanUpgradeRequests/Show', [
             'request' => $planUpgradeRequest,
         ]);

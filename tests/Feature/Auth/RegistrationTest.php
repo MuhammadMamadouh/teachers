@@ -34,6 +34,10 @@ class RegistrationTest extends TestCase
             'phone' => '0501234567',
             'subject' => 'الرياضيات',
             'governorate_id' => $governorate->id,
+            'center_name' => 'Test Center',
+            'center_type' => 'individual',
+            'center_address' => 'Test Address',
+            'is_teacher' => true,
         ]);
 
         // After registration, the user should be authenticated

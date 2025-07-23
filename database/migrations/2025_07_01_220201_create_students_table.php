@@ -17,6 +17,10 @@ return new class () extends Migration {
             $table->string('phone')->nullable();
             $table->string('guardian_phone')->nullable();
             $table->timestamps();
+
+            // additional indexes for performance
+            $table->index('user_id');
+            $table->index('name');
         });
     }
 

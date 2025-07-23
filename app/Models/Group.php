@@ -12,7 +12,10 @@ class Group extends Model
     use HasFactory;
     protected $fillable = [
         'user_id',
+        'center_id',
         'name',
+        'subject',
+        'level',
         'description',
         'max_students',
         'is_active',
@@ -25,6 +28,14 @@ class Group extends Model
         'is_active' => 'boolean',
         'student_price' => 'decimal:2',
     ];
+
+    /**
+     * Get the center that the group belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
+    }
 
     public function schedules(): HasMany
     {
@@ -67,6 +78,14 @@ class Group extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the teacher that owns this group (alias for user relationship).
+     */
+    public function teacher(): BelongsTo
+    {
+        return $this->user();
     }
 
     /**

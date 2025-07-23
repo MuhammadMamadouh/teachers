@@ -24,6 +24,12 @@ return new class () extends Migration {
             $table->timestamp('approved_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+                        // additional indexes for performance
+            $table->index('email');
+            $table->index('phone');
+            $table->index('is_approved');
+            $table->index('is_admin');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

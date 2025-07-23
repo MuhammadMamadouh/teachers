@@ -12,6 +12,7 @@ class Payment extends Model
     protected $fillable = [
         'student_id',
         'group_id',
+        'center_id',
         'payment_type',
         'related_date',
         'amount',
@@ -35,6 +36,11 @@ class Payment extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
+    }
+
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
     }
 
     /**

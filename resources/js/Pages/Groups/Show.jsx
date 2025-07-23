@@ -14,6 +14,9 @@ export default function Show({ group, availableStudents, paymentSummary }) {
     const [studentToRemove, setStudentToRemove] = useState(null);
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    // Assigned students search filter state
+    const [assignedStudentNameFilter, setAssignedStudentNameFilter] = useState('');
+    const [assignedStudentPhoneFilter, setAssignedStudentPhoneFilter] = useState('');
 
     const handleDelete = () => {
         setShowDeleteModal(true);
@@ -59,12 +62,14 @@ export default function Show({ group, availableStudents, paymentSummary }) {
         );
     };
 
-    // Filter available students based on search term
-    const filteredStudents = availableStudents?.filter(student =>
+    // Use paginated availableStudents
+    const studentsData = availableStudents?.data || [];
+    // Filter only the current page's students
+    const filteredStudents = studentsData.filter(student =>
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.phone.includes(searchTerm) ||
         (student.guardian_phone && student.guardian_phone.includes(searchTerm))
-    ) || [];
+    );
 
     const clearSearch = () => {
         setSearchTerm('');
@@ -141,6 +146,40 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                                 </span>
                                             </p>
                                         )}
+                                        
+                                        {/* Teacher Information */}
+                                        {group.teacher && (
+                                            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                <div className="flex items-center space-x-3 space-x-reverse">
+                                                    <div className="flex-shrink-0">
+                                                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-gray-900">المعلم المسؤول</p>
+                                                        <p className="text-sm text-gray-600">{group.teacher.name}</p>
+                                                        {group.teacher.subject && (
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                                التخصص: {group.teacher.subject}
+                                                            </p>
+                                                        )}
+                                                        {group.teacher.email && (
+                                                            <p className="text-xs text-gray-500">
+                                                                البريد الإلكتروني: {group.teacher.email}
+                                                            </p>
+                                                        )}
+                                                        {group.teacher.phone && (
+                                                            <p className="text-xs text-gray-500">
+                                                                الهاتف: {group.teacher.phone}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <span className={`px-3 py-1 text-sm font-medium rounded-full ${
                                         group.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -151,6 +190,22 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                 
                                 {group.description && (
                                     <p className="text-gray-600 mb-4">{group.description}</p>
+                                )}
+                                
+                                {/* Subject and Level Information */}
+                                {(group.subject || group.level) && (
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {group.subject && (
+                                            <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                                                المادة: {group.subject}
+                                            </span>
+                                        )}
+                                        {group.level && (
+                                            <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
+                                                المستوى: {group.level}
+                                            </span>
+                                        )}
+                                    </div>
                                 )}
                                 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
@@ -288,33 +343,112 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             {/* Students List */}
                             <div>
                                 <h4 className="text-lg font-medium text-gray-900 mb-4">قائمة الطلاب</h4>
-                                {group.assigned_students && group.assigned_students.length > 0 ? (
-                                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {group.assigned_students.map((student) => (
-                                                <div key={student.id} className="bg-white p-4 rounded-lg shadow-sm border">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="flex-1 min-w-0">
-                                                            <h5 className="font-medium text-gray-900 truncate">{student.name}</h5>
-                                                            <p className="text-sm text-gray-600 truncate">{student.phone}</p>
-                                                            {student.guardian_name && (
-                                                                <p className="text-xs text-gray-500">ولي الأمر: {student.guardian_name}</p>
-                                                            )}
+                                {/* Search filters for assigned students (server-side) */}
+                                {group.assigned_students && group.assigned_students.data && (
+                                    <form
+                                        className="mb-4 flex flex-col sm:flex-row gap-2"
+                                        onSubmit={e => {
+                                            e.preventDefault();
+                                            const params = new URLSearchParams(window.location.search);
+                                            params.set('assigned_student_name', assignedStudentNameFilter);
+                                            params.set('assigned_student_phone', assignedStudentPhoneFilter);
+                                            router.get(window.location.pathname + '?' + params.toString(), {}, { preserveState: true, replace: true });
+                                        }}
+                                    >
+                                        <input
+                                            type="text"
+                                            placeholder="بحث بالاسم..."
+                                            className="w-full sm:w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                            value={assignedStudentNameFilter || ''}
+                                            onChange={e => setAssignedStudentNameFilter(e.target.value)}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    const params = new URLSearchParams(window.location.search);
+                                                    params.set('assigned_student_name', assignedStudentNameFilter);
+                                                    params.set('assigned_student_phone', assignedStudentPhoneFilter);
+                                                    router.get(window.location.pathname + '?' + params.toString(), {}, { preserveState: true, replace: true });
+                                                }
+                                            }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="بحث برقم الجوال..."
+                                            className="w-full sm:w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                            value={assignedStudentPhoneFilter || ''}
+                                            onChange={e => setAssignedStudentPhoneFilter(e.target.value)}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    const params = new URLSearchParams(window.location.search);
+                                                    params.set('assigned_student_name', assignedStudentNameFilter);
+                                                    params.set('assigned_student_phone', assignedStudentPhoneFilter);
+                                                    router.get(window.location.pathname + '?' + params.toString(), {}, { preserveState: true, replace: true });
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 mt-2 sm:mt-0"
+                                        >
+                                            بحث
+                                        </button>
+                                    </form>
+                                )}
+                                {group.assigned_students && group.assigned_students.data && group.assigned_students.data.length > 0 ? (
+                                    <>
+                                        <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {group.assigned_students.data.map((student) => (
+                                                    <div key={student.id} className="bg-white p-4 rounded-lg shadow-sm border">
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="flex-1 min-w-0">
+                                                                <h5 className="font-medium text-gray-900 truncate">{student.name}</h5>
+                                                                <p className="text-sm text-gray-600 truncate">{student.phone}</p>
+                                                                {student.guardian_name && (
+                                                                    <p className="text-xs text-gray-500">ولي الأمر: {student.guardian_name}</p>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                onClick={() => confirmRemoveStudent(student)}
+                                                                className="text-red-600 hover:text-red-800 text-sm"
+                                                                title="إزالة من المجموعة"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            onClick={() => confirmRemoveStudent(student)}
-                                                            className="text-red-600 hover:text-red-800 text-sm"
-                                                            title="إزالة من المجموعة"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                            </svg>
-                                                        </button>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                        {/* Pagination Controls for assigned students */}
+                                        <div className="flex justify-between items-center mt-4">
+                                            <div>
+                                                {group.assigned_students.links && group.assigned_students.links.map((link, idx) => (
+                                                    link.url ? (
+                                                        <button
+                                                            key={idx}
+                                                            className={`px-2 py-1 mx-1 rounded ${link.active ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                                                            onClick={() => {
+                                                                const params = new URLSearchParams(window.location.search);
+                                                                params.set('assigned_student_name', assignedStudentNameFilter);
+                                                                params.set('assigned_student_phone', assignedStudentPhoneFilter);
+                                                                router.get(link.url.split('?')[0] + '?' + params.toString(), {}, { preserveState: true, preserveScroll: true });
+                                                            }}
+                                                            disabled={link.active}
+                                                        >
+                                                            {link.label.replace(/&laquo;|&raquo;/g, '').replace(/<.*?>/g, '')}
+                                                        </button>
+                                                    ) : null
+                                                ))}
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                عرض {group.assigned_students.from} - {group.assigned_students.to} من {group.assigned_students.total}
+                                            </div>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className="text-center py-8">
                                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -380,7 +514,7 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                             </div>
                         )}
                         
-                        {availableStudents && availableStudents.length > 0 ? (
+                        {studentsData.length > 0 ? (
                             <>
                                 <p className="text-sm text-gray-600 mb-4">
                                     يتم عرض الطلاب المتاحين فقط (غير المُعينين في أي مجموعة)
@@ -414,8 +548,8 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                 {searchTerm && (
                                     <div className="mb-3 text-sm text-gray-600">
                                         {filteredStudents.length > 0 
-                                            ? `تم العثور على ${filteredStudents.length} طالب`
-                                            : 'لم يتم العثور على نتائج للبحث'
+                                            ? `تم العثور على ${filteredStudents.length} طالب في هذه الصفحة`
+                                            : 'لم يتم العثور على نتائج للبحث في هذه الصفحة'
                                         }
                                     </div>
                                 )}
@@ -442,11 +576,30 @@ export default function Show({ group, availableStudents, paymentSummary }) {
                                     ) : (
                                         <div className="text-center py-4 text-gray-500">
                                             {searchTerm 
-                                                ? 'لا توجد نتائج مطابقة للبحث' 
-                                                : 'لا يوجد طلاب متاحين'
+                                                ? 'لا توجد نتائج مطابقة للبحث في هذه الصفحة' 
+                                                : 'لا يوجد طلاب متاحين في هذه الصفحة'
                                             }
                                         </div>
                                     )}
+                                </div>
+                                {/* Pagination Controls */}
+                                <div className="flex justify-between items-center mb-2">
+                                    <div>
+                                        {availableStudents.links && availableStudents.links.map((link, idx) => (
+                                            link.url ? (
+                                                <button
+                                                    key={idx}
+                                                    className={`px-2 py-1 mx-1 rounded ${link.active ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                                                    onClick={() => {
+                                                        router.get(link.url, {}, { preserveState: true, preserveScroll: true });
+                                                    }}
+                                                    disabled={link.active}
+                                                >
+                                                    {link.label.replace(/&laquo;|&raquo;/g, '').replace(/<.*?>/g, '')}
+                                                </button>
+                                            ) : null
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="flex justify-end space-x-4">
                                     <button

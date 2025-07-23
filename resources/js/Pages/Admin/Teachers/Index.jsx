@@ -168,77 +168,87 @@ export default function TeachersIndex({ teachers, filters, stats }) {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         إدارة المعلمين
                     </h2>
                     <Link
                         href={route('admin.teachers.create')}
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                     >
                         <UserPlus className="w-4 h-4 mr-2" />
-                        إضافة معلم جديد
+                        <span className="sm:hidden">إضافة</span>
+                        <span className="hidden sm:inline">إضافة معلم جديد</span>
                     </Link>
                 </div>
             }
         >
             <Head title="إدارة المعلمين" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="py-6 sm:py-12">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0">
-                                        <Users className="h-8 w-8 text-blue-600" />
+                                    <div className="flex-shrink-0 ml-2 mr-2">
+                                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                                     </div>
-                                    <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">إجمالي المعلمين</h4>
-                                        <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                                    <div className="ml-3 sm:ml-4">
+                                        <h4 className="text-base sm:text-lg font-medium text-gray-900">
+                                            <span className="sm:hidden">المعلمين</span>
+                                            <span className="hidden sm:inline">إجمالي المعلمين</span>
+                                        </h4>
+                                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0">
-                                        <UserCheck className="h-8 w-8 text-green-600" />
+                                    <div className="flex-shrink-0  ml-2 mr-2">
+                                        <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
                                     </div>
-                                    <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">معلمين معتمدين</h4>
-                                        <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
+                                    <div className="ml-3 sm:ml-4">
+                                        <h4 className="text-base sm:text-lg font-medium text-gray-900">
+                                            <span className="sm:hidden">معتمدين</span>
+                                            <span className="hidden sm:inline">معلمين معتمدين</span>
+                                        </h4>
+                                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.approved}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0">
-                                        <UserX className="h-8 w-8 text-yellow-600" />
+                                    <div className="flex-shrink-0  ml-2 mr-2">
+                                        <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" />
                                     </div>
-                                    <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">في انتظار الاعتماد</h4>
-                                        <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                                    <div className="ml-3 sm:ml-4">
+                                        <h4 className="text-base sm:text-lg font-medium text-gray-900">
+                                            <span className="sm:hidden">انتظار</span>
+                                            <span className="hidden sm:inline">في انتظار الاعتماد</span>
+                                        </h4>
+                                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.pending}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0">
-                                        <CheckCircle className="h-8 w-8 text-purple-600" />
+                                    <div className="flex-shrink-0  ml-2 mr-2">
+                                        <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
                                     </div>
-                                    <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">نشطين</h4>
-                                        <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+                                    <div className="ml-3 sm:ml-4">
+                                        <h4 className="text-base sm:text-lg font-medium text-gray-900">نشطين</h4>
+                                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.active}</p>
                                     </div>
                                 </div>
                             </div>
@@ -247,8 +257,8 @@ export default function TeachersIndex({ teachers, filters, stats }) {
 
                     {/* Search and Filters */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6">
-                            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                        <div className="p-4 sm:p-6">
+                            <div className="flex flex-col lg:flex-row gap-4 mb-4">
                                 <div className="flex-1">
                                     <div className="relative">
                                         <input
@@ -263,7 +273,7 @@ export default function TeachersIndex({ teachers, filters, stats }) {
                                     </div>
                                 </div>
                                 
-                                <div className="flex gap-2">
+                                <div className="flex flex-col sm:flex-row gap-2">
                                     <select
                                         value={statusFilter}
                                         onChange={(e) => setStatusFilter(e.target.value)}
@@ -303,7 +313,7 @@ export default function TeachersIndex({ teachers, filters, stats }) {
 
                             {/* Bulk Actions */}
                             {selectedTeachers.length > 0 && (
-                                <div className="flex gap-2 mb-4">
+                                <div className="flex flex-wrap gap-2 mb-4">
                                     <span className="text-sm text-gray-600 py-2">
                                         تم تحديد {selectedTeachers.length} معلم
                                     </span>
@@ -332,138 +342,263 @@ export default function TeachersIndex({ teachers, filters, stats }) {
 
                     {/* Teachers Table */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedTeachers.length === teachers.data.length && teachers.data.length > 0}
-                                                onChange={toggleSelectAll}
-                                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                                            />
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            المعلم
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            الحالة
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            الخطة
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            الطلاب
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            المجموعات
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            تاريخ التسجيل
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            إجراءات
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {teachers.data.map((teacher) => (
-                                        <tr key={teacher.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                        {/* Mobile Card View */}
+                        <div className="lg:hidden">
+                            <div className="p-4 space-y-4">
+                                {/* Mobile Select All */}
+                                <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedTeachers.length === teachers.data.length && teachers.data.length > 0}
+                                            onChange={toggleSelectAll}
+                                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                        />
+                                        <label className="mr-2 text-sm text-gray-600">تحديد الكل</label>
+                                    </div>
+                                    <span className="text-sm text-gray-500">{teachers.data.length} معلم</span>
+                                </div>
+
+                                {/* Teacher Cards */}
+                                {teachers.data.map((teacher) => (
+                                    <div key={teacher.id} className="bg-gray-50 rounded-lg p-4 space-y-4">
+                                        {/* Card Header */}
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center space-x-3 space-x-reverse">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedTeachers.includes(teacher.id)}
                                                     onChange={() => toggleSelectTeacher(teacher.id)}
                                                     className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                                                 />
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-10 w-10">
-                                                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                                            <span className="text-sm font-medium text-gray-700">
-                                                                {teacher.name.charAt(0)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="ml-4">
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {teacher.name}
-                                                        </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {teacher.email}
-                                                        </div>
+                                                <div className="flex-shrink-0  ml-2 mr-2 h-10 w-10">
+                                                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            {teacher.name.charAt(0)}
+                                                        </span>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {getStatusBadge(teacher)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {teacher.plan_name}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {teacher.students_count}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {teacher.groups_count}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(teacher.created_at).toLocaleDateString('ar-EG', {
-                                                        year: 'numeric',
-                                                        month: 'long',
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-900">{teacher.name}</div>
+                                                    <div className="text-sm text-gray-500">{teacher.email}</div>
+                                                </div>
+                                            </div>
+                                            {getStatusBadge(teacher)}
+                                        </div>
+
+                                        {/* Card Details */}
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span className="text-gray-500 block">الخطة:</span>
+                                                <span className="text-gray-900 font-medium">{teacher.plan_name}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-500 block">الطلاب:</span>
+                                                <span className="text-gray-900 font-medium">{teacher.students_count}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-500 block">المجموعات:</span>
+                                                <span className="text-gray-900 font-medium">{teacher.groups_count}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-500 block">التسجيل:</span>
+                                                <span className="text-gray-900 font-medium">
+                                                    {new Date(teacher.created_at).toLocaleDateString('ar-EG', {
+                                                        month: 'short',
                                                         day: 'numeric'
                                                     })}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex items-center space-x-2 space-x-reverse">
-                                                    <Link
-                                                        href={route('admin.teachers.show', teacher.id)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                        title="عرض التفاصيل"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </Link>
-                                                    <Link
-                                                        href={route('admin.teachers.edit', teacher.id)}
-                                                        className="text-indigo-600 hover:text-indigo-900"
-                                                        title="تعديل"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </Link>
-                                                    
-                                                    {teacher.is_approved ? (
-                                                        <button
-                                                            onClick={() => handleDeactivate(teacher)}
-                                                            className="text-yellow-600 hover:text-yellow-900"
-                                                            title="إلغاء التفعيل"
-                                                        >
-                                                            <UserX className="w-4 h-4" />
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => handleActivate(teacher)}
-                                                            className="text-green-600 hover:text-green-900"
-                                                            title="تفعيل"
-                                                        >
-                                                            <UserCheck className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                    
-                                                    <button
-                                                        onClick={() => handleDelete(teacher)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                        title="حذف"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Card Actions */}
+                                        <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+                                            <Link
+                                                href={route('admin.teachers.show', teacher.id)}
+                                                className="inline-flex items-center px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                                                title="عرض التفاصيل"
+                                            >
+                                                <Eye className="w-4 h-4 mr-1" />
+                                                عرض
+                                            </Link>
+                                            <Link
+                                                href={route('admin.teachers.edit', teacher.id)}
+                                                className="inline-flex items-center px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                                                title="تعديل"
+                                            >
+                                                <Edit className="w-4 h-4 mr-1" />
+                                                تعديل
+                                            </Link>
+                                            
+                                            {teacher.is_approved ? (
+                                                <button
+                                                    onClick={() => handleDeactivate(teacher)}
+                                                    className="inline-flex items-center px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200"
+                                                    title="إلغاء التفعيل"
+                                                >
+                                                    <UserX className="w-4 h-4 mr-1" />
+                                                    إلغاء
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleActivate(teacher)}
+                                                    className="inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                                                    title="تفعيل"
+                                                >
+                                                    <UserCheck className="w-4 h-4 mr-1" />
+                                                    تفعيل
+                                                </button>
+                                            )}
+                                            
+                                            <button
+                                                onClick={() => handleDelete(teacher)}
+                                                className="inline-flex items-center px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                                                title="حذف"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1" />
+                                                حذف
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <div className="hidden lg:block">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedTeachers.length === teachers.data.length && teachers.data.length > 0}
+                                                    onChange={toggleSelectAll}
+                                                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                                />
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                المعلم
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                الحالة
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                الخطة
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                الطلاب
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                المجموعات
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                تاريخ التسجيل
+                                            </th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                إجراءات
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {teachers.data.map((teacher) => (
+                                            <tr key={teacher.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedTeachers.includes(teacher.id)}
+                                                        onChange={() => toggleSelectTeacher(teacher.id)}
+                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                                    />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0 h-10 w-10">
+                                                            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                                                <span className="text-sm font-medium text-gray-700">
+                                                                    {teacher.name.charAt(0)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-medium text-gray-900">
+                                                                {teacher.name}
+                                                            </div>
+                                                            <div className="text-sm text-gray-500">
+                                                                {teacher.email}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {getStatusBadge(teacher)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {teacher.plan_name}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {teacher.students_count}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {teacher.groups_count}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {new Date(teacher.created_at).toLocaleDateString('ar-EG', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex items-center space-x-2 space-x-reverse">
+                                                        <Link
+                                                            href={route('admin.teachers.show', teacher.id)}
+                                                            className="text-blue-600 hover:text-blue-900"
+                                                            title="عرض التفاصيل"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </Link>
+                                                        <Link
+                                                            href={route('admin.teachers.edit', teacher.id)}
+                                                            className="text-indigo-600 hover:text-indigo-900"
+                                                            title="تعديل"
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </Link>
+                                                        
+                                                        {teacher.is_approved ? (
+                                                            <button
+                                                                onClick={() => handleDeactivate(teacher)}
+                                                                className="text-yellow-600 hover:text-yellow-900"
+                                                                title="إلغاء التفعيل"
+                                                            >
+                                                                <UserX className="w-4 h-4" />
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleActivate(teacher)}
+                                                                className="text-green-600 hover:text-green-900"
+                                                                title="تفعيل"
+                                                            >
+                                                                <UserCheck className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        
+                                                        <button
+                                                            onClick={() => handleDelete(teacher)}
+                                                            className="text-red-600 hover:text-red-900"
+                                                            title="حذف"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         {/* Pagination */}

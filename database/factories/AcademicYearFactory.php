@@ -17,8 +17,8 @@ class AcademicYearFactory extends Factory
     public function definition(): array
     {
         return [
-            'name_ar' => $this->faker->unique()->word . ' - ' . $this->faker->unique()->word,
-            'code' => $this->faker->unique()->slug(2, false),
+            'name_ar' => $this->faker->randomElement(['الصف الأول', 'الصف الثاني', 'الصف الثالث', 'الصف الرابع', 'الصف الخامس', 'الصف السادس']) . ' - ' . $this->faker->randomElement(['ابتدائي', 'إعدادي', 'ثانوي']),
+            'code' => $this->faker->unique()->regexify('[A-Z]{2}[0-9]{2}'),
         ];
     }
 

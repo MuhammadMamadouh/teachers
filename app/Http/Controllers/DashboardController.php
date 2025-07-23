@@ -21,30 +21,141 @@ class DashboardController extends Controller
     public const ASSISTANT = 'assistant';
 
 
-
-
-    /**
-     * Display the dashboard.
-     */
-    public function index(): Response
+    public function index()
     {
         $user = Auth::user();
 
+        
+        // Ensure user belongs to a center
+        // if (!$user->center_id && !$user->is_admin) {
+        //     return redirect()->route('center.setup');
+        // }
+
+        // Get the User model instance to access role methods
+        $userModel = User::find($user->id);
+
+        // Determine dashboard type based on user role
+        // Priority: system admin > center owner > center admin > assistant > teacher
+        if ($userModel->hasRole('system-admin')) {
+
+            return $this->adminDashboard($userModel);
+        }
+
+        // Check if user is a center owner - redirect to center owner dashboard
+        // if ($userModel->isCenterOwner() && $userModel->type !== self::ASSISTANT) {
+        //     dd($user);
+        //     return redirect()->route('center.owner.dashboard');
+        // }
+
+        // Check if user is a center admin (is_admin = true)
         if ($user->is_admin) {
-            return $this->adminDashboard();
+            return $this->adminDashboard($userModel);
         }
 
         if ($user->type === 'assistant') {
-            return $this->assistantDashboard($user);
+            return $this->assistantDashboard($userModel);
         }
 
-        return $this->teacherDashboard($user);
+        return $this->teacherDashboard($userModel);
+
+
     }
 
     /**
-     * Admin dashboard with system reports.
+     * Admin dashboard with center-wide reports.
      */
-    private function adminDashboard(): Response
+    private function adminDashboard1(User $user)
+    {
+        $center = $user->center;
+        if (!$center && !$user->is_admin) {
+            return redirect()->route('center.setup');
+        }
+
+        // Get center-wide statistics
+        $totalTeachers = User::where('center_id', $user->center_id)
+            ->where('type', self::TEACHER)
+            ->where('is_admin', false)
+            ->count();
+        $totalAssistants = User::where('center_id', $user->center_id)
+            ->where('type', self::ASSISTANT)
+            ->count();
+
+        $totalStudents = Student::where('center_id', $user->center_id)->count();
+        $totalGroups = Group::where('center_id', $user->center_id)->count();
+
+        // Get center subscription info
+        $subscription = Subscription::where('center_id', $user->center_id)
+            ->where('is_active', true)
+            ->with('plan')
+            ->first();
+
+        // Get recent activities (last 7 days)
+        $recentStudents = Student::where('center_id', $user->center_id)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->with('user')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $recentGroups = Group::where('center_id', $user->center_id)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->with('user')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // Get teachers with their stats
+        $teachersWithStats = User::where('center_id', $user->center_id)
+            ->where('type', self::TEACHER)
+            ->withCount(['students', 'groups'])
+            ->get();
+
+        // Get all center users for the admin dashboard
+        $students = Student::where('center_id', $user->center_id)
+            ->with('user')
+            ->get();
+
+        $groups = Group::where('center_id', $user->center_id)
+            ->with('user')
+            ->get();
+
+        $teachers = User::where('center_id', $user->center_id)
+            ->where('type', self::TEACHER)
+            ->where('is_admin', false)
+            ->get();
+
+        $assistants = User::where('center_id', $user->center_id)
+            ->where('type', self::ASSISTANT)
+            ->get();
+
+        // Get subscription limits for the admin/center
+        $subscriptionLimits = $user->getSubscriptionLimits();
+
+        
+        return Inertia::render('Admin/Dashboard', [
+            'center' => $center,
+            'students' => $students,
+            'groups' => $groups,
+            'teachers' => $teachers,
+            'assistants' => $assistants,
+            'subscriptionLimits' => $subscriptionLimits,
+            'currentStudentCount' => $totalStudents,
+            'canAddStudents' => $user->canAddStudents(),
+            'availablePlans' => [],
+            'stats' => [
+                'totalTeachers' => $totalTeachers,
+                'totalAssistants' => $totalAssistants,
+                'totalStudents' => $totalStudents,
+                'totalGroups' => $totalGroups,
+            ],
+            'subscription' => $subscription,
+            'recentStudents' => $recentStudents,
+            'recentGroups' => $recentGroups,
+            'teachersWithStats' => $teachersWithStats,
+        ]);
+    }
+
+        private function adminDashboard(): Response
     {
         $totalTeachers = User::where('is_admin', false)
         ->where('type', self::TEACHER) // Exclude assistants
@@ -52,31 +163,31 @@ class DashboardController extends Controller
         // System statistics
         $approvedTeachers = $totalTeachers->where('is_approved', true)->count();
         $pendingTeachers = $totalTeachers->where('is_approved', false)->count();
-
-
+       
+        
         $totalTeachers = User::where('is_admin', false)
         ->where('type', self::TEACHER)->count();
         $totalStudents = Student::count();
-
+        
         // Plan statistics
         $planStats = Plan::withCount('subscriptions')
             ->get()
             ->map(function ($plan) {
                 return [
-                    'name' => $plan->name,
-                    'max_students' => $plan->max_students,
-                    'price' => $plan->formatted_price,
-                    'subscribers' => $plan->subscriptions_count,
-                    'is_default' => $plan->is_default,
+                    'name'          => $plan->name,
+                    'max_students'  => $plan->max_students,
+                    'price'        => $plan->formatted_price,
+                    'subscribers'  => $plan->subscriptions_count,
+                    'is_default'   => $plan->is_default,
                 ];
             });
-
+        
         // Recent activity
         $recentUsers = User::where('is_admin', false)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get(['id', 'name', 'email', 'is_approved', 'created_at']);
-
+        
         // Usage statistics
         $usageStats = User::where('is_admin', false)
         // ->where('type', self::TEACHER) // Exclude assistants
@@ -86,7 +197,6 @@ class DashboardController extends Controller
             ->map(function ($user) {
                 $subscription = $user->activeSubscription;
                 $maxStudents = $subscription && $subscription->plan ? $subscription->plan->max_students : 0;
-
                 return [
                     'student_count' => $user->students->count(),
                     'max_students' => $maxStudents,
@@ -96,7 +206,7 @@ class DashboardController extends Controller
 
         // Get comprehensive admin reports
         $adminReports = $this->getAdminReports();
-
+        
         return Inertia::render('Admin/Dashboard', [
             'systemStats' => [
                 'total_users' => $totalTeachers,
@@ -122,11 +232,24 @@ class DashboardController extends Controller
             ->orderBy('max_students')
             ->get();
 
+        // Get teacher's students and groups
+        // $students = Student::where('center_id', $user->center_id)
+        //     ->where('user_id', $user->id)
+        //     ->with('user')
+        //     ->get();
+
+        // $groups = Group::where('center_id', $user->center_id)
+        //     ->where('user_id', $user->id)
+        //     ->with('user')
+        //     ->get();
+
         return Inertia::render('Dashboard', [
             'subscriptionLimits' => $subscriptionLimits,
             'currentStudentCount' => $currentStudentCount,
             'canAddStudents' => $user->canAddStudents(),
             'availablePlans' => $availablePlans,
+            // 'students' => $students,
+            // 'groups' => $groups,
         ]);
     }
 
@@ -141,11 +264,31 @@ class DashboardController extends Controller
         if (!$teacher) {
             return Inertia::render('Dashboard', [
                 'error' => 'No teacher found for this assistant',
+                'subscriptionLimits' => [
+                    'max_students' => 0,
+                    'has_active_subscription' => false,
+                ],
+                'currentStudentCount' => 0,
+                'canAddStudents' => false,
+                'availablePlans' => [],
+                'isAssistant' => true,
+                'teacherName' => '',
             ]);
         }
 
         $subscriptionLimits = $teacher->getSubscriptionLimits();
         $currentStudentCount = $teacher->getStudentCount();
+
+        // Get teacher's students and groups for the assistant
+        $students = Student::where('center_id', $user->center_id)
+            ->where('user_id', $teacher->id)
+            ->with('user')
+            ->get();
+
+        $groups = Group::where('center_id', $user->center_id)
+            ->where('user_id', $teacher->id)
+            ->with('user')
+            ->get();
 
         return Inertia::render('Dashboard', [
             'subscriptionLimits' => $subscriptionLimits,
@@ -154,6 +297,8 @@ class DashboardController extends Controller
             'availablePlans' => [], // Assistants don't need to see upgrade options
             'isAssistant' => true,
             'teacherName' => $teacher->name,
+            'students' => $students,
+            'groups' => $groups,
         ]);
     }
 
@@ -168,7 +313,7 @@ class DashboardController extends Controller
         $groups = Group::where('user_id', $user->id)
             ->with(['schedules', 'specialSessions'])
             ->get();
-
+            
         return Inertia::render('Dashboard/Calendar', [
             'groups' => $groups,
         ]);
@@ -410,20 +555,36 @@ class DashboardController extends Controller
             $user = $teacher;
         }
 
-        // Get all groups and students for the user
-        $groups = Group::where('user_id', $user->id)->with(['assignedStudents', 'payments'])->get();
-        $students = Student::where('user_id', $user->id)->get();
         $currentMonth = now()->month;
         $currentYear = now()->year;
 
+        // Get group counts and student counts efficiently
+        $groups = Group::where('user_id', $user->id)
+            ->withCount('assignedStudents')
+            ->withCount('schedules')
+            ->get();
+        
+          
+
+        $totalGroups = $groups->count();
+        $totalStudentsInGroups = $groups->sum('assigned_students_count');
+        $averageStudentsPerGroup = $totalGroups > 0 ? round($totalStudentsInGroups / $totalGroups, 1) : 0;
+
+        // total students in no group
+        $totalStudentsWithoutGroup = Student::where('user_id', $user->id)
+            ->whereNull('group_id')
+            ->count();
+
         // Financial Reports
         $totalExpectedMonthlyIncome = $groups->where('payment_type', 'monthly')->sum(function ($group) {
-            return $group->assignedStudents->count() * $group->student_price;
+            return $group->assigned_students_count * $group->student_price;
         });
 
         $totalExpectedPerSessionIncome = $groups->where('payment_type', 'per_session')->sum(function ($group) {
-            return $group->assignedStudents->count() * $group->student_price;
+            return $group->assigned_students_count * $group->student_price * $group->schedules_count * 4; // 4 weaks = 1 month
         });
+
+        $totalIncome = $totalExpectedMonthlyIncome + $totalExpectedPerSessionIncome;
 
         // Get actual collected payments
         $totalCollectedPayments = DB::table('payments')
@@ -431,28 +592,28 @@ class DashboardController extends Controller
             ->where('students.user_id', $user->id)
             ->where('students.group_id', '!=', null)
             ->where('payments.is_paid', true)
-            
             ->sum('payments.amount');
 
         // Get pending payments (for current month)
         $paidStudentsThisMonth = DB::table('payments')
             ->join('students', 'payments.student_id', '=', 'students.id')
             ->where('students.user_id', $user->id)
-            ->where('payments.payment_type', 'monthly')
+            // ->where('payments.payment_type', 'per_session')
             ->whereYear('payments.related_date', $currentYear)
             ->whereMonth('payments.related_date', $currentMonth)
             ->where('payments.is_paid', true)
             ->count();
 
-        $totalStudentsCount = $students->where('group_id', '!=', null)->count();
-        $pendingPayments = ($totalStudentsCount - $paidStudentsThisMonth) *
-            ($groups->where('payment_type', 'monthly')->avg('student_price') ?: 0);
+            // dd($paidStudentsThisMonth);
+
+
+        $pendingPayments = $totalIncome - $totalCollectedPayments;
 
         // Collection rate
-        $collectionRate = $totalStudentsCount > 0 ? round(($paidStudentsThisMonth / $totalStudentsCount) * 100, 1) : 0;
+        $collectionRate = $totalStudentsInGroups > 0 ? round(($totalCollectedPayments / $totalIncome) * 100, 1) : 0;
 
         // Average student price
-        $averageStudentPrice = $groups->avg('student_price') ?: 0;
+        // $averageStudentPrice = $groups->avg('student_price') ?: 0;
 
         // Recent payments (last 10)
         $recentPayments = DB::table('payments')
@@ -478,75 +639,74 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Groups and Students Reports
-        $totalGroups = $groups->count();
-        $totalStudentsInGroups = $students->where('group_id', '!=', null)->count();
-        $averageStudentsPerGroup = $totalGroups > 0 ? round($totalStudentsInGroups / $totalGroups, 1) : 0;
-
-        // total students in no group
-        $totalStudentsWithoutGroup = $students->where('group_id', null)->count();
-
         // Attendance Reports
-        $totalSessionsThisMonth = DB::table('attendances')
-            ->join('groups', 'attendances.group_id', '=', 'groups.id')
-            ->where('groups.user_id', $user->id)
-            ->whereMonth('attendances.date', $currentMonth)
-            ->whereYear('attendances.date', $currentYear)
-            ->distinct('attendances.date', 'attendances.group_id')
-            ->count();
+        // $totalSessionsThisMonth = DB::table('attendances')
+        //     ->join('groups', 'attendances.group_id', '=', 'groups.id')
+        //     ->where('groups.user_id', $user->id)
+        //     ->whereMonth('attendances.date', $currentMonth)
+        //     ->whereYear('attendances.date', $currentYear)
+        //     ->distinct(['attendances.date', 'attendances.group_id'])
+        //     ->count();
 
-        $totalAttendancesThisMonth = DB::table('attendances')
-            ->join('groups', 'attendances.group_id', '=', 'groups.id')
-            ->where('groups.user_id', $user->id)
-            ->where('attendances.is_present', true)
-            ->whereMonth('attendances.date', $currentMonth)
-            ->whereYear('attendances.date', $currentYear)
-            ->count();
+        // $totalAttendancesThisMonth = DB::table('attendances')
+        //     ->join('groups', 'attendances.group_id', '=', 'groups.id')
+        //     ->where('groups.user_id', $user->id)
+        //     ->where('attendances.is_present', true)
+        //     ->whereMonth('attendances.date', $currentMonth)
+        //     ->whereYear('attendances.date', $currentYear)
+        //     ->count();
 
-        $totalPossibleAttendances = DB::table('attendances')
-            ->join('groups', 'attendances.group_id', '=', 'groups.id')
-            ->where('groups.user_id', $user->id)
-            ->whereMonth('attendances.date', $currentMonth)
-            ->whereYear('attendances.date', $currentYear)
-            ->count();
+        // $totalPossibleAttendances = DB::table('attendances')
+        //     ->join('groups', 'attendances.group_id', '=', 'groups.id')
+        //     ->where('groups.user_id', $user->id)
+        //     ->whereMonth('attendances.date', $currentMonth)
+        //     ->whereYear('attendances.date', $currentYear)
+        //     ->count();
 
-        $overallAttendanceRate = $totalPossibleAttendances > 0 ?
-            round(($totalAttendancesThisMonth / $totalPossibleAttendances) * 100, 1) : 0;
+        // $overallAttendanceRate = $totalPossibleAttendances > 0 ?
+        //     round(($totalAttendancesThisMonth / $totalPossibleAttendances) * 100, 1) : 0;
 
-        $averageAttendancePerSession = $totalSessionsThisMonth > 0 ?
-            round($totalAttendancesThisMonth / $totalSessionsThisMonth, 1) : 0;
+        // $averageAttendancePerSession = $totalSessionsThisMonth > 0 ?
+        //     round($totalAttendancesThisMonth / $totalSessionsThisMonth, 1) : 0;
 
         // Top performing groups (by attendance rate and monthly income)
-        $topGroups = $groups->map(function ($group) use ($currentMonth, $currentYear) {
-            $groupAttendances = DB::table('attendances')
-                ->where('group_id', $group->id)
-                ->whereMonth('date', $currentMonth)
-                ->whereYear('date', $currentYear)
-                ->get();
+        // $attendanceByGroup = DB::table('attendances')
+        //     ->select('group_id',
+        //         DB::raw('COUNT(*) as total'),
+        //         DB::raw('SUM(CASE WHEN is_present = 1 THEN 1 ELSE 0 END) as present')
+        //     )
+        //     ->whereIn('group_id', $groups->pluck('id'))
+        //     ->whereMonth('date', $currentMonth)
+        //     ->whereYear('date', $currentYear)
+        //     ->groupBy('group_id')
+        //     ->get()
+        //     ->keyBy('group_id');
 
-            $totalAttendances = $groupAttendances->count();
-            $presentAttendances = $groupAttendances->where('is_present', true)->count();
-            $attendanceRate = $totalAttendances > 0 ? round(($presentAttendances / $totalAttendances) * 100, 1) : 0;
-
-            $monthlyIncome = $group->payment_type === 'monthly' ?
-                $group->assignedStudents->count() * $group->student_price : 0;
-
-            return [
-                'id' => $group->id,
-                'name' => $group->name,
-                'students_count' => $group->assignedStudents->count(),
-                'attendance_rate' => $attendanceRate,
-                'monthly_income' => $monthlyIncome,
-            ];
-        })->sortByDesc('attendance_rate')->take(3)->values();
+        // $topGroups = $groups->map(function ($group) use ($attendanceByGroup) {
+        //     $att = $attendanceByGroup[$group->id] ?? null;
+        //     $totalAttendances = $att ? $att->total : 0;
+        //     $presentAttendances = $att ? $att->present : 0;
+        //     $attendanceRate = $totalAttendances > 0 ? round(($presentAttendances / $totalAttendances) * 100, 1) : 0;
+        //     $monthlyIncome = $group->payment_type === 'monthly' ?
+        //         $group->assigned_students_count * $group->student_price : 0;
+        //     return [
+        //         'id' => $group->id,
+        //         'name' => $group->name,
+        //         'students_count' => $group->assigned_students_count,
+        //         'attendance_rate' => $attendanceRate,
+        //         'monthly_income' => $monthlyIncome,
+        //     ];
+        // })->sortByDesc('attendance_rate')->take(3)->values();
 
         return response()->json([
             'financial' => [
                 'total_expected_monthly_income' => $totalExpectedMonthlyIncome,
+                'total_expected_persessions_income'=>$totalExpectedPerSessionIncome,
+                'total_income' => $totalIncome,
                 'total_collected_payments' => $totalCollectedPayments,
                 'pending_payments' => $pendingPayments,
                 'collection_rate' => $collectionRate,
-                'average_student_price' => $averageStudentPrice,
+                // 'average_student_price' => $averageStudentPrice,
                 'recent_payments' => $recentPayments,
             ],
             'groups' => [
@@ -554,14 +714,14 @@ class DashboardController extends Controller
                 'total_students_in_groups' => $totalStudentsInGroups,
                 'total_students_without_group' => $totalStudentsWithoutGroup,
                 'average_students_per_group' => $averageStudentsPerGroup,
-                'top_groups' => $topGroups,
+                // 'top_groups' => $topGroups,
             ],
-            'attendance' => [
-                'total_sessions_this_month' => $totalSessionsThisMonth,
-                'total_attendances_this_month' => $totalAttendancesThisMonth,
-                'overall_attendance_rate' => $overallAttendanceRate,
-                'average_attendance_per_session' => $averageAttendancePerSession,
-            ],
+            // 'attendance' => [
+            //     'total_sessions_this_month' => $totalSessionsThisMonth,
+            //     'total_attendances_this_month' => $totalAttendancesThisMonth,
+            //     'overall_attendance_rate' => $overallAttendanceRate,
+            //     'average_attendance_per_session' => $averageAttendancePerSession,
+            // ],
         ]);
     }
 

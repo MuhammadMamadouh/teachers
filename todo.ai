@@ -1,110 +1,157 @@
-🎯 Goal: Implement a complete attendance and payment system for a Laravel + Inertia React SaaS app for teachers. Each group has a payment type: 'per_session' or 'monthly'. Each student in a group has a defined `student_price`. Students can only be added to groups with the same academic year.
 
----
+Project Goal:
+This is a SaaS platform for educational centers where every account in the system is represented as a "center" (organization).
+The center can be:
 
-🟩 Step 1: Attendance System
+A real educational center with multiple teachers and assistants.
 
-📦 Create `attendances` table:
+An individual teacher, who operates as a "center" with just himself/herself. known as individual center.
 
-| Column      | Type     | Notes |
-|-------------|----------|-------|
-| id          | bigint   | Primary Key |
-| group_id    | foreign key → groups.id |
-| student_id  | foreign key → students.id |
-| date        | date     | Attendance date |
-| is_present  | boolean  | true if present |
-| created_at  | timestamp |
+The system must support both scenarios seamlessly, allowing for easy upgrades from individual to multi-teacher setups without data migration.
 
-✅ Add unique constraint on (`group_id`, `student_id`, `date`) to prevent duplicate attendance entries for the same day.
+Scenario 1: Educational Center with Multiple Teachers & Assistants
+Entities:
 
-➕ When marking attendance:
-- Filter students by group’s academic year
-- Display list of students
-- Allow marking present/absent for today’s session
+Center: Main account (organization).
 
-If the group’s `payment_type = per_session`, trigger a related payment (see Step 2).
+Admin: The owner/manager of the center. Full access to all data.
 
----
+Teachers: Each teacher manages their own students, groups, and sessions.
 
-🟨 Step 2: Payments System
+Assistants: Linked to either the center as a whole or to a specific teacher. Their permissions are set by the admin.
 
-📦 Create `payments` table:
+Students/Groups/Sessions: Always linked to a teacher and the center.
 
-| Column        | Type       | Notes |
-|---------------|------------|-------|
-| id            | bigint     | Primary |
-| group_id      | foreign key |
-| student_id    | foreign key |
-| payment_type  | enum('monthly', 'per_session') |
-| related_date  | date       | For per_session → attendance date, for monthly → month start |
-| amount        | decimal(8,2) |
-| is_paid       | boolean    | default false |
-| paid_at       | datetime (nullable) |
-| notes         | text (nullable) |
-| created_at    | timestamp |
+Requirements:
 
-✅ Add unique constraint on (`group_id`, `student_id`, `related_date`) to prevent duplicate payments.
+Admin can:
 
----
+Add/edit/delete any teacher, assistant, student, or group in the center.
 
-🟦 Step 3: Payment Logic by Group Type
+Assign assistants to specific teachers or give general assistant permissions.
 
-### If `per_session`:
-- After saving attendance (`is_present = true`)
-- Automatically create a payment record with:
-  - `payment_type = per_session`
-  - `related_date = attendance.date`
-  - `amount = group.student_price`
+See all data, analytics, and reports for the entire center.
 
-### If `monthly`:
-- On the 1st day of each month (or when student is added to group), generate:
-  - `payment_type = monthly`
-  - `related_date = first day of month`
-  - `amount = group.student_price`
-  - `is_paid = false`
+Control the subscription/plan and see current usage (number of teachers, assistants, students).
 
-✅ Teacher can manually update `is_paid = true` and `paid_at` when payment is received (cash only for now).
+Teacher can:
 
----
+Add/edit/delete their own students and groups only.
 
-🟫 Step 4: Frontend Views (Inertia React)
+View and manage their sessions, attendance, and payments for their own students.
 
-### For Teacher:
+Cannot access or modify data for other teachers.
 
-📆 Attendance Page:
-- Show list of today’s sessions (based on group schedule)
-- For each session:
-  - List of students (filtered by academic year)
-  - Checkbox for presence
-  - After submission → save attendances
-  - If `per_session`, trigger payment generation
+Assistant can (as set by admin):
 
-💰 Payments Page:
-- Monthly View:
-  - List of students with due/unpaid payments (for current month or current day)
-  - Status: Paid / Unpaid
-  - Date of payment
-  - Total expected income
-  - Total paid so far
-  - Remaining due
+Add/edit students and groups for a specific teacher or the whole center (if permission granted).
 
-📊 Group Summary:
-- Show:
-  - Number of students
-  - Group `payment_type`
-  - `student_price`
-  - Total collected this month
-  - Total pending
-  - Number of unpaid students
+Register attendance and payments.
 
----
+Permissions must be dynamic and configurable (using roles/permissions system).
 
-🛡️ Step 5: Validations & Guards
+Subscription Plans:
 
-- Only allow attendance marking and payment view for authorized teachers/assistants
-- Validate that students assigned to a group belong to the same `academic_year_id`
-- Prevent duplicate payments or attendance records for the same day/student/group
+Each plan has a trail period of number of days admin can set.
 
----
-🟩 Step 6: Additional Features
-- Weekly/monthly revenue summaries per group
+Each plan limits the number of teachers, assistants, and students per center.
+
+When center reaches limit, show upgrade prompt.
+
+Data Filtering:
+
+Every action and API must be filtered by center_id.
+
+Teachers and assistants see only data relevant to their assignment (their own or as permitted by admin).
+
+Scenario 2: Individual Teacher (Single-User Center)
+Entities:
+
+Center: Created automatically for the teacher, using their name.
+
+Admin/Teacher: The same user (has both roles).
+
+No assistants by default, unless teacher upgrades plan and invites others.
+
+Requirements:
+
+The individual teacher sees and manages all their own data as the only user in the center.
+
+No other teachers exist in this center (unless teacher decides to upgrade or add more users later).
+
+System must work smoothly for single-teacher scenario, without adding unnecessary steps or complexity.
+
+Teacher can still invite assistants if their plan allows, and can give them permissions just like in scenario 1.
+
+All data linked to the center and the teacher as the only user.
+
+Upgrade Path:
+
+If the teacher wants to grow (add more teachers/assistants), they can simply invite new users, and the system automatically adapts to scenario 1.
+
+General System Rules:
+Every user (admin, teacher, assistant) is always linked to a center.
+
+All students, groups, sessions, and related data must always be linked to both a center and a teacher.
+
+Role & permissions system is essential:
+
+Must be flexible (admin can set what assistants can/can’t do).
+
+Teachers can only see/manage their own data.
+
+Admins have full visibility and control.
+
+UI Flows:
+
+On registration: User creates a center. If individual, center name is the user’s name.
+
+Admin dashboard: Manage users (teachers/assistants), students, groups, sessions, and plan.
+
+Teacher dashboard: Manage only own students, groups, sessions, attendance, payments.
+
+Assistant dashboard: Show only the views and actions permitted by their role/assigned permissions.
+
+Subscription management:
+
+Each plan includes limits for teachers, assistants, students, etc.
+
+Enforce limits and prompt upgrade as needed.
+
+All database queries and business logic must always enforce center-based isolation and teacher-based filtering for data access.
+
+
+Business Scenarios:
+Admin  invites a new teacher or assistant or Add them manually with emails and default password:
+
+Invitation is sent by email; invited user joins center with specified role.
+
+System checks plan limits before adding.
+
+Teacher adds a new student or group:
+
+Student/group linked only to that teacher and their center.
+
+Assistant marks attendance for a group:
+
+Only for the groups/teachers they have permissions for.
+
+Teacher wants to add another teacher:
+
+System checks if allowed by current plan; if not, prompt upgrade.
+
+Teacher working solo:
+
+Everything works as before, but under the center structure.
+
+Notes:
+The design must ensure seamless upgrade from single-teacher to multi-teacher with zero data migration needed.
+
+Permissions/roles must be highly configurable.
+
+Every view/action in the UI should always respect the user's center, role, and assigned permissions.
+
+Build the backend and frontend architecture to fully support both scenarios out-of-the-box.
+Document special logic for permissions, user management, and plan enforcement.
+All endpoints, queries, and UI screens must always reflect the correct scenario for each logged-in user.
+

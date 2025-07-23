@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\EducationLevel;
 
 class Student extends Model
 {
@@ -13,10 +14,16 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'group_id',
+        'center_id',
         'name',
         'phone',
         'guardian_phone',
+        'level',
         'academic_year_id',
+    ];
+
+    protected $casts = [
+        'level' => EducationLevel::class,
     ];
 
     /**
@@ -58,5 +65,13 @@ class Student extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the center that the student belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
     }
 }

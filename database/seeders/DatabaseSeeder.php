@@ -16,9 +16,11 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->call([
             GovernorateSeeder::class,
-            PlansSeeder::class,
+            EnhancedPlanSeeder::class,
+            RolesAndPermissionsSeeder::class,
             AdminUserSeeder::class,
             AcademicYearSeeder::class,
+            // CenterSeeder::class,
         ]);
 
         // $teachers = User::factory()

@@ -1,5 +1,5 @@
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
-import { BookOpen } from 'lucide-react';
 
 export default function GuestLayout({ children }) {
     return (
@@ -9,7 +9,7 @@ export default function GuestLayout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <Link href="/" className="flex items-center">
-                            <BookOpen className="h-8 w-8 text-indigo-600 ml-3" />
+                            <ApplicationLogo className="h-20 w-32 text-indigo-600 ml-3" />
                             <span className="text-xl font-bold text-gray-900">نظام إدارة المعلمين</span>
                         </Link>
                         <div className="flex items-center space-x-reverse space-x-4">

@@ -8,27 +8,29 @@ import {
     UserGroupIcon
 } from '@heroicons/react/24/outline';
 
-export default function Index({ groups, academicYears, filters }) {
+export default function Index({ groups = [], academicYears = {}, teachers = [], filters = {} }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState(null);
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [selectedAcademicYear, setSelectedAcademicYear] = useState(filters?.academic_year_id || '');
+    const [selectedTeacher, setSelectedTeacher] = useState(filters?.teacher_id || '');
     const [isLoading, setIsLoading] = useState(false);
     
     const prevSearch = usePrevious(searchTerm);
     const prevAcademicYear = usePrevious(selectedAcademicYear);
+    const prevTeacher = usePrevious(selectedTeacher);
 
     // Debounced search effect
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            if (searchTerm !== prevSearch || selectedAcademicYear !== prevAcademicYear) {
+            if (searchTerm !== prevSearch || selectedAcademicYear !== prevAcademicYear || selectedTeacher !== prevTeacher) {
                 handleFilter();
             }
         }, 300);
 
         return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchTerm, selectedAcademicYear]);
+    }, [searchTerm, selectedAcademicYear, selectedTeacher]);
 
     const handleFilter = () => {
         setIsLoading(true);
@@ -42,6 +44,10 @@ export default function Index({ groups, academicYears, filters }) {
             params.academic_year_id = selectedAcademicYear;
         }
 
+        if (selectedTeacher) {
+            params.teacher_id = selectedTeacher;
+        }
+
         router.get(route('groups.index'), params, {
             preserveState: true,
             preserveScroll: true,
@@ -52,6 +58,7 @@ export default function Index({ groups, academicYears, filters }) {
     const handleClearFilters = () => {
         setSearchTerm('');
         setSelectedAcademicYear('');
+        setSelectedTeacher('');
         setIsLoading(true);
         router.get(route('groups.index'), {}, {
             preserveState: true,
@@ -60,7 +67,7 @@ export default function Index({ groups, academicYears, filters }) {
         });
     };
 
-    const hasActiveFilters = searchTerm || selectedAcademicYear;
+    const hasActiveFilters = searchTerm || selectedAcademicYear || selectedTeacher;
 
     const handleDelete = (group) => {
         setGroupToDelete(group);
@@ -102,7 +109,7 @@ export default function Index({ groups, academicYears, filters }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Search and Filter Section */}
                     <div className="mb-6 rounded-lg bg-white shadow-sm border border-gray-200 p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Search Input */}
                             <div className="relative">
                                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
@@ -135,9 +142,33 @@ export default function Index({ groups, academicYears, filters }) {
                                     onChange={(e) => setSelectedAcademicYear(e.target.value)}
                                 >
                                     <option value="">جميع الصفوف</option>
-                                    {academicYears?.map((year) => (
-                                        <option key={year.id} value={year.id}>
-                                            {year.name_ar}
+                                    {academicYears && Object.entries(academicYears).map(([level, years]) => (
+                                        <optgroup key={level} label={level}>
+                                            {Array.isArray(years) && years.map((year) => (
+                                                <option key={year.id} value={year.id}>
+                                                    {year.name_ar}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Teacher Filter */}
+                            <div>
+                                <label htmlFor="teacher" className="block text-sm font-medium text-gray-700 mb-2">
+                                    المعلم
+                                </label>
+                                <select
+                                    id="teacher"
+                                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    value={selectedTeacher}
+                                    onChange={(e) => setSelectedTeacher(e.target.value)}
+                                >
+                                    <option value="">جميع المعلمين</option>
+                                    {teachers && Array.isArray(teachers) && teachers.map((teacher) => (
+                                        <option key={teacher.id} value={teacher.id}>
+                                            {teacher.name} {teacher.subject ? `- ${teacher.subject}` : ''}
                                         </option>
                                     ))}
                                 </select>
@@ -163,13 +194,20 @@ export default function Index({ groups, academicYears, filters }) {
                             <div className="mt-4 flex items-center text-sm text-gray-600">
                                 <UserGroupIcon className="h-4 w-4 mr-1" />
                                 <span>
-                                    {isLoading ? 'جاري البحث...' : `تم العثور على ${groups.length} مجموعة`}
+                                    {isLoading ? 'جاري البحث...' : `تم العثور على ${Array.isArray(groups) ? groups.length : 0} مجموعة`}
                                     {searchTerm && (
                                         <span className="font-medium"> للبحث &quot;{searchTerm}&quot;</span>
                                     )}
                                     {selectedAcademicYear && academicYears && (
                                         <span className="font-medium">
-                                            {' '}في الصف الدراسي &quot;{academicYears.find(y => y.id.toString() === selectedAcademicYear)?.name_ar}&quot;
+                                            {' '}في الصف الدراسي &quot;{
+                                                Object.values(academicYears).flat().find(y => y.id.toString() === selectedAcademicYear)?.name_ar
+                                            }&quot;
+                                        </span>
+                                    )}
+                                    {selectedTeacher && teachers && (
+                                        <span className="font-medium">
+                                            {' '}للمعلم &quot;{teachers.find(t => t.id.toString() === selectedTeacher)?.name}&quot;
                                         </span>
                                     )}
                                 </span>
@@ -184,7 +222,7 @@ export default function Index({ groups, academicYears, filters }) {
                             </div>
                         )}
                         <div className="p-6 text-gray-900">
-                            {groups.length === 0 ? (
+                            {!Array.isArray(groups) || groups.length === 0 ? (
                                 <div className="text-center py-8">
                                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -224,7 +262,7 @@ export default function Index({ groups, academicYears, filters }) {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {groups.map((group) => (
+                                    {Array.isArray(groups) && groups.map((group) => (
                                         <div key={group.id} className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
                                             <div className="flex justify-between items-start mb-4">
                                                 <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>
@@ -240,12 +278,21 @@ export default function Index({ groups, academicYears, filters }) {
                                             )}
                                             
                                             <div className="mb-4">
-                                                <p className="text-sm text-gray-500">الحد الأقصى للطلاب: {group.max_students}</p>
+                                                <p className="text-sm text-gray-500 ">الحد الأقصى للطلاب: {group.max_students}</p>
+                                                <p className="text-sm text-gray-500  mt-1">الطلاب المسجلين: {group.assigned_students ? group.assigned_students : 0}</p>
                                                 {group.academic_year && (
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-500  mt-1">
                                                         الصف الدراسي: 
                                                         <span className="inline-flex items-center px-2 py-1 ml-2 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                                                             {group.academic_year.name_ar}
+                                                        </span>
+                                                    </p>
+                                                )}
+                                                {group.teacher && (
+                                                    <p className="text-sm text-gray-500  mt-1">
+                                                        المعلم: 
+                                                        <span className="inline-flex items-center px-2 py-1 ml-2 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                                            {group.teacher.name} {group.teacher.subject ? `- ${group.teacher.subject}` : ''}
                                                         </span>
                                                     </p>
                                                 )}
@@ -254,11 +301,14 @@ export default function Index({ groups, academicYears, filters }) {
                                             <div className="mb-4">
                                                 <h4 className="text-sm font-medium text-gray-900 mb-2">الجدول الأسبوعي:</h4>
                                                 <div className="space-y-1">
-                                                    {group.schedules.map((schedule) => (
+                                                    {group.schedules && Array.isArray(group.schedules) && group.schedules.map((schedule) => (
                                                         <div key={schedule.id} className="text-xs text-gray-600">
                                                             {getDayName(schedule.day_of_week)}: {schedule.start_time} - {schedule.end_time}
                                                         </div>
                                                     ))}
+                                                    {(!group.schedules || !Array.isArray(group.schedules) || group.schedules.length === 0) && (
+                                                        <div className="text-xs text-gray-500 italic">لا توجد جلسات مجدولة</div>
+                                                    )}
                                                 </div>
                                             </div>
 

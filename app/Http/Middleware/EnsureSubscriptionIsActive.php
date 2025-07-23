@@ -31,31 +31,16 @@ class EnsureSubscriptionIsActive
                 return redirect()->route('subscription.expired');
             }
 
-            // Check if the teacher has an active subscription
+            // Check if the teacher has an active subscription (this will check center subscription if applicable)
             if (!$teacher->hasActiveSubscription()) {
-                $subscription = $teacher->activeSubscription()->first();
-
-                // Mark subscription as expired if it exists but is past end date
-                if ($subscription && $subscription->isExpired()) {
-                    $subscription->markAsExpired();
-                }
-
-                // Redirect to subscription expired page
                 return redirect()->route('subscription.expired');
             }
 
             return $next($request);
         }
 
-        // For teachers and other users, check their own subscription
+        // For all other users (including center-based teachers), check their subscription
         if (!$user || !$user->hasActiveSubscription()) {
-            $subscription = $user ? $user->activeSubscription()->first() : null;
-
-            // Mark subscription as expired if it exists but is past end date
-            if ($subscription && $subscription->isExpired()) {
-                $subscription->markAsExpired();
-            }
-
             // Redirect to subscription expired page
             return redirect()->route('subscription.expired');
         }

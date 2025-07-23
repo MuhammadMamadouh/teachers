@@ -29,13 +29,17 @@ class AdminTeacherController extends Controller
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
             if ($request->status === 'approved') {
-                $query->where('is_approved', true);
+                $query->where('is_approved', true)->where('is_active', true);
             } elseif ($request->status === 'pending') {
                 $query->where('is_approved', false);
             } elseif ($request->status === 'active') {
-                $query->where('is_approved', true)->whereHas('activeSubscription');
+                $query->where('is_approved', true)->where('is_active', true)->whereHas('activeSubscription');
             } elseif ($request->status === 'inactive') {
-                $query->where('is_approved', false)->orWhereDoesntHave('activeSubscription');
+                $query->where(function ($q) {
+                    $q->where('is_approved', false)
+                      ->orWhere('is_active', false)
+                      ->orWhereDoesntHave('activeSubscription');
+                });
             }
         }
 
@@ -69,9 +73,14 @@ class AdminTeacherController extends Controller
             'filters' => $request->only(['status', 'search', 'sort_by', 'sort_order']),
             'stats' => [
                 'total' => User::where('is_admin', false)->where('type', 'teacher')->count(),
-                'approved' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->count(),
+                'approved' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->where('is_active', true)->count(),
                 'pending' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', false)->count(),
-                'active' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->whereHas('activeSubscription')->count(),
+                'active' => User::where('is_admin', false)->where('type', 'teacher')->where('is_approved', true)->where('is_active', true)->whereHas('activeSubscription')->count(),
+                'inactive' => User::where('is_admin', false)->where('type', 'teacher')->where(function ($q) {
+                    $q->where('is_approved', false)
+                      ->orWhere('is_active', false)
+                      ->orWhereDoesntHave('activeSubscription');
+                })->count(),
             ],
         ]);
     }
@@ -162,47 +171,54 @@ class AdminTeacherController extends Controller
     {
         $teacher->load([
             'activeSubscription.plan',
-            'students',
-            'groups.assignedStudents',
             'groups.payments' => function ($query) {
                 $query->where('is_paid', true)->orderBy('paid_at', 'desc')->limit(10);
             },
         ]);
 
+        $total_payments = DB::table('payments')
+            ->join('students', 'payments.student_id', '=', 'students.id')
+            ->where('students.user_id', $teacher->id)
+            ->where('students.group_id', '!=', null)
+            ->where('payments.is_paid', true)
+            ->sum('payments.amount');
+
+            // dd($teacher->students()->count());
+            $total_students = $teacher->students()->count();
+
+
         // Calculate statistics
         $stats = [
-            'students_count' => $teacher->students->count(),
-            'groups_count' => $teacher->groups->count(),
-            'total_revenue' => $teacher->groups->sum(function ($group) {
-                return $group->payments->sum('amount');
-            }),
+            'total_students' => $total_students,
+            'total_groups' => $teacher->groups()->count(),
+            'total_payments' => $total_payments,
             'active_subscriptions' => $teacher->activeSubscription ? 1 : 0,
         ];
 
-        // Get recent activity
-        $recentPayments = DB::table('payments')
-            ->join('students', 'payments.student_id', '=', 'students.id')
-            ->join('groups', 'payments.group_id', '=', 'groups.id')
-            ->where('students.user_id', $teacher->id)
-            ->where('payments.is_paid', true)
-            ->orderBy('payments.paid_at', 'desc')
-            ->limit(10)
-            ->select('students.name as student_name', 'groups.name as group_name', 'payments.amount', 'payments.paid_at', 'payments.related_date')
-            ->get()
-            ->map(function ($payment) {
-                return [
-                    'student_name' => $payment->student_name,
-                    'group_name' => $payment->group_name,
-                    'amount' => $payment->amount,
-                    'paid_at' => $payment->paid_at,
-                    'month_year' => \Carbon\Carbon::parse($payment->related_date)->format('F Y'),
-                ];
-            });
+        // // Get recent activity
+        // $recentPayments = DB::table('payments')
+        //     ->join('students', 'payments.student_id', '=', 'students.id')
+        //     ->join('groups', 'payments.group_id', '=', 'groups.id')
+        //     ->where('students.user_id', $teacher->id)
+        //     ->where('payments.is_paid', true)
+        //     ->orderBy('payments.paid_at', 'desc')
+        //     ->limit(10)
+        //     ->select('students.name as student_name', 'groups.name as group_name', 'payments.amount', 'payments.paid_at', 'payments.related_date')
+        //     ->get()
+        //     ->map(function ($payment) {
+        //         return [
+        //             'student_name' => $payment->student_name,
+        //             'group_name' => $payment->group_name,
+        //             'amount' => $payment->amount,
+        //             'paid_at' => $payment->paid_at,
+        //             'month_year' => \Carbon\Carbon::parse($payment->related_date)->format('F Y'),
+        //         ];
+        //     });
 
         return Inertia::render('Admin/Teachers/Show', [
             'teacher' => $teacher,
             'stats' => $stats,
-            'recentPayments' => $recentPayments,
+            // 'recentPayments' => $recentPayments,
         ]);
     }
 
@@ -309,6 +325,7 @@ class AdminTeacherController extends Controller
     {
         $teacher->update([
             'is_approved' => true,
+            'is_active' => true,
             'approved_at' => now(),
         ]);
 
@@ -333,6 +350,7 @@ class AdminTeacherController extends Controller
     {
         $teacher->update([
             'is_approved' => false,
+            'is_active' => false,
             'approved_at' => null,
         ]);
 
@@ -364,6 +382,7 @@ class AdminTeacherController extends Controller
                     case 'activate':
                         $teacher->update([
                             'is_approved' => true,
+                            'is_active' => true,
                             'approved_at' => now(),
                         ]);
                         if (!$teacher->activeSubscription) {
@@ -381,6 +400,7 @@ class AdminTeacherController extends Controller
                     case 'deactivate':
                         $teacher->update([
                             'is_approved' => false,
+                            'is_active' => false,
                             'approved_at' => null,
                         ]);
                         $teacher->subscriptions()->update(['is_active' => false]);

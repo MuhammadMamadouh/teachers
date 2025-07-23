@@ -9,12 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use Notifiable;
+    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -29,8 +31,10 @@ class User extends Authenticatable
         'subject',
         'city',
         'governorate_id',
+        'center_id',
         'notes',
         'is_approved',
+        'is_active',
         'is_admin',
         'approved_at',
         'type',
@@ -60,6 +64,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_approved' => 'boolean',
+            'is_active' => 'boolean',
             'is_admin' => 'boolean',
             'approved_at' => 'datetime',
             'onboarding_completed' => 'boolean',
@@ -91,6 +96,38 @@ class User extends Authenticatable
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
+    }
+
+    /**
+     * Get the center this user belongs to.
+     */
+    public function center(): BelongsTo
+    {
+        return $this->belongsTo(Center::class);
+    }
+
+    /**
+     * Get all centers owned by this user (admin/owner).
+     */
+    public function ownedCenters(): HasMany
+    {
+        return $this->hasMany(Center::class, 'owner_id');
+    }
+
+    /**
+     * Check if user is the owner of their center.
+     */
+    public function isCenterOwner(): bool
+    {
+        return $this->center && $this->center->owner_id === $this->id;
+    }
+
+    /**
+     * Check if user has admin role in their center.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin') || $this->is_admin;
     }
 
     /**
@@ -130,17 +167,33 @@ class User extends Authenticatable
      */
     public function getSubscriptionLimits(): array
     {
-        // For assistants, use the teacher's subscription
-        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
+        $subscription = null;
 
-        if (!$userToCheck) {
-            return [
-                'max_students' => 0,
-                'has_active_subscription' => false,
-            ];
+        // For assistants, check teacher's subscription
+        if ($this->isAssistant()) {
+            $userToCheck = $this->teacher;
+            if (!$userToCheck) {
+                return [
+                    'max_students' => 0,
+                    'has_active_subscription' => false,
+                ];
+            }
+            
+            // If teacher belongs to a center, use center's subscription
+            if ($userToCheck->center_id && $userToCheck->center) {
+                $subscription = $userToCheck->center->activeSubscription()->with('plan')->first();
+            } else {
+                $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+            }
+        } 
+        // For teachers belonging to a center, use center's subscription
+        else if ($this->center_id && $this->center && $this->type === 'teacher') {
+            $subscription = $this->center->activeSubscription()->with('plan')->first();
         }
-
-        $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+        // For everyone else, use their own subscription
+        else {
+            $subscription = $this->activeSubscription()->with('plan')->first();
+        }
 
         if (!$subscription || !$subscription->isCurrentlyActive()) {
             return [
@@ -248,7 +301,7 @@ class User extends Authenticatable
      */
     public function isTeacher(): bool
     {
-        return $this->type === 'teacher';
+        return $this->hasRole('teacher') || $this->type === 'teacher';
     }
 
     /**
@@ -256,7 +309,7 @@ class User extends Authenticatable
      */
     public function isAssistant(): bool
     {
-        return $this->type === 'assistant';
+        return $this->hasRole('assistant') || $this->type === 'assistant';
     }
 
     /**
@@ -265,6 +318,22 @@ class User extends Authenticatable
     public function getIsAssistantAttribute(): bool
     {
         return $this->isAssistant();
+    }
+
+    /**
+     * Accessor for is_teacher attribute for frontend compatibility.
+     */
+    public function getIsTeacherAttribute(): bool
+    {
+        return $this->isTeacher();
+    }
+
+    /**
+     * Accessor for is_center_owner attribute for frontend compatibility.
+     */
+    public function getIsCenterOwnerAttribute(): bool
+    {
+        return $this->isCenterOwner();
     }
 
     /**
@@ -344,14 +413,31 @@ class User extends Authenticatable
     public function hasActiveSubscription(): bool
     {
         // For assistants, check the teacher's subscription
-        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-
-        if (!$userToCheck) {
-            return false;
+        if ($this->isAssistant()) {
+            $userToCheck = $this->teacher;
+            if (!$userToCheck) {
+                return false;
+            }
+            
+            // If the teacher belongs to a center, check center's subscription
+            if ($userToCheck->center_id && $userToCheck->center) {
+                $subscription = $userToCheck->center->activeSubscription()->first();
+                return $subscription && $subscription->isCurrentlyActive();
+            }
+            
+            // Otherwise check teacher's own subscription
+            $subscription = $userToCheck->activeSubscription()->first();
+            return $subscription && $subscription->isCurrentlyActive();
         }
 
-        $subscription = $userToCheck->activeSubscription()->first();
+        // For teachers belonging to a center, check center's subscription
+        if ($this->center_id && $this->center && $this->type === 'teacher') {
+            $subscription = $this->center->activeSubscription()->first();
+            return $subscription && $subscription->isCurrentlyActive();
+        }
 
+        // For independent teachers and center owners, check their own subscription
+        $subscription = $this->activeSubscription()->first();
         return $subscription && $subscription->isCurrentlyActive();
     }
 
@@ -361,14 +447,31 @@ class User extends Authenticatable
     public function getCurrentPlan()
     {
         // For assistants, get the teacher's plan
-        $userToCheck = $this->isAssistant() ? $this->teacher : $this;
-
-        if (!$userToCheck) {
-            return null;
+        if ($this->isAssistant()) {
+            $userToCheck = $this->teacher;
+            if (!$userToCheck) {
+                return null;
+            }
+            
+            // If the teacher belongs to a center, get center's plan
+            if ($userToCheck->center_id && $userToCheck->center) {
+                $subscription = $userToCheck->center->activeSubscription()->with('plan')->first();
+                return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
+            }
+            
+            // Otherwise get teacher's own plan
+            $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+            return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
         }
 
-        $subscription = $userToCheck->activeSubscription()->with('plan')->first();
+        // For teachers belonging to a center, get center's plan
+        if ($this->center_id && $this->center && $this->type === 'teacher') {
+            $subscription = $this->center->activeSubscription()->with('plan')->first();
+            return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
+        }
 
+        // For independent teachers and center owners, get their own plan
+        $subscription = $this->activeSubscription()->with('plan')->first();
         return $subscription && $subscription->isCurrentlyActive() ? $subscription->plan : null;
     }
 }

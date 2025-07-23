@@ -16,6 +16,10 @@ return new class () extends Migration {
 
             // Add teacher_id for assistant users
             $table->foreignId('teacher_id')->nullable()->constrained('users')->onDelete('cascade');
+
+            // additional indexes for performance
+            $table->index('type');
+            $table->index('teacher_id');
         });
     }
 

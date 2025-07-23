@@ -3,9 +3,11 @@ import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { successAlert, errorAlert } from '@/utils/sweetAlert';
 
-export default function Index({ groups, selectedGroup, selectedDate, attendances }) {
+export default function Index({ groups, selectedGroup, selectedDate, students, attendances, searchTerm = '' }) {
     const [localSelectedGroup, setLocalSelectedGroup] = useState(selectedGroup?.id || '');
     const [localSelectedDate, setLocalSelectedDate] = useState(selectedDate);
+    const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+    const [selectAll, setSelectAll] = useState(false);
     
     const { data, setData, post, processing } = useForm({
         group_id: selectedGroup?.id || '',
@@ -13,9 +15,10 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
         attendances: []
     });
 
+    // Initialize attendance data when students change
     useEffect(() => {
-        if (selectedGroup && selectedGroup.assigned_students) {
-            const attendanceData = selectedGroup.assigned_students.map(student => ({
+        if (students && students.data) {
+            const attendanceData = students.data.map(student => ({
                 student_id: student.id,
                 is_present: attendances[student.id]?.is_present || false,
                 notes: attendances[student.id]?.notes || ''
@@ -23,7 +26,42 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
             setData('attendances', attendanceData);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedGroup, attendances]);
+    }, [students, attendances]);
+
+    // Handle bulk select all for current page
+    const handleSelectAll = (isChecked) => {
+        setSelectAll(isChecked);
+        const newAttendances = [...data.attendances];
+        
+        // Update all students on current page
+        if (students && students.data) {
+            students.data.forEach((student, index) => {
+                if (newAttendances[index]) {
+                    newAttendances[index].is_present = isChecked;
+                }
+            });
+        }
+        
+        setData('attendances', newAttendances);
+    };
+
+    // Update selectAll state when individual checkboxes change
+    useEffect(() => {
+        if (students && students.data && students.data.length > 0) {
+            const allCurrentStudentsPresent = students.data.every((student, index) => 
+                data.attendances[index]?.is_present || false
+            );
+            setSelectAll(allCurrentStudentsPresent);
+        }
+    }, [data.attendances, students]);
+
+    // Handle page navigation
+    const handlePageChange = (url) => {
+        router.get(url, {}, {
+            preserveState: true,
+            replace: true
+        });
+    };
 
     // Get valid days for the selected group
     const getValidDays = () => {
@@ -98,10 +136,26 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
         }
     };
 
+    const handleSearchChange = (term) => {
+        setLocalSearchTerm(term);
+    };
+
+    const handleSearchSubmit = () => {
+        if (localSelectedGroup) {
+            router.get(route('attendance.index'), {
+                group_id: localSelectedGroup,
+                date: localSelectedDate,
+                search: localSearchTerm
+            });
+        }
+    };
+
     const handleAttendanceChange = (studentIndex, field, value) => {
         const newAttendances = [...data.attendances];
-        newAttendances[studentIndex][field] = value;
-        setData('attendances', newAttendances);
+        if (newAttendances[studentIndex]) {
+            newAttendances[studentIndex][field] = value;
+            setData('attendances', newAttendances);
+        }
     };
 
     const submit = (e) => {
@@ -178,7 +232,7 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                         <option value="">اختر المجموعة</option>
                                         {groups.map((group) => (
                                             <option key={group.id} value={group.id}> 
-                                                {group.name} ({group.assigned_students.length} طلاب)
+                                                {group.name} ({group.assigned_students_count} طلاب)
                                             </option>
                                         ))}
                                     </select>
@@ -187,14 +241,6 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                 <div>
                                     <label htmlFor="date_select" className="block text-sm font-medium text-gray-700 mb-2 text-right">
                                         اختر التاريخ
-                                        {selectedGroup && selectedGroup.schedules && (
-                                            <span className="text-xs text-gray-500 block mt-1">
-                                                أيام المجموعة: {selectedGroup.schedules.map(schedule => {
-                                                    const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-                                                    return days[schedule.day_of_week];
-                                                }).join(', ')}
-                                            </span>
-                                        )}
                                     </label>
                                     <input
                                         id="date_select"
@@ -210,6 +256,14 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                                 : ''
                                         }`}
                                     />
+                                    {selectedGroup && selectedGroup.schedules && (
+                                        <span className="text-xs text-gray-500 block mt-1">
+                                            أيام المجموعة: {selectedGroup.schedules.map(schedule => {
+                                                const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                                                return days[schedule.day_of_week];
+                                            }).join(', ')}
+                                        </span>
+                                    )}
                                     {!localSelectedGroup && (
                                         <p className="mt-1 text-xs text-gray-500 text-right">
                                             اختر مجموعة أولاً
@@ -223,94 +277,222 @@ export default function Index({ groups, selectedGroup, selectedDate, attendances
                                 </div>
                             </div>
 
-                            {selectedGroup && selectedGroup.assigned_students ? (
-                                selectedGroup.assigned_students.length > 0 ? (
-                                    <form onSubmit={submit}>
-                                        <div className="mb-6">
-                                            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 text-right">
-                                                قائمة طلاب {selectedGroup.name} - {new Date(selectedDate).toLocaleDateString('ar-EG', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                            </h3>
-                                            
-                                            <div className="space-y-3 sm:space-y-4">
-                                                {selectedGroup.assigned_students.map((student, index) => (
-                                                    <div key={student.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-                                                            {/* Student Info */}
-                                                            <div className="flex items-center space-x-3 space-x-reverse">
-                                                                <div className="flex-shrink-0">
-                                                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                                                        <span className="text-sm font-medium text-gray-600">
-                                                                            {student.name.charAt(0)}
-                                                                        </span>
+                            {/* Search bar for students */}
+                            {selectedGroup && (
+                                <div className="mb-6">
+                                    <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                                        البحث في الطلاب
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            id="search"
+                                            value={localSearchTerm}
+                                            onChange={(e) => handleSearchChange(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+                                            placeholder="البحث بالاسم أو رقم الهاتف..."
+                                            className="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right text-sm"
+                                        />
+                                        <button
+                                            onClick={handleSearchSubmit}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                        >
+                                            بحث
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Student count and pagination info */}
+                            {selectedGroup && students && students.data && (
+                                <div className="mb-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600">
+                                    <span className="text-right">
+                                        عرض {students.from} إلى {students.to} من {students.total} طالب
+                                    </span>
+                                    <span className="text-right">
+                                        الصفحة {students.current_page} من {students.last_page}
+                                    </span>
+                                </div>
+                            )}
+
+                            {selectedGroup && students && students.data ? (
+                                students.data.length > 0 ? (
+                                    <>
+                                        {/* Info note for large groups */}
+                                        {students.total > 50 && (
+                                            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                                <p className="text-sm text-blue-800 text-right">
+                                                    💡 تم تقسيم الطلاب إلى صفحات (20 طالب في كل صفحة) لتسهيل التنقل والتحكم
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        <form onSubmit={submit}>
+                                            <div className="mb-6">
+                                                <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+                                                    <h3 className="text-base sm:text-lg font-medium text-gray-900 text-right">
+                                                        قائمة طلاب {selectedGroup.name} - {new Date(selectedDate).toLocaleDateString('ar-EG', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </h3>
+                                                    
+                                                    {/* Bulk actions */}
+                                                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                                                        <label className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectAll}
+                                                                onChange={(e) => handleSelectAll(e.target.checked)}
+                                                                className="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500 ml-2"
+                                                            />
+                                                            <span className="text-sm text-gray-700">تحديد الكل</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="space-y-3 sm:space-y-4">
+                                                    {students.data.map((student, index) => {
+                                                        return (
+                                                            <div key={student.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                                                                    {/* Student Info */}
+                                                                    <div className="flex items-center space-x-3 space-x-reverse">
+                                                                        <div className="flex-shrink-0">
+                                                                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                                                <span className="text-sm font-medium text-gray-600">
+                                                                                    {student.name.charAt(0)}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <h4 className="text-sm font-medium text-gray-900">{student.name}</h4>
+                                                                            <p className="text-xs sm:text-sm text-gray-500">{student.phone}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    {/* Attendance Controls */}
+                                                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                                                                        <label className="flex items-center justify-center sm:justify-start">
+                                                                            <span className="ml-2 text-sm text-gray-700">حاضر</span>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={data.attendances[index]?.is_present || false}
+                                                                                onChange={(e) => handleAttendanceChange(index, 'is_present', e.target.checked)}
+                                                                                className="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
+                                                                            />
+                                                                        </label>
+                                                                        
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="ملاحظات (اختياري)"
+                                                                            value={data.attendances[index]?.notes || ''}
+                                                                            onChange={(e) => handleAttendanceChange(index, 'notes', e.target.value)}
+                                                                            className="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right w-full sm:w-auto"
+                                                                        />
                                                                     </div>
                                                                 </div>
-                                                                <div className="text-right">
-                                                                    <h4 className="text-sm font-medium text-gray-900">{student.name}</h4>
-                                                                    <p className="text-xs sm:text-sm text-gray-500">{student.phone}</p>
-                                                                </div>
                                                             </div>
-                                                            
-                                                            {/* Attendance Controls */}
-                                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                                                                <label className="flex items-center justify-center sm:justify-start">
-                                                                    <span className="ml-2 text-sm text-gray-700">حاضر</span>
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={data.attendances[index]?.is_present || false}
-                                                                        onChange={(e) => handleAttendanceChange(index, 'is_present', e.target.checked)}
-                                                                        className="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
-                                                                    />
-                                                                </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                                
+                                                {/* Pagination controls */}
+                                                {students.links && students.links.length > 3 && (
+                                                    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 p-4 bg-gray-50 rounded-lg">
+                                                        <div className="flex items-center gap-2 mb-2 sm:mb-0">
+                                                            {students.links.map((link, index) => {
+                                                                if (index === 0) {
+                                                                    return (
+                                                                        <button
+                                                                            key={index}
+                                                                            type="button"
+                                                                            onClick={() => link.url && handlePageChange(link.url)}
+                                                                            disabled={!link.url}
+                                                                            className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        >
+                                                                            السابق
+                                                                        </button>
+                                                                    );
+                                                                }
                                                                 
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="ملاحظات (اختياري)"
-                                                                    value={data.attendances[index]?.notes || ''}
-                                                                    onChange={(e) => handleAttendanceChange(index, 'notes', e.target.value)}
-                                                                    className="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-right w-full sm:w-auto"
-                                                                />
-                                                            </div>
+                                                                if (index === students.links.length - 1) {
+                                                                    return (
+                                                                        <button
+                                                                            key={index}
+                                                                            type="button"
+                                                                            onClick={() => link.url && handlePageChange(link.url)}
+                                                                            disabled={!link.url}
+                                                                            className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        >
+                                                                            التالي
+                                                                        </button>
+                                                                    );
+                                                                }
+                                                                
+                                                                return (
+                                                                    <button
+                                                                        key={index}
+                                                                        type="button"
+                                                                        onClick={() => link.url && handlePageChange(link.url)}
+                                                                        disabled={!link.url}
+                                                                        className={`px-3 py-1 text-sm rounded-md ${
+                                                                            link.active
+                                                                                ? 'bg-blue-600 text-white'
+                                                                                : 'bg-white border border-gray-300 hover:bg-gray-50'
+                                                                        }`}
+                                                                    >
+                                                                        {link.label}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        
+                                                        <div className="text-sm text-gray-600 text-right">
+                                                            عرض {students.from} إلى {students.to} من {students.total} طالب
                                                         </div>
                                                     </div>
-                                                ))}
+                                                )}
                                             </div>
-                                        </div>
 
-                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                                            <div className="text-sm text-gray-500 text-right order-2 sm:order-1">
-                                                المجموع: {selectedGroup.assigned_students.length} طالب
-                                                {data.attendances && (
-                                                    <span className="mr-2 sm:mr-4"> | 
-                                                        الحاضرين: {data.attendances.filter(a => a.is_present).length}
-                                                    </span>
-                                                )}
+                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                                                <div className="text-sm text-gray-500 text-right order-2 sm:order-1">
+                                                    المجموع: {students.total} طالب
+                                                    {searchTerm && (
+                                                        <span className="mr-2 sm:mr-4"> | 
+                                                            النتائج: {students.data.length}
+                                                        </span>
+                                                    )}
+                                                    {data.attendances && (
+                                                        <span className="mr-2 sm:mr-4"> | 
+                                                            الحاضرين: {data.attendances.filter(a => a.is_present).length}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    type="submit"
+                                                    disabled={processing}
+                                                    className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 w-full sm:w-auto order-1 sm:order-2"
+                                                >
+                                                    {processing && (
+                                                        <svg className="animate-spin -mr-1 ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                    )}
+                                                    {processing ? 'جاري الحفظ...' : 'حفظ الحضور'}
+                                                </button>
                                             </div>
-                                            <button
-                                                type="submit"
-                                                disabled={processing}
-                                                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 w-full sm:w-auto order-1 sm:order-2"
-                                            >
-                                                {processing && (
-                                                    <svg className="animate-spin -mr-1 ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                )}
-                                                {processing ? 'جاري الحفظ...' : 'حفظ الحضور'}
-                                            </button>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </>
                                 ) : (
                                     <div className="text-center py-8">
                                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                         </svg>
                                         <h3 className="mt-2 text-sm font-medium text-gray-900">لا يوجد طلاب</h3>
-                                        <p className="mt-1 text-sm text-gray-500">لم يتم تعيين أي طلاب لهذه المجموعة بعد.</p>
+                                        <p className="mt-1 text-sm text-gray-500">لم يتم العثور على طلاب في هذه المجموعة.</p>
                                     </div>
                                 )
                             ) : (

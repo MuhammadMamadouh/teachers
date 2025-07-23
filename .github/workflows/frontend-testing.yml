@@ -1,14 +1,37 @@
 name: Frontend Testing
 on:
-  push:
-    branches: [main]
+  push
+    
 jobs:
     lint:
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest, macos-latest]
+                node-version: [18, 20]
+                include:
+                    - os: ubuntu-latest
+                      node-version: 18
+                    - os: windows-latest
+                      node-version: 20
+                    - os: macos-latest
+                      node-version: 18
+                      continue-on-error: true
+                exclude:
+                    - os: macos-latest
+                      node-version: 18
         steps:
             - name: Get Code
               uses: actions/checkout@v4
+            
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '18'
+                  cache: 'npm'
+            
             - name: Cache Node Modules
+              id: cache-npm
               uses: actions/cache@v4
               with:
                   path: ~/.npm
@@ -17,11 +40,14 @@ jobs:
                       ${{ runner.os }}-node-${{
                           hashFiles('**/package-lock.json')
                       }}
+            
             - name: Install Dependencies
               run: npm ci
+            
             - name: Run Lint
               id: lint-test
               run: npm run lint
+            
             - name: Upload Test Results
               if: steps.lint-test.outcome == 'success'
               uses: actions/upload-artifact@v4
@@ -34,7 +60,15 @@ jobs:
         steps:
             - name: Get Code
               uses: actions/checkout@v4
+            
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '18'
+                  cache: 'npm'
+            
             - name: Cache Node Modules
+              id: cache-npm
               uses: actions/cache@v4
               with:
                   path: ~/.npm
@@ -43,10 +77,40 @@ jobs:
                       ${{ runner.os }}-node-${{
                           hashFiles('**/package-lock.json')
                       }}
+            
             - name: Install Dependencies
               run: npm ci
+            
+            - name: Verify Vitest Installation
+              run: |
+                  echo "Checking if vitest is installed..."
+                  npx vitest --version
+                  echo "Checking package.json scripts..."
+                  npm run
+                  echo "Checking node_modules..."
+                  ls -la node_modules/.bin/ | grep vitest || echo "vitest not found in node_modules/.bin/"
+                  echo "Checking if test files exist..."
+                  find tests/ -name "*.test.jsx" -o -name "*.test.js" | head -10
+            
             - name: Run Tests
-              run: npm run test
+              run: |
+                  echo "Running tests..."
+                  npm run test
+              env:
+                  CI: true
+              
+            - name: Generate Test Coverage
+              run: npm run test:coverage
+              continue-on-error: true
+              
+            - name: Upload Test Results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-results
+                  path: |
+                      coverage/
+                      tests/Pages/**/*.test.jsx
 
     deploy:
         needs: [lint, test]
@@ -54,7 +118,15 @@ jobs:
         steps:
             - name: Get Code
               uses: actions/checkout@v4
+            
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '18'
+                  cache: 'npm'
+            
             - name: Cache Node Modules
+              id: cache-npm
               uses: actions/cache@v4
               with:
                   path: ~/.npm
@@ -63,15 +135,37 @@ jobs:
                       ${{ runner.os }}-node-${{
                           hashFiles('**/package-lock.json')
                       }}
+            
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
               with:
                   php-version: '8.2'
+            
             - name: Install Composer Dependencies
               run: composer install --no-dev --optimize-autoloader
+            
             - name: Generate Ziggy Routes
               run: php artisan ziggy:generate
+            
             - name: Install Dependencies
               run: npm ci
+            
             - name: Build Project
               run: npm run build
+
+    failure-report:
+        needs: [lint, test]
+        if: failure()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Output Failure Report
+              run: |
+                echo "One or more jobs failed. Please check the logs for details."
+                echo "github object: ${{ toJson(github) }}"
+                echo "Failure Report:"
+                echo "Lint Job:"
+                if [ -f ./tests/Pages/lint-results.txt ]; then
+                    cat ./tests/Pages/lint-results.txt
+                else
+                    echo "No lint results found."
+                fi

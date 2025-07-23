@@ -37,7 +37,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Show payments for a specific group and date range
+     * Show payments for a specific group and date range with pagination
      */
     public function show(Request $request)
     {
@@ -45,34 +45,61 @@ class PaymentController extends Controller
             'group_id' => 'required|exists:groups,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
+            'per_page' => 'nullable|integer|min:1|max:100',
+            'search' => 'nullable|string',
+            'payment_status' => 'nullable|in:all,paid,unpaid',
         ]);
-
 
         $user = Auth::user();
         $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
 
         $group = Group::where('user_id', $teacherId)
             ->where('id', $request->group_id)
-            ->with(['assignedStudents'])
             ->firstOrFail();
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now()->endOfMonth();
+        $perPage = $request->per_page ?? 20;
+        $search = $request->search;
+        $paymentStatus = $request->payment_status ?? 'all';
 
-        // Get payments for the specified date range
+        // Build student query with pagination
+        $studentsQuery = $group->assignedStudents()->getQuery();
+        
+        // Apply search filter
+        if ($search) {
+            $studentsQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ;
+            });
+        }
+
+        // Get paginated students
+        $students = $studentsQuery->paginate($perPage);
+
+        // Get payments for the current page of students
+        $studentIds = $students->pluck('id');
         $payments = Payment::where('group_id', $request->group_id)
+            ->whereIn('student_id', $studentIds)
             ->whereBetween('related_date', [$startDate, $endDate])
             ->with('student')
             ->get()
             ->groupBy('student_id');
 
-        // Calculate summary statistics
-        $totalExpected = 0;
-        $totalPaid = 0;
-        $totalUnpaid = 0;
+        // Calculate summary statistics for ALL students (not just current page)
+        $totalSummary = $this->calculateGroupSummary($group, $startDate, $endDate, $search, $paymentStatus);
 
-        $studentPayments = $group->assignedStudents->map(function ($student) use ($payments, $group, $startDate, $endDate, &$totalExpected, &$totalPaid, &$totalUnpaid) {
+        // Process student payments for current page
+        $studentPayments = $students->map(function ($student) use ($payments, $group, $startDate, $endDate, $paymentStatus) {
             $studentPaymentsList = $payments->get($student->id, collect());
+
+            // Filter payments by status if specified
+            if ($paymentStatus === 'paid') {
+                $studentPaymentsList = $studentPaymentsList->where('is_paid', true);
+            } elseif ($paymentStatus === 'unpaid') {
+                $studentPaymentsList = $studentPaymentsList->where('is_paid', false);
+            }
 
             $expectedAmount = 0;
             $paidAmount = 0;
@@ -84,24 +111,15 @@ class PaymentController extends Controller
                 $endMonth = $endDate->copy()->startOfMonth();
                 $months = $startMonth->diffInMonths($endMonth) + 1;
 
-
                 $expectedAmount = $months * $group->student_price;
-
                 $paidAmount = $studentPaymentsList->where('is_paid', true)->sum('amount');
-
                 $unpaidAmount = $expectedAmount - $paidAmount;
             } else {
                 // For per-session payments, sum up all payments
                 $expectedAmount = $studentPaymentsList->sum('amount');
                 $paidAmount = $studentPaymentsList->where('is_paid', true)->sum('amount');
                 $unpaidAmount = $studentPaymentsList->where('is_paid', false)->sum('amount');
-                logger()->info("Student ID: {$student->id}, Expected: {$expectedAmount}, Paid: {$paidAmount}, Unpaid: {$unpaidAmount}");
             }
-
-            $totalExpected += $expectedAmount;
-            $totalPaid += $paidAmount;
-            $totalUnpaid += $unpaidAmount;
-            logger()->info("Total Expected: {$totalExpected}, Total Paid: {$totalPaid}, Total Unpaid: {$totalUnpaid}");
 
             return [
                 'student' => $student,
@@ -119,18 +137,78 @@ class PaymentController extends Controller
                 'student_price' => $group->student_price,
                 'payment_type' => $group->payment_type,
             ],
-            'student_payments' => $studentPayments,
-            'summary' => [
-                'total_expected' => $totalExpected,
-                'total_paid' => $totalPaid,
-                'total_unpaid' => $totalUnpaid,
-                'payment_percentage' => $totalExpected > 0 ? ($totalPaid / $totalExpected) * 100 : 0,
+            'student_payments' => [
+                'data' => $studentPayments,
+                'current_page' => $students->currentPage(),
+                'last_page' => $students->lastPage(),
+                'per_page' => $students->perPage(),
+                'total' => $students->total(),
+                'from' => $students->firstItem(),
+                'to' => $students->lastItem(),
+                'links' => $students->linkCollection(),
             ],
+            'summary' => $totalSummary,
             'date_range' => [
                 'start_date' => $startDate->format('Y-m-d'),
                 'end_date' => $endDate->format('Y-m-d'),
             ],
         ]);
+    }
+
+    /**
+     * Calculate summary statistics for the entire group
+     */
+    private function calculateGroupSummary($group, $startDate, $endDate, $search = null, $paymentStatus = 'all')
+    {
+        // Get all students (with search filter if provided)
+        $studentsQuery = $group->assignedStudents()->getQuery();
+        
+        if ($search) {
+            $studentsQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ;
+            });
+        }
+
+        $totalStudents = $studentsQuery->count();
+        $studentIds = $studentsQuery->pluck('id');
+
+        // Get payments for all students
+        $paymentsQuery = Payment::where('group_id', $group->id)
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('related_date', [$startDate, $endDate]);
+
+        // Apply payment status filter
+        if ($paymentStatus === 'paid') {
+            $paymentsQuery->where('is_paid', true);
+        } elseif ($paymentStatus === 'unpaid') {
+            $paymentsQuery->where('is_paid', false);
+        }
+
+        $payments = $paymentsQuery->get();
+
+        $totalPaid = $payments->where('is_paid', true)->sum('amount');
+        $totalUnpaid = $payments->where('is_paid', false)->sum('amount');
+
+        // Calculate expected amount
+        $totalExpected = 0;
+        if ($group->payment_type === 'monthly') {
+            $startMonth = $startDate->copy()->startOfMonth();
+            $endMonth = $endDate->copy()->startOfMonth();
+            $months = $startMonth->diffInMonths($endMonth) + 1;
+            $totalExpected = $totalStudents * $months * $group->student_price;
+        } else {
+            $totalExpected = $payments->sum('amount');
+        }
+
+        return [
+            'total_students' => $totalStudents,
+            'total_expected' => $totalExpected,
+            'total_paid' => $totalPaid,
+            'total_unpaid' => $totalExpected - $totalPaid,
+            'payment_percentage' => $totalExpected > 0 ? ($totalPaid / $totalExpected) * 100 : 0,
+        ];
     }
 
     /**
@@ -155,8 +233,6 @@ class PaymentController extends Controller
         if ($group->payment_type !== 'monthly') {
             return response()->json(['error' => 'هذه المجموعة لا تستخدم نظام الدفع الشهري'], 400);
         }
-
-
 
         $relatedDate = Carbon::createFromDate($request->year, $request->month, 1);
         $paymentsCreated = 0;
@@ -184,6 +260,66 @@ class PaymentController extends Controller
 
         return response()->json([
             'message' => "تم إنشاء {$paymentsCreated} دفعة جديدة",
+            'payments_created' => $paymentsCreated,
+        ]);
+    }
+
+    /**
+     * Generate per-session payments for a group
+     */
+    public function generateSessionPayments(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required|exists:groups,id',
+            'session_date' => 'required|date',
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+        ]);
+
+        $user = Auth::user();
+        $teacherId = $user->type === 'assistant' ? $user->teacher_id : $user->id;
+
+        $group = Group::where('user_id', $teacherId)
+            ->where('id', $request->group_id)
+            ->with('assignedStudents')
+            ->firstOrFail();
+
+        if ($group->payment_type !== 'per_session') {
+            return response()->json(['error' => 'هذه المجموعة لا تستخدم نظام الدفع بالجلسة'], 400);
+        }
+
+        $sessionDate = Carbon::parse($request->session_date);
+        $paymentsCreated = 0;
+
+        DB::transaction(function () use ($group, $sessionDate, $request, &$paymentsCreated) {
+            foreach ($request->student_ids as $studentId) {
+                // Verify student belongs to this group
+                $student = $group->assignedStudents->firstWhere('id', $studentId);
+                if (!$student) {
+                    continue;
+                }
+
+                $payment = Payment::firstOrCreate(
+                    [
+                        'group_id' => $group->id,
+                        'student_id' => $studentId,
+                        'related_date' => $sessionDate,
+                    ],
+                    [
+                        'payment_type' => 'per_session',
+                        'amount' => $group->student_price,
+                        'is_paid' => false,
+                    ]
+                );
+
+                if ($payment->wasRecentlyCreated) {
+                    $paymentsCreated++;
+                }
+            }
+        });
+
+        return response()->json([
+            'message' => "تم إنشاء {$paymentsCreated} دفعة جديدة للجلسة",
             'payments_created' => $paymentsCreated,
         ]);
     }

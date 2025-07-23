@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, BookOpen, RotateCcw, DollarSign, TrendingUp, BarChart3, PieChart } from 'lucide-react';
 import StartNewTermModal from '@/Components/StartNewTermModal';
 
-export default function Dashboard({ subscriptionLimits, currentStudentCount, canAddStudents, availablePlans, isAssistant = false, teacherName = '', error }) {
+export default function Dashboard({ 
+    subscriptionLimits = {}, 
+    currentStudentCount = 0, 
+    canAddStudents = false, 
+    availablePlans = [], 
+    isAssistant = false, 
+    teacherName = '', 
+    error = null 
+}) {
     const [todaySessions, setTodaySessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
     const [showTermResetModal, setShowTermResetModal] = useState(false);
@@ -99,11 +107,11 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                     <div className="ml-4">
                                         <h4 className="text-lg font-medium text-gray-900">الطلاب</h4>
                                         <p className="text-2xl font-bold text-gray-900">
-                                            {currentStudentCount} من {subscriptionLimits.max_students || 0}
+                                            {currentStudentCount} من {subscriptionLimits?.max_students || 0}
                                         </p>                        <p className="text-sm text-gray-500">
-                                            {subscriptionLimits.has_active_subscription ? 'خطة نشطة' : 'لا توجد خطة نشطة'}
+                                            {subscriptionLimits?.has_active_subscription ? 'خطة نشطة' : 'لا توجد خطة نشطة'}
                                         </p>
-                                        {subscriptionLimits.plan && (
+                                        {subscriptionLimits?.plan && (
                                             <p className="text-xs text-blue-600 font-medium mt-1">
                                                 خطة {subscriptionLimits.plan.name}
                                             </p>
@@ -117,20 +125,20 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                             <div className="p-6">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0  ml-2 mr-2">
-                                        <div className={`flex items-center justify-center h-12 w-12 rounded-md ${subscriptionLimits.has_active_subscription ? 'bg-green-100' : 'bg-red-100'
+                                        <div className={`flex items-center justify-center h-12 w-12 rounded-md ${subscriptionLimits?.has_active_subscription ? 'bg-green-100' : 'bg-red-100'
                                             }`}>
-                                            <svg className={`h-6 w-6 ${subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
+                                            <svg className={`h-6 w-6 ${subscriptionLimits?.has_active_subscription ? 'text-green-600' : 'text-red-600'
                                                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>                        <p className={`text-sm font-medium ${subscriptionLimits.has_active_subscription ? 'text-green-600' : 'text-red-600'
+                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>                        <p className={`text-sm font-medium ${subscriptionLimits?.has_active_subscription ? 'text-green-600' : 'text-red-600'
                                             }`}>
-                                            {subscriptionLimits.has_active_subscription ? 'نشط' : 'غير نشط'}
+                                            {subscriptionLimits?.has_active_subscription ? 'نشط' : 'غير نشط'}
                                         </p>
-                                        {subscriptionLimits.plan ? (
+                                        {subscriptionLimits?.plan ? (
                                             <p className="text-sm text-gray-500">خطة {subscriptionLimits.plan.name}</p>
                                         ) : (
                                             <p className="text-sm text-gray-500">لا توجد خطة</p>
@@ -159,7 +167,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                             {canAddStudents ? 'متاح' : 'تم الوصول للحد الأقصى'}
                                         </p>
                                         <p className="text-sm text-gray-500">
-                                            {subscriptionLimits.max_students - currentStudentCount} مقعد متبقي
+                                            {(subscriptionLimits?.max_students || 0) - currentStudentCount} مقعد متبقي
                                         </p>
                                     </div>
                                 </div>
@@ -192,10 +200,29 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm font-medium text-green-800">إجمالي الدخل المتوقع (شهرياً)</p>
+                                                        <p className="text-sm font-medium text-green-800">إجمالي الدخل المتوقع ( للمجموعات الشهرية)</p>
                                                         <p className="text-2xl font-bold text-green-900">{reports.financial.total_expected_monthly_income.toLocaleString()} ج.م</p>
                                                     </div>
                                                     <TrendingUp className="h-8 w-8 text-green-600" />
+                                                </div>
+                                            </div>
+                                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-purple-800">إجمالي الدخل المتوقع ( لمجموعات الجلسة)</p>
+                                                        <p className="text-2xl font-bold text-purple-900">{reports.financial.total_expected_persessions_income.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <TrendingUp className="h-8 w-8 text-purple-600" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-red-800">إجمالي الدخل المتوقع</p>
+                                                        <p className="text-2xl font-bold text-red-900">{reports.financial.total_income.toLocaleString()} ج.م</p>
+                                                    </div>
+                                                    <TrendingUp className="h-8 w-8 text-red-600" />
                                                 </div>
                                             </div>
                                             
@@ -233,11 +260,11 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                                     <span className="text-sm font-bold text-gray-900">{reports.financial.collection_rate}%</span>
                                                 </div>
                                             </div>
-                                            
+{/*                                             
                                             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                                                 <p className="text-sm font-medium text-purple-800">متوسط سعر الطالب</p>
                                                 <p className="text-xl font-bold text-purple-900">{reports.financial.average_student_price.toLocaleString()} ج.م</p>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 
@@ -272,16 +299,16 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                                 <p className="text-2xl font-bold text-purple-900">{reports.groups.average_students_per_group}</p>
                                             </div>
                                             
-                                            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-center">
+                                            {/* <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-center">
                                                 <Calendar className="mx-auto h-8 w-8 text-indigo-600 mb-2" />
                                                 <p className="text-sm font-medium text-indigo-800">إجمالي الجلسات هذا الشهر</p>
                                                 <p className="text-2xl font-bold text-indigo-900">{reports.attendance.total_sessions_this_month}</p>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 
                                     {/* Attendance Reports */}
-                                    <div>
+                                    {/* <div>
                                         <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
                                             <Calendar className="w-4 h-4 text-emerald-600 ml-2" />
                                             تقارير الحضور
@@ -310,10 +337,10 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                                 <p className="text-2xl font-bold text-teal-900">{reports.attendance.average_attendance_per_session}</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> */}
 
                                     {/* Top Performing Groups */}
-                                    {reports.groups.top_groups && reports.groups.top_groups.length > 0 && (
+                                    {/* {reports.groups.top_groups && reports.groups.top_groups.length > 0 && (
                                         <div>
                                             <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center">
                                                 <TrendingUp className="w-4 h-4 text-yellow-600 ml-2" />
@@ -343,7 +370,7 @@ export default function Dashboard({ subscriptionLimits, currentStudentCount, can
                                                 ))}
                                             </div>
                                         </div>
-                                    )}
+                                    )} */}
 
                                   
                                 </div>

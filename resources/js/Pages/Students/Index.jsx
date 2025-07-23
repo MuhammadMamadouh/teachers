@@ -9,31 +9,54 @@ import {
     UsersIcon
 } from '@heroicons/react/24/outline';
 
-export default function Index({ students, groups, academicYears, subscriptionLimits, currentStudentCount, canAddStudents, filters }) {
+export default function Index({ students, groups, academicYears, teachers, educationLevels, subscriptionLimits, currentStudentCount, canAddStudents, filters }) {
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [selectedGroup, setSelectedGroup] = useState(filters?.group_id || '');
     const [selectedAcademicYear, setSelectedAcademicYear] = useState(filters?.academic_year_id || '');
+    const [selectedTeacher, setSelectedTeacher] = useState(filters?.teacher_id || '');
+    const [selectedLevel, setSelectedLevel] = useState(filters?.level || '');
     const [isLoading, setIsLoading] = useState(false);
 
     const prevSearch = usePrevious(searchTerm);
     const prevGroup = usePrevious(selectedGroup);
     const prevAcademicYear = usePrevious(selectedAcademicYear);
+    const prevTeacher = usePrevious(selectedTeacher);
+    const prevLevel = usePrevious(selectedLevel);
 
     // Set default values if props are not provided
     const hasSubscriptionLimits = subscriptionLimits && currentStudentCount !== undefined;
     const canAdd = canAddStudents !== undefined ? canAddStudents : true;
 
+    // Filter academic years based on selected level
+    const filteredAcademicYears = selectedLevel && academicYears[selectedLevel] ? academicYears[selectedLevel] : [];
+
     // Debounced search effect
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            if (searchTerm !== prevSearch || selectedGroup !== prevGroup || selectedAcademicYear !== prevAcademicYear) {
+            if (searchTerm !== prevSearch || selectedGroup !== prevGroup || selectedAcademicYear !== prevAcademicYear || selectedTeacher !== prevTeacher || selectedLevel !== prevLevel) {
                 handleFilter();
             }
         }, 300);
 
         return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchTerm, selectedGroup, selectedAcademicYear]);
+    }, [searchTerm, selectedGroup, selectedAcademicYear, selectedTeacher, selectedLevel]);
+
+    // Handle pagination
+    const handlePageChange = (url) => {
+        setIsLoading(true);
+        router.get(url, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
+    const handleLevelChange = (level) => {
+        setSelectedLevel(level);
+        setSelectedAcademicYear(''); // Reset academic year when level changes
+        setSelectedGroup(''); // Reset group when level changes
+    };
 
     const handleFilter = () => {
         setIsLoading(true);
@@ -51,6 +74,14 @@ export default function Index({ students, groups, academicYears, subscriptionLim
             params.academic_year_id = selectedAcademicYear;
         }
 
+        if (selectedTeacher) {
+            params.teacher_id = selectedTeacher;
+        }
+
+        if (selectedLevel) {
+            params.level = selectedLevel;
+        }
+
         router.get(route('students.index'), params, {
             preserveState: true,
             preserveScroll: true,
@@ -62,6 +93,8 @@ export default function Index({ students, groups, academicYears, subscriptionLim
         setSearchTerm('');
         setSelectedGroup('');
         setSelectedAcademicYear('');
+        setSelectedTeacher('');
+        setSelectedLevel('');
         setIsLoading(true);
         router.get(route('students.index'), {}, {
             preserveState: true,
@@ -70,7 +103,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
         });
     };
 
-    const hasActiveFilters = searchTerm || selectedGroup || selectedAcademicYear;
+    const hasActiveFilters = searchTerm || selectedGroup || selectedAcademicYear || selectedTeacher;
     const handleDelete = (student) => {
         confirmDialog({
             title: 'حذف الطالب',
@@ -158,7 +191,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
 
                     {/* Search and Filter Section */}
                     <div className="mb-6 rounded-lg bg-white shadow-sm border border-gray-200 p-4 sm:p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                             {/* Search Input */}
                             <div className="relative">
                                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
@@ -179,6 +212,26 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 </div>
                             </div>
 
+                            {/* Level Filter */}
+                            <div>
+                                <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-2">
+                                    المستوى التعليمي
+                                </label>
+                                <select
+                                    id="level"
+                                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    value={selectedLevel}
+                                    onChange={(e) => handleLevelChange(e.target.value)}
+                                >
+                                    <option value="">جميع المستويات</option>
+                                    {educationLevels?.map((level) => (
+                                        <option key={level.value} value={level.value}>
+                                            {level.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             {/* Academic Year Filter */}
                             <div>
                                 <label htmlFor="academic_year" className="block text-sm font-medium text-gray-700 mb-2">
@@ -189,9 +242,12 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     value={selectedAcademicYear}
                                     onChange={(e) => setSelectedAcademicYear(e.target.value)}
+                                    disabled={!selectedLevel}
                                 >
-                                    <option value="">جميع الصفوف</option>
-                                    {academicYears?.map((year) => (
+                                    <option value="">
+                                        {selectedLevel ? 'جميع الصفوف' : 'اختر المستوى أولاً'}
+                                    </option>
+                                    {filteredAcademicYears.map((year) => (
                                         <option key={year.id} value={year.id}>
                                             {year.name_ar}
                                         </option>
@@ -220,6 +276,26 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 </select>
                             </div>
 
+                            {/* Teacher Filter */}
+                            <div>
+                                <label htmlFor="teacher" className="block text-sm font-medium text-gray-700 mb-2">
+                                    المعلم
+                                </label>
+                                <select
+                                    id="teacher"
+                                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    value={selectedTeacher}
+                                    onChange={(e) => setSelectedTeacher(e.target.value)}
+                                >
+                                    <option value="">جميع المعلمين</option>
+                                    {teachers?.map((teacher) => (
+                                        <option key={teacher.id} value={teacher.id}>
+                                            {teacher.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             {/* Clear Filters Button */}
                             <div className="flex items-end">
                                 {hasActiveFilters && (
@@ -241,7 +317,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                             <div className="mt-4 flex items-center text-sm text-gray-600">
                                 <UsersIcon className="h-4 w-4 mr-1" />
                                 <span>
-                                    {isLoading ? 'جاري البحث...' : `تم العثور على ${students.length} طالب`}
+                                    {isLoading ? 'جاري البحث...' : `تم العثور على ${students.total} طالب`}
                                     {searchTerm && (
                                         <span className="font-medium"> للبحث &quot;{searchTerm}&quot;</span>
                                     )}
@@ -253,6 +329,23 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                     {selectedGroup === 'unassigned' && (
                                         <span className="font-medium"> غير محدد في مجموعة</span>
                                     )}
+                                    {selectedTeacher && teachers && (
+                                        <span className="font-medium">
+                                            {' '}للمعلم &quot;{teachers.find(t => t.id.toString() === selectedTeacher)?.name}&quot;
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Pagination info */}
+                        {students.data && students.data.length > 0 && (
+                            <div className="mt-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600">
+                                <span className="text-right">
+                                    عرض {students.from} إلى {students.to} من {students.total} طالب
+                                </span>
+                                <span className="text-right">
+                                    الصفحة {students.current_page} من {students.last_page}
                                 </span>
                             </div>
                         )}
@@ -265,7 +358,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                             </div>
                         )}
                         <div className="p-4 sm:p-6">
-                            {students.length === 0 ? (
+                            {!students.data || students.data.length === 0 ? (
                                 <div className="text-center py-12">
                                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -311,7 +404,7 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                 <>
                                     {/* Mobile Card View */}
                                     <div className="sm:hidden space-y-4">
-                                        {students.map((student) => (
+                                        {students.data.map((student) => (
                                             <div key={student.id} className="bg-gray-50 rounded-lg p-4 border hover:bg-gray-100">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div className="flex-1">
@@ -321,6 +414,17 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                 </div>
                                                 
                                                 <div className="space-y-2 mb-3">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">المستوى التعليمي:</span>
+                                                        {student.level ? (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {student.level}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-sm">غير محدد</span>
+                                                        )}
+                                                    </div>
+                                                    
                                                     <div className="flex justify-between items-center">
                                                         <span className="text-sm text-gray-500">الصف الدراسي:</span>
                                                         {student.academic_year ? (
@@ -344,6 +448,17 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                     </div>
                                                     
                                                     <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">المعلم:</span>
+                                                        {student.group?.teacher ? (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                                {student.group.teacher.name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-sm">غير محدد</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="flex justify-between items-center">
                                                         <span className="text-sm text-gray-500">هاتف ولي الأمر:</span>
                                                         <span className="text-sm text-gray-900">{student.guardian_phone}</span>
                                                     </div>
@@ -352,13 +467,13 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                 <div className="flex justify-end space-x-2 space-x-reverse pt-3 border-t border-gray-200">
                                                     <Link
                                                         href={route('students.edit', student.id)}
-                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium ml-1"
                                                     >
                                                         تعديل
                                                     </Link>
                                                     <Link
                                                         href={route('students.show', student.id)}
-                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium  mr-1"
                                                     >
                                                         عرض
                                                     </Link>
@@ -373,6 +488,63 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                         ))}
                                     </div>
                                     
+                                    {/* Pagination controls for mobile */}
+                                    {students.links && students.links.length > 3 && (
+                                        <div className="sm:hidden flex flex-col items-center mt-6 p-4 bg-gray-50 rounded-lg">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                {students.links.map((link, index) => {
+                                                    if (index === 0) {
+                                                        return (
+                                                            <button
+                                                                key={index}
+                                                                type="button"
+                                                                onClick={() => link.url && handlePageChange(link.url)}
+                                                                disabled={!link.url}
+                                                                className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            >
+                                                                السابق
+                                                            </button>
+                                                        );
+                                                    }
+                                                    
+                                                    if (index === students.links.length - 1) {
+                                                        return (
+                                                            <button
+                                                                key={index}
+                                                                type="button"
+                                                                onClick={() => link.url && handlePageChange(link.url)}
+                                                                disabled={!link.url}
+                                                                className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            >
+                                                                التالي
+                                                            </button>
+                                                        );
+                                                    }
+                                                    
+                                                    return (
+                                                        <button
+                                                            key={index}
+                                                            type="button"
+                                                            onClick={() => link.url && handlePageChange(link.url)}
+                                                            disabled={!link.url}
+                                                            className={`px-3 py-1 text-sm rounded-md ${
+                                                                link.active
+                                                                    ? 'bg-blue-600 text-white'
+                                                                    : 'bg-white border border-gray-300 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            {link.label}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                            
+                                            <div className="text-sm text-gray-600 text-center">
+                                                عرض {students.from} إلى {students.to} من {students.total} طالب
+                                            </div>
+                                        </div>
+                                    )}
+                                    
                                     {/* Desktop Table View */}
                                     <div className="hidden sm:block overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
@@ -385,10 +557,16 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                     الهاتف
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                    المستوى التعليمي
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                                     الصف الدراسي
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                                     المجموعة
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                    المعلم
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                                     هاتف ولي الأمر
@@ -399,13 +577,22 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 bg-white">
-                                            {students.map((student) => (
+                                            {students.data.map((student) => (
                                                 <tr key={student.id} className="hover:bg-gray-50">
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                                                         {student.name}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                         {student.phone}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                                        {student.level ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {student.level}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400">غير محدد</span>
+                                                        )}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                         {student.academic_year ? (
@@ -420,6 +607,15 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                                         {student.group ? (
                                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                                 {student.group.name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400">غير محدد</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                                        {student.group?.teacher ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                                {student.group.teacher.name}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-400">غير محدد</span>
@@ -455,6 +651,63 @@ export default function Index({ students, groups, academicYears, subscriptionLim
                                         </tbody>
                                     </table>
                                 </div>
+                                
+                                {/* Pagination controls */}
+                                {students.links && students.links.length > 3 && (
+                                    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 p-4 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2 mb-2 sm:mb-0">
+                                            {students.links.map((link, index) => {
+                                                if (index === 0) {
+                                                    return (
+                                                        <button
+                                                            key={index}
+                                                            type="button"
+                                                            onClick={() => link.url && handlePageChange(link.url)}
+                                                            disabled={!link.url}
+                                                            className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        >
+                                                            السابق
+                                                        </button>
+                                                    );
+                                                }
+                                                
+                                                if (index === students.links.length - 1) {
+                                                    return (
+                                                        <button
+                                                            key={index}
+                                                            type="button"
+                                                            onClick={() => link.url && handlePageChange(link.url)}
+                                                            disabled={!link.url}
+                                                            className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        >
+                                                            التالي
+                                                        </button>
+                                                    );
+                                                }
+                                                
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        type="button"
+                                                        onClick={() => link.url && handlePageChange(link.url)}
+                                                        disabled={!link.url}
+                                                        className={`px-3 py-1 text-sm rounded-md ${
+                                                            link.active
+                                                                ? 'bg-blue-600 text-white'
+                                                                : 'bg-white border border-gray-300 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {link.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        
+                                        <div className="text-sm text-gray-600 text-right">
+                                            عرض {students.from} إلى {students.to} من {students.total} طالب
+                                        </div>
+                                    </div>
+                                )}
                                 </>
                             )}
                         </div>

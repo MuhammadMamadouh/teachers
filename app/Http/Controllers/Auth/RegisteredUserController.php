@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\CenterType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\Center;
 use App\Models\Governorate;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -41,6 +44,7 @@ class RegisteredUserController extends Controller
             'governorates' => $governorates,
             'plans' => $plans,
             'selectedPlan' => $selectedPlan,
+            'centerTypes' => CenterType::options(),
         ]);
     }
 
@@ -49,18 +53,19 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
-        // dd($request->all()); // Debugging line to inspect request data
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'phone' => 'required|string|max:20',
-            'subject' => 'required|string|max:255',
-            'governorate_id' => 'required|exists:governorates,id',
-            'plan_id' => 'nullable|exists:plans,id',
 
+
+        // Create center first
+        $center = Center::create([
+            'name' => $request->center_name,
+            'type' => $request->center_type,
+            'address' => $request->center_address,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'governorate_id' => $request->governorate_id,
+            'is_active' => true,
         ]);
 
         $user = User::create([
@@ -68,10 +73,22 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'subject' => $request->subject,
-            'governorate_id' => $request->governorate_id,
+            'subject' => $request->is_teacher ? $request->subject : null,
+            'center_id' => $center->id,
+            'type' => $request->is_teacher ? 'teacher' : 'center_owner',
             'is_approved' => false,
         ]);
+
+        // Update center with owner
+        $center->update(['owner_id' => $user->id]);
+
+        // Assign roles - Center owners get center-admin role, not system admin
+        $user->assignRole('center-admin'); // Center admin role (not system admin)
+        
+        // If user specified they are also a teacher, assign teacher role
+        if ($request->is_teacher) {
+            $user->assignRole('teacher');
+        }
 
         // Create subscription for new user based on selected plan
         $selectedPlan = null;
@@ -86,6 +103,7 @@ class RegisteredUserController extends Controller
 
         Subscription::create([
             'user_id' => $user->id,
+            'center_id' => $center->id,
             'plan_id' => $selectedPlan ? $selectedPlan->id : null,
             'max_students' => $selectedPlan ? $selectedPlan->max_students : 5, // Fallback to 5
             'is_active' => true,
@@ -98,7 +116,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Redirect new users to onboarding
-        return redirect(route('onboarding.show', absolute: false));
+        // Redirect new users to pending approval page since they need approval first
+        return redirect(route('pending-approval', absolute: false));
     }
 }

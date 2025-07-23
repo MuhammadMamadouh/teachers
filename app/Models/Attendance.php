@@ -16,6 +16,7 @@ class Attendance extends Model
         'date',
         'is_present',
         'notes',
+        'center_id',
     ];
 
     protected $casts = [

@@ -31,7 +31,7 @@ class RegisterRequest extends FormRequest
             'phone' => 'required|string|max:20|unique:' . User::class,
             'subject' => 'required_if:is_teacher,1|nullable|string|max:255',
             'governorate_id' => 'required|exists:governorates,id',
-            'plan_id' => 'nullable|exists:plans,id',
+            'plan_id' => 'required|exists:plans,id',
             'center_name' => 'required|string|max:255',
             'center_type' => 'required|in:' . implode(',', array_column(CenterType::cases(), 'value')),
             'center_address' => 'nullable|string|max:255',

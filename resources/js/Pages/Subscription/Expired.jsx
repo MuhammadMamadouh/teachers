@@ -1,7 +1,18 @@
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useState } from 'react';
+
 
 export default function Expired({ plans, currentSubscription, _hasHadTrial }) {
+
+        const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText('01018314398');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -24,18 +35,48 @@ export default function Expired({ plans, currentSubscription, _hasHadTrial }) {
                                     يرجى التواصل مع المدير لتجديد اشتراكك.
                                 </p>
 
-                                {currentSubscription && (
+                                {currentSubscription && currentSubscription.plan && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                                         <p className="text-sm text-red-700">
                                             انتهت صلاحية اشتراك {currentSubscription.plan.name} في{' '}
                                             {new Date(currentSubscription.end_date).toLocaleDateString('ar-EG', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}.
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}.
                                         </p>
                                     </div>
                                 )}
+
+                                <p className="mb-6 text-gray-600">
+                                 يمكنك الدفع عن طريق فودافون كاش أو إنستا باي على الرقم
+                                <span className="block my-2">
+                                    <div className="flex items-center gap-2 justify-center">
+                                        <input
+                                            type="text"
+                                            value="01018314398"
+                                            readOnly
+                                            className="border border-gray-300 rounded px-2 py-1 text-center w-40 bg-gray-50 text-gray-800 select-all focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                            id="payment-number"
+                                            onFocus={e => e.target.select()}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="text-indigo-600 hover:text-indigo-800 text-sm border border-indigo-200 rounded px-2 py-1 bg-white relative"
+                                            onClick={handleCopy}
+                                        >
+                                            {copied ? 'تم النسخ!' : 'نسخ'}
+                                        </button>
+                                    </div>
+                                </span>
+                                 من فضلك أرسل الإيصال الخاص بعملية الدفع للإدارة عبر الواتساب مع ذكر الاسم المستخدم الخاص بك على الموقع.
+                                <a
+                                    href="https://wa.me/+201270770613"
+                                    className="text-indigo-600 hover:underline ml-1"
+                                >
+                                    01270770613
+                                </a>
+                            </p>
                             </div>
 
                             {/* Plans Grid */}

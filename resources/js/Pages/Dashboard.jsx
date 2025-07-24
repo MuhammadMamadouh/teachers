@@ -134,12 +134,24 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>                        <p className={`text-sm font-medium ${subscriptionLimits?.has_active_subscription ? 'text-green-600' : 'text-red-600'
-                                            }`}>
+                                        <h4 className="text-lg font-medium text-gray-900">الاشتراك</h4>
+                                        <p className={`text-sm font-medium ${subscriptionLimits?.has_active_subscription ? 'text-green-600' : 'text-red-600'}`}>
                                             {subscriptionLimits?.has_active_subscription ? 'نشط' : 'غير نشط'}
                                         </p>
                                         {subscriptionLimits?.plan ? (
-                                            <p className="text-sm text-gray-500">خطة {subscriptionLimits.plan.name}</p>
+                                            <div className="space-y-1 mt-2">
+                                                <p className="text-sm text-gray-500">خطة: <span className="font-semibold text-blue-700">{subscriptionLimits.plan.name}</span></p>
+                                                <p className="text-sm text-gray-500">عدد الطلاب المسموح: <span className="font-semibold text-blue-700">{subscriptionLimits.plan.max_students}</span></p>
+                                                <p className="text-sm text-gray-500">عدد المساعدين المسموح: <span className="font-semibold text-blue-700">{subscriptionLimits.plan.max_assistants}</span></p>
+                                                <p className="text-sm text-gray-500">سعر الخطة: <span className="font-semibold text-blue-700">{subscriptionLimits.plan.price} ج.م</span></p>
+                                                <p className="text-sm text-gray-500">مدة الخطة: <span className="font-semibold text-blue-700">{subscriptionLimits.plan.duration_days} يوم</span></p>
+                                                {subscriptionLimits.plan.is_trial && (
+                                                    <span className="inline-block bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">خطة تجريبية</span>
+                                                )}
+                                                {subscriptionLimits.plan.end_date && (
+                                                    <p className="text-sm text-red-700">تاريخ انتهاء الخطة: <span className="font-semibold">{subscriptionLimits.plan.end_date}</span></p>
+                                                )}
+                                            </div>
                                         ) : (
                                             <p className="text-sm text-gray-500">لا توجد خطة</p>
                                         )}
@@ -161,13 +173,12 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                     <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">إضافة طلاب</h4>
-                                        <p className={`text-sm font-medium ml-2 mr-2 ${canAddStudents ? 'text-green-600' : 'text-yellow-600'
-                                            }`}>
-                                            {canAddStudents ? 'متاح' : 'تم الوصول للحد الأقصى'}
+                                        <h4 className="text-lg font-medium text-gray-900">عدد المساعدين المسموح</h4>
+                                        <p className="text-2xl font-bold text-teal-700">
+                                            {subscriptionLimits?.plan?.max_assistants ?? 0}
                                         </p>
                                         <p className="text-sm text-gray-500">
-                                            {(subscriptionLimits?.max_students || 0) - currentStudentCount} مقعد متبقي
+                                            يمكنك إضافة حتى {subscriptionLimits?.plan?.max_assistants ?? 0} مساعد في خطتك الحالية
                                         </p>
                                     </div>
                                 </div>

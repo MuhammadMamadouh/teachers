@@ -69,7 +69,7 @@ export default function Welcome({ auth, plans = [] }) {
 
     return (
         <div className="min-h-screen bg-white" dir="rtl">
-            <Head title="نظام إدارة المعلمين - منصة شاملة لإدارة التعليم" />
+            <Head title="نظام إدارة الطلاب للمعلمين - منصة شاملة لإدارة الدروس" />
             
             {/* Header */}
             <header className="bg-white shadow-sm">
@@ -113,10 +113,10 @@ export default function Welcome({ auth, plans = [] }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                     <div className="text-center">
                         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                            نظم <span className="text-indigo-600">تعليمك</span> بطريقة احترافية
+                            نظم <span className="text-indigo-600">مجموعاتك</span> بطريقة احترافية
                         </h1>
                         <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                            منصة شاملة مصممة خصيصاً للمعلمين العرب لإدارة الطلاب والمجموعات والمدفوعات والحضور. 
+                            منصة شاملة مصممة خصيصاً للمعلمين  لإدارة الطلاب والمجموعات والمدفوعات والحضور. 
                             ابدأ رحلتك التعليمية المنظمة اليوم.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -128,9 +128,9 @@ export default function Welcome({ auth, plans = [] }) {
                                     ابدأ مجاناً الآن
                                 </Link>
                             )}
-                            <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all duration-300">
+                            {/* <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all duration-300">
                                 شاهد العرض التوضيحي
-                            </button>
+                            </button> */}
                         </div>
                         <p className="text-sm text-gray-500 mt-4">
                             <CheckCircle className="w-4 h-4 text-green-500 inline ml-1" />
@@ -169,7 +169,7 @@ export default function Welcome({ auth, plans = [] }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                            مميزات مصممة خصيصاً للمعلمين العرب
+                            مميزات مصممة خصيصاً للمعلمين المحترفين
                         </h2>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                             كل ما تحتاجه لإدارة تعليمية ناجحة في مكان واحد. من إدارة الطلاب إلى تتبع المدفوعات، كلها بواجهة عربية سهلة الاستخدام.
@@ -214,7 +214,7 @@ export default function Welcome({ auth, plans = [] }) {
                                             <CheckCircle className="w-6 h-6 text-green-500 ml-3 mt-1 flex-shrink-0" />
                                             <div>
                                                 <h4 className="font-semibold text-gray-900 mb-1">دعم كامل للغة العربية</h4>
-                                                <p className="text-gray-600 text-sm">مصمم خصيصاً للثقافة العربية والتعليم الإسلامي</p>
+                                                <p className="text-gray-600 text-sm">مصمم خصيصاً للثقافة العربية والتعليم والمصرية </p>
                                             </div>
                                         </div>
                                         <div className="flex items-start">
@@ -488,7 +488,7 @@ export default function Welcome({ auth, plans = [] }) {
                                 <span className="text-lg font-bold">نظام إدارة المعلمين</span>
                             </div>
                             <p className="text-gray-400 leading-relaxed">
-                                منصة شاملة مصممة خصيصاً للمعلمين العرب لإدارة العملية التعليمية بطريقة احترافية ومنظمة.
+                                منصة شاملة مصممة خصيصاً للمعلمين المصريين لإدارة العملية التعليمية بطريقة احترافية ومنظمة.
                             </p>
                         </div>
                         <div>

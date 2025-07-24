@@ -56,6 +56,9 @@ class RegisteredUserController extends Controller
     public function store(RegisterRequest $request): RedirectResponse
     {
 
+        $selectedPlan = Plan::find($request->plan_id);
+
+        $is_approved = $selectedPlan && $selectedPlan->is_trial ? true : false;
 
         // Create center first
         $center = Center::create([
@@ -76,7 +79,7 @@ class RegisteredUserController extends Controller
             'subject' => $request->is_teacher ? $request->subject : null,
             'center_id' => $center->id,
             'type' => $request->is_teacher ? 'teacher' : 'center_owner',
-            'is_approved' => false,
+            'is_approved' => $is_approved,
         ]);
 
         // Update center with owner
@@ -88,17 +91,6 @@ class RegisteredUserController extends Controller
         // If user specified they are also a teacher, assign teacher role
         if ($request->is_teacher) {
             $user->assignRole('teacher');
-        }
-
-        // Create subscription for new user based on selected plan
-        $selectedPlan = null;
-        if ($request->plan_id) {
-            $selectedPlan = Plan::find($request->plan_id);
-        }
-
-        // Fallback to default plan if no plan selected or plan not found
-        if (!$selectedPlan) {
-            $selectedPlan = Plan::where('is_default', true)->first();
         }
 
         Subscription::create([
@@ -115,6 +107,13 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // if selected plan is trail, user dose not need to pay or be approved
+        if ($selectedPlan->is_trial) {
+            
+            // Redirect to dashboard for trial users
+            return redirect()->route('dashboard');
+        }
 
         // Redirect new users to pending approval page since they need approval first
         return redirect(route('pending-approval', absolute: false));
